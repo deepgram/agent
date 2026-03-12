@@ -1,0 +1,21 @@
+{
+  "name": "@deepgram/console-agent-server",
+  "version": "0.0.1",
+  "description": "Proxy server for the Deepgram Console Agent — forwards browser requests to Deepgram and Anthropic with API keys injected server-side",
+  "type": "module",
+  "scripts": {
+    "dev": "bun --watch server.ts",
+    "start": "bun server.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@lukeocodes/composite-voice": "^0.0.1",
+    "express": "^5.1.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/bun": "latest",
+    "typescript": "^5.7.0"
+  },
+  "license": "MIT"
+}

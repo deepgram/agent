@@ -1,0 +1,24 @@
+<!--
+  Console UI Integration Example
+
+  Add this snippet to the console-ui's index.html, just before </body>:
+-->
+
+<!-- Deepgram Console Agent -->
+<script type="module">
+  // In production, use the built UMD/ESM bundle:
+  // import { init } from 'https://cdn.example.com/deepgram-console-agent.es.js';
+  //
+  // For development, point to the local dev server:
+  import { init } from 'http://localhost:5174/src/index.ts';
+
+  init({
+    // Proxy URLs — point to the fly.io-deployed proxy server
+    // (or localhost:3001 for local dev)
+    anthropicProxyUrl: 'https://deepgram-console-agent-proxy.fly.dev/api/proxy/anthropic',
+    deepgramProxyUrl: 'https://deepgram-console-agent-proxy.fly.dev/api/proxy/deepgram',
+
+    // Optional: override console API base URL (defaults to current origin)
+    // apiBaseUrl: 'https://api.deepgram.com',
+  });
+</script>
