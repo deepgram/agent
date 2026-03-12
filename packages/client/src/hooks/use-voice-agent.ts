@@ -88,7 +88,7 @@ export function useVoiceAgent(
         ],
         conversationHistory: { enabled: true, maxTurns: 20 },
         turnTaking: {
-          pauseCaptureOnPlayback: 'auto',
+          pauseCaptureOnPlayback: false,
         },
       });
 
