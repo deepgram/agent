@@ -7,6 +7,7 @@ export const selfHostedSkills: Skill[] = [
     name: 'List Distribution Credentials',
     description: 'List all self-hosted distribution credentials',
     category: 'self-hosted',
+    risk: 'safe',
     parameters: [],
     execute: async (_params, ctx) => {
       if (!ctx.projectId) return { success: false, message: 'No project selected.' };
@@ -18,6 +19,7 @@ export const selfHostedSkills: Skill[] = [
     name: 'Create Distribution Credential',
     description: 'Create a new credential for self-hosted deployments',
     category: 'self-hosted',
+    risk: 'confirm',
     parameters: [
       { name: 'comment', type: 'string', description: 'Label for the credential', required: true },
     ],
@@ -31,14 +33,14 @@ export const selfHostedSkills: Skill[] = [
   {
     id: 'selfhosted-delete',
     name: 'Delete Distribution Credential',
-    description: 'Delete a self-hosted distribution credential (destructive)',
+    description: 'Navigate to self-hosted page where the user can delete a credential manually',
     category: 'self-hosted',
-    parameters: [
-      { name: 'credentialId', type: 'string', description: 'The credential ID to delete', required: true },
-    ],
-    execute: async (params, ctx) => {
+    risk: 'dangerous',
+    parameters: [],
+    execute: async (_params, ctx) => {
       if (!ctx.projectId) return { success: false, message: 'No project selected.' };
-      return apiCall(ctx, 'DELETE', `/projects/${ctx.projectId}/self-hosted/distribution/credentials/${params.credentialId}`);
+      ctx.navigate(`/project/${ctx.projectId}/self-hosted`);
+      return { success: true, message: 'Navigated to Self-Hosted. You can delete credentials from there.', navigateTo: `/project/${ctx.projectId}/self-hosted` };
     },
   },
 ];

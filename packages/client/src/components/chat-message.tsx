@@ -2,28 +2,68 @@ import type { ChatMessage as ChatMessageType } from '../types';
 
 interface Props {
   message: ChatMessageType;
+  onConfirm?: () => void;
+  onCancel?: () => void;
+  isPending?: boolean;
 }
 
-export function ChatMessageBubble({ message }: Props) {
+export function ChatMessageBubble({ message, onConfirm, onCancel, isPending }: Props) {
   const isUser = message.role === 'user';
   const isSystem = message.role === 'system';
 
   // Strip skill blocks from display
   const displayContent = message.content.replace(/```skill\s*\n[\s\S]*?\n```/g, '').trim();
-  if (!displayContent) return null;
+  if (!displayContent && !message.pendingSkill) return null;
+
+  const isDangerous = message.pendingSkill?.risk === 'dangerous';
+  const isConfirm = message.pendingSkill?.risk === 'confirm';
 
   return (
     <div
       className={`dg-agent-message ${isUser ? 'dg-agent-message--user' : ''} ${isSystem ? 'dg-agent-message--system' : ''}`}
     >
-      {message.skillUsed && (
+      {message.skillUsed && !message.pendingSkill && (
         <div className="dg-agent-message__skill">
           Executed: {message.skillUsed}
         </div>
       )}
-      <div className="dg-agent-message__content">
-        {displayContent}
-      </div>
+      {displayContent && (
+        <div className="dg-agent-message__content">
+          {displayContent}
+        </div>
+      )}
+
+      {/* Confirmation UI for pending skills */}
+      {message.pendingSkill && isPending && (
+        <div className={`dg-agent-confirm ${isDangerous ? 'dg-agent-confirm--dangerous' : 'dg-agent-confirm--confirm'}`}>
+          {isDangerous && (
+            <>
+              <div className="dg-agent-confirm__label">This action is destructive and cannot be undone.</div>
+              <div className="dg-agent-confirm__actions">
+                <button className="dg-agent-confirm__btn dg-agent-confirm__btn--danger" onClick={onConfirm}>
+                  Confirm {message.pendingSkill.skillName}
+                </button>
+                <button className="dg-agent-confirm__btn dg-agent-confirm__btn--cancel" onClick={onCancel}>
+                  Cancel
+                </button>
+              </div>
+            </>
+          )}
+          {isConfirm && (
+            <div className="dg-agent-confirm__label">
+              Confirm with a voice or text response (e.g. &quot;yes&quot;, &quot;go ahead&quot;, &quot;sure&quot;), or say anything else to cancel.
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Show expired pending state */}
+      {message.pendingSkill && !isPending && (
+        <div className="dg-agent-confirm dg-agent-confirm--resolved">
+          <div className="dg-agent-confirm__label">Action resolved.</div>
+        </div>
+      )}
+
       <div className="dg-agent-message__time">
         {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
       </div>

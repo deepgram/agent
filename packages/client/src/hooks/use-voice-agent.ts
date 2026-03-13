@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ConsoleAgentConfig } from '../types';
-import type { CompositeVoice as CompositeVoiceType } from '@lukeocodes/composite-voice';
+import type { CompositeVoice as CompositeVoiceType, LLMToolDefinition, LLMToolCall, LLMToolResult } from '@lukeocodes/composite-voice';
 
 interface VoiceAgentState {
   isListening: boolean;
@@ -10,6 +10,11 @@ interface VoiceAgentState {
   isOutputMuted: boolean;
   interimTranscript: string;
   error: string | null;
+}
+
+interface ToolsConfig {
+  definitions: LLMToolDefinition[];
+  onToolCall: (toolCall: LLMToolCall) => Promise<LLMToolResult>;
 }
 
 interface VoiceAgentCallbacks {
@@ -23,6 +28,7 @@ export function useVoiceAgent(
   config: ConsoleAgentConfig,
   systemPrompt: string,
   callbacks: VoiceAgentCallbacks,
+  toolsConfig?: ToolsConfig,
 ) {
   const [state, setState] = useState<VoiceAgentState>({
     isListening: false,
@@ -90,6 +96,12 @@ export function useVoiceAgent(
         turnTaking: {
           pauseCaptureOnPlayback: false,
         },
+        ...(toolsConfig ? {
+          tools: {
+            definitions: toolsConfig.definitions,
+            onToolCall: toolsConfig.onToolCall,
+          },
+        } : {}),
       });
 
       // Wire up events
@@ -137,7 +149,7 @@ export function useVoiceAgent(
       setState((s) => ({ ...s, error: `Failed to initialize voice agent: ${msg}` }));
       return null;
     }
-  }, [config, systemPrompt]);
+  }, [config, systemPrompt, toolsConfig]);
 
   const start = useCallback(async () => {
     const agent = await initAgent();
@@ -171,6 +183,10 @@ export function useVoiceAgent(
     }
     await agent.sendMessage(text);
   }, [initAgent]);
+
+  const getHistory = useCallback(() => {
+    return agentRef.current?.getHistory() ?? [];
+  }, []);
 
   const toggleInput = useCallback(async () => {
     const agent = agentRef.current;
@@ -215,5 +231,5 @@ export function useVoiceAgent(
     };
   }, []);
 
-  return { ...state, start, stop, sendMessage, toggleInput, toggleOutput };
+  return { ...state, start, stop, sendMessage, getHistory, toggleInput, toggleOutput };
 }

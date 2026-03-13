@@ -7,6 +7,7 @@ export const teamSkills: Skill[] = [
     name: 'List Team Members',
     description: 'List all members of the current project',
     category: 'team',
+    risk: 'safe',
     parameters: [],
     execute: async (_params, ctx) => {
       if (!ctx.projectId) return { success: false, message: 'No project selected.' };
@@ -22,6 +23,7 @@ export const teamSkills: Skill[] = [
     name: 'Invite Team Member',
     description: 'Send an invitation to a new team member by email',
     category: 'team',
+    risk: 'confirm',
     parameters: [
       { name: 'email', type: 'string', description: 'Email address to invite', required: true },
       { name: 'scope', type: 'enum', description: 'Role for the invited member', required: false, enumValues: ['member', 'admin', 'owner'] },
@@ -38,6 +40,7 @@ export const teamSkills: Skill[] = [
     name: 'List Pending Invites',
     description: 'List all pending team invitations',
     category: 'team',
+    risk: 'safe',
     parameters: [],
     execute: async (_params, ctx) => {
       if (!ctx.projectId) return { success: false, message: 'No project selected.' };
@@ -52,27 +55,27 @@ export const teamSkills: Skill[] = [
   {
     id: 'team-cancel-invite',
     name: 'Cancel Invitation',
-    description: 'Cancel a pending team invitation (destructive)',
+    description: 'Navigate to team page where the user can revoke a pending invitation',
     category: 'team',
-    parameters: [
-      { name: 'email', type: 'string', description: 'Email of the invitation to cancel', required: true },
-    ],
-    execute: async (params, ctx) => {
+    risk: 'dangerous',
+    parameters: [],
+    execute: async (_params, ctx) => {
       if (!ctx.projectId) return { success: false, message: 'No project selected.' };
-      return apiCall(ctx, 'DELETE', `/projects/${ctx.projectId}/invites/${encodeURIComponent(params.email as string)}`);
+      ctx.navigate(`/project/${ctx.projectId}/team`);
+      return { success: true, message: 'Navigated to Team. You can revoke invitations from there.', navigateTo: `/project/${ctx.projectId}/team` };
     },
   },
   {
     id: 'team-remove',
     name: 'Remove Team Member',
-    description: 'Remove a member from the project (destructive)',
+    description: 'Navigate to team page where the user can remove a member — this revokes their access immediately',
     category: 'team',
-    parameters: [
-      { name: 'memberId', type: 'string', description: 'The member ID to remove', required: true },
-    ],
-    execute: async (params, ctx) => {
+    risk: 'dangerous',
+    parameters: [],
+    execute: async (_params, ctx) => {
       if (!ctx.projectId) return { success: false, message: 'No project selected.' };
-      return apiCall(ctx, 'DELETE', `/projects/${ctx.projectId}/members/${params.memberId}`);
+      ctx.navigate(`/project/${ctx.projectId}/team`);
+      return { success: true, message: 'Navigated to Team. You can remove members from there.', navigateTo: `/project/${ctx.projectId}/team` };
     },
   },
   {
@@ -80,6 +83,7 @@ export const teamSkills: Skill[] = [
     name: 'Change Member Role',
     description: 'Change a team member\'s role/permissions',
     category: 'team',
+    risk: 'confirm',
     parameters: [
       { name: 'memberId', type: 'string', description: 'The member ID to update', required: true },
       { name: 'scope', type: 'enum', description: 'New role for the member', required: true, enumValues: ['member', 'admin', 'owner'] },
@@ -87,6 +91,21 @@ export const teamSkills: Skill[] = [
     execute: async (params, ctx) => {
       if (!ctx.projectId) return { success: false, message: 'No project selected.' };
       return apiCall(ctx, 'PUT', `/projects/${ctx.projectId}/members/${params.memberId}/scopes`, { scope: params.scope });
+    },
+  },
+  {
+    id: 'team-grant-scope',
+    name: 'Grant Specific Scope',
+    description: 'Grant a specific product scope to a team member (e.g. self-hosted access)',
+    category: 'team',
+    risk: 'confirm',
+    parameters: [
+      { name: 'memberId', type: 'string', description: 'The member ID to update', required: true },
+      { name: 'scopeName', type: 'string', description: 'The scope name to grant (e.g. self-hosted:product)', required: true },
+    ],
+    execute: async (params, ctx) => {
+      if (!ctx.projectId) return { success: false, message: 'No project selected.' };
+      return apiCall(ctx, 'PUT', `/projects/${ctx.projectId}/members/${params.memberId}/scopes/${encodeURIComponent(params.scopeName as string)}`);
     },
   },
 ];

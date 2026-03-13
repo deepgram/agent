@@ -11,6 +11,7 @@ export const navigationSkills: Skill[] = [
     name: 'Go to Dashboard',
     description: 'Navigate to the project dashboard/overview page',
     category: 'navigation',
+    risk: 'safe',
     parameters: [],
     execute: async (_params, ctx) => {
       if (!ctx.projectId) return { success: false, message: 'No project selected.' };
@@ -22,6 +23,7 @@ export const navigationSkills: Skill[] = [
     name: 'Go to API Keys',
     description: 'Navigate to the API keys management page',
     category: 'navigation',
+    risk: 'safe',
     parameters: [],
     execute: async (_params, ctx) => {
       if (!ctx.projectId) return { success: false, message: 'No project selected.' };
@@ -33,6 +35,7 @@ export const navigationSkills: Skill[] = [
     name: 'Go to Team',
     description: 'Navigate to the team/members management page',
     category: 'navigation',
+    risk: 'safe',
     parameters: [],
     execute: async (_params, ctx) => {
       if (!ctx.projectId) return { success: false, message: 'No project selected.' };
@@ -44,6 +47,7 @@ export const navigationSkills: Skill[] = [
     name: 'Go to Billing',
     description: 'Navigate to the billing overview page',
     category: 'navigation',
+    risk: 'safe',
     parameters: [],
     execute: async (_params, ctx) => {
       if (!ctx.projectId) return { success: false, message: 'No project selected.' };
@@ -55,6 +59,7 @@ export const navigationSkills: Skill[] = [
     name: 'Go to Usage',
     description: 'Navigate to the usage overview page',
     category: 'navigation',
+    risk: 'safe',
     parameters: [],
     execute: async (_params, ctx) => {
       if (!ctx.projectId) return { success: false, message: 'No project selected.' };
@@ -66,6 +71,7 @@ export const navigationSkills: Skill[] = [
     name: 'Go to Usage Logs',
     description: 'Navigate to detailed request logs',
     category: 'navigation',
+    risk: 'safe',
     parameters: [],
     execute: async (_params, ctx) => {
       if (!ctx.projectId) return { success: false, message: 'No project selected.' };
@@ -77,6 +83,7 @@ export const navigationSkills: Skill[] = [
     name: 'Go to Spend Analysis',
     description: 'Navigate to the spend analysis page',
     category: 'navigation',
+    risk: 'safe',
     parameters: [],
     execute: async (_params, ctx) => {
       if (!ctx.projectId) return { success: false, message: 'No project selected.' };
@@ -88,6 +95,7 @@ export const navigationSkills: Skill[] = [
     name: 'Go to Credit History',
     description: 'Navigate to the credit history page',
     category: 'navigation',
+    risk: 'safe',
     parameters: [],
     execute: async (_params, ctx) => {
       if (!ctx.projectId) return { success: false, message: 'No project selected.' };
@@ -99,6 +107,7 @@ export const navigationSkills: Skill[] = [
     name: 'Go to Payment Info',
     description: 'Navigate to payment method management',
     category: 'navigation',
+    risk: 'safe',
     parameters: [],
     execute: async (_params, ctx) => {
       if (!ctx.projectId) return { success: false, message: 'No project selected.' };
@@ -110,6 +119,7 @@ export const navigationSkills: Skill[] = [
     name: 'Go to User Settings',
     description: 'Navigate to user profile settings',
     category: 'navigation',
+    risk: 'safe',
     parameters: [],
     execute: async (_params, ctx) => nav('/settings', 'User Settings', ctx),
   },
@@ -118,6 +128,7 @@ export const navigationSkills: Skill[] = [
     name: 'Go to Self-Hosted',
     description: 'Navigate to self-hosted/on-premises credentials page',
     category: 'navigation',
+    risk: 'safe',
     parameters: [],
     execute: async (_params, ctx) => {
       if (!ctx.projectId) return { success: false, message: 'No project selected.' };
@@ -129,6 +140,7 @@ export const navigationSkills: Skill[] = [
     name: 'Navigate to Page',
     description: 'Navigate to any console page by path',
     category: 'navigation',
+    risk: 'safe',
     parameters: [
       { name: 'path', type: 'string', description: 'The URL path to navigate to', required: true },
     ],

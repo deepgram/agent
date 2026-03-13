@@ -7,6 +7,7 @@ export const apiKeySkills: Skill[] = [
     name: 'List API Keys',
     description: 'List all API keys for the current project',
     category: 'api-keys',
+    risk: 'safe',
     parameters: [],
     execute: async (_params, ctx) => {
       if (!ctx.projectId) return { success: false, message: 'No project selected.' };
@@ -20,36 +21,31 @@ export const apiKeySkills: Skill[] = [
   {
     id: 'keys-create',
     name: 'Create API Key',
-    description: 'Create a new API key with optional comment, expiration, scopes, and tags',
+    description: 'Navigate to the API keys page with the create form open so the user can name their key and copy the secret',
     category: 'api-keys',
-    parameters: [
-      { name: 'comment', type: 'string', description: 'Label/comment for the key', required: true },
-      { name: 'expirationDate', type: 'string', description: 'Expiration date (ISO 8601) or empty for no expiry', required: false },
-      { name: 'scopes', type: 'string', description: 'Comma-separated scopes (e.g. member,admin)', required: false },
-      { name: 'tags', type: 'string', description: 'Comma-separated tags', required: false },
-    ],
-    execute: async (params, ctx) => {
+    risk: 'safe',
+    parameters: [],
+    execute: async (_params, ctx) => {
       if (!ctx.projectId) return { success: false, message: 'No project selected.' };
-      const body: Record<string, unknown> = { comment: params.comment };
-      if (params.expirationDate) body.expiration_date = params.expirationDate;
-      if (params.scopes) body.scopes = (params.scopes as string).split(',').map((s) => s.trim());
-      if (params.tags) body.tags = (params.tags as string).split(',').map((t) => t.trim());
-      const res = await apiCall(ctx, 'POST', `/projects/${ctx.projectId}/keys`, body);
-      if (!res.success) return res;
-      return { success: true, message: `API key created: ${(res.data as { comment: string }).comment}. The key value is shown only once — copy it now!`, data: res.data };
+      ctx.navigate(`/project/${ctx.projectId}/keys?action=create`);
+      return {
+        success: true,
+        message: 'Opened the Create API Key form. Name your key and click "Create Key" — the secret will appear for you to copy.',
+        navigateTo: `/project/${ctx.projectId}/keys?action=create`,
+      };
     },
   },
   {
     id: 'keys-delete',
     name: 'Delete API Key',
-    description: 'Delete an API key by its ID (destructive)',
+    description: 'Navigate to API keys page where the user can delete a key manually — keys cannot be recovered once deleted',
     category: 'api-keys',
-    parameters: [
-      { name: 'keyId', type: 'string', description: 'The API key ID to delete', required: true },
-    ],
-    execute: async (params, ctx) => {
+    risk: 'dangerous',
+    parameters: [],
+    execute: async (_params, ctx) => {
       if (!ctx.projectId) return { success: false, message: 'No project selected.' };
-      return apiCall(ctx, 'DELETE', `/projects/${ctx.projectId}/keys/${params.keyId}`);
+      ctx.navigate(`/project/${ctx.projectId}/keys`);
+      return { success: true, message: 'Navigated to API Keys. You can delete keys from there.', navigateTo: `/project/${ctx.projectId}/keys` };
     },
   },
 ];

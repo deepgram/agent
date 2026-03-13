@@ -57,6 +57,25 @@ export function getProjectIdFromUrl(): string | null {
   return match ? match[1] : null;
 }
 
+/** Store a tool result in the cache */
+export function storeToolResult(state: AgentState, skillId: string, data: unknown): AgentState {
+  const next: AgentState = {
+    ...state,
+    recentToolResults: {
+      ...state.recentToolResults,
+      [skillId]: data,
+    },
+  };
+  saveState(next);
+  return next;
+}
+
+/** Get a cached tool result */
+export function getToolResult(skillId: string): unknown | undefined {
+  const state = loadState();
+  return state.recentToolResults?.[skillId];
+}
+
 /** Generate a unique message ID */
 export function generateId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;

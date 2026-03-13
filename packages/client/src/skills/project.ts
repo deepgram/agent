@@ -7,6 +7,7 @@ export const projectSkills: Skill[] = [
     name: 'List Projects',
     description: 'List all projects the user has access to',
     category: 'project',
+    risk: 'safe',
     parameters: [],
     execute: async (_params, ctx) => {
       const res = await apiCall(ctx, 'GET', '/projects_with_scopes');
@@ -17,10 +18,23 @@ export const projectSkills: Skill[] = [
     },
   },
   {
+    id: 'project-details',
+    name: 'Get Project Details',
+    description: 'Get full details of the current project',
+    category: 'project',
+    risk: 'safe',
+    parameters: [],
+    execute: async (_params, ctx) => {
+      if (!ctx.projectId) return { success: false, message: 'No project selected.' };
+      return apiCall(ctx, 'GET', `/projects/${ctx.projectId}`);
+    },
+  },
+  {
     id: 'project-create',
     name: 'Create Project',
     description: 'Create a new project',
     category: 'project',
+    risk: 'confirm',
     parameters: [
       { name: 'name', type: 'string', description: 'Name for the new project', required: true },
     ],
@@ -33,6 +47,7 @@ export const projectSkills: Skill[] = [
     name: 'Rename Project',
     description: 'Rename the current project',
     category: 'project',
+    risk: 'confirm',
     parameters: [
       { name: 'name', type: 'string', description: 'New name for the project', required: true },
     ],
@@ -44,35 +59,71 @@ export const projectSkills: Skill[] = [
   {
     id: 'project-delete',
     name: 'Delete Project',
-    description: 'Permanently delete the current project (destructive)',
+    description: 'Navigate to project settings where the user can delete the project manually — this is too destructive to execute via the agent',
     category: 'project',
+    risk: 'dangerous',
     parameters: [],
     execute: async (_params, ctx) => {
       if (!ctx.projectId) return { success: false, message: 'No project selected.' };
-      return apiCall(ctx, 'DELETE', `/projects/${ctx.projectId}`);
+      ctx.navigate(`/project/${ctx.projectId}/settings`);
+      return { success: true, message: 'Navigated to project settings. You can delete the project from there.', navigateTo: `/project/${ctx.projectId}/settings` };
     },
   },
   {
     id: 'project-leave',
     name: 'Leave Project',
-    description: 'Leave the current project (removes your access)',
+    description: 'Navigate to project settings where the user can leave the project manually — this removes your access permanently',
     category: 'project',
+    risk: 'dangerous',
     parameters: [],
     execute: async (_params, ctx) => {
       if (!ctx.projectId) return { success: false, message: 'No project selected.' };
-      return apiCall(ctx, 'DELETE', `/projects/${ctx.projectId}/leave`);
+      ctx.navigate(`/project/${ctx.projectId}/settings`);
+      return { success: true, message: 'Navigated to project settings. You can leave the project from there.', navigateTo: `/project/${ctx.projectId}/settings` };
+    },
+  },
+  {
+    id: 'project-concurrency-limits',
+    name: 'View Concurrency Limits',
+    description: 'Get the concurrency limits for the current project',
+    category: 'project',
+    risk: 'safe',
+    parameters: [],
+    execute: async (_params, ctx) => {
+      if (!ctx.projectId) return { success: false, message: 'No project selected.' };
+      return apiCall(ctx, 'GET', `/projects/${ctx.projectId}/concurrency-limits`);
     },
   },
   {
     id: 'project-switch',
     name: 'Switch Project',
-    description: 'Switch to a different project by navigating to its dashboard',
+    description: 'Switch to a different project by navigating to its dashboard. Use the project UUID from project-list results, never a project name.',
     category: 'project',
+    risk: 'safe',
     parameters: [
-      { name: 'projectId', type: 'string', description: 'The project ID to switch to', required: true },
+      { name: 'projectId', type: 'string', description: 'The project UUID to switch to (from project-list results)', required: true },
     ],
     execute: async (params, ctx) => {
-      const pid = params.projectId as string;
+      let pid = params.projectId as string;
+
+      // If the LLM passed a name instead of a UUID, try to resolve it from cached project list
+      const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      if (!uuidPattern.test(pid)) {
+        const cached = ctx.getToolResult('project-list') as { projects?: Array<{ project_id: string; name: string }> } | undefined;
+        if (cached?.projects) {
+          const match = cached.projects.find(
+            (p) => p.name.toLowerCase() === pid.toLowerCase()
+          );
+          if (match) {
+            pid = match.project_id;
+          } else {
+            return { success: false, message: `Could not find a project named "${pid}". Use project-list first to see available projects and their IDs.` };
+          }
+        } else {
+          return { success: false, message: `"${pid}" is not a valid project UUID. Use project-list first to get the correct project ID.` };
+        }
+      }
+
       ctx.navigate(`/project/${pid}/dashboard`);
       return { success: true, message: `Switched to project ${pid}.`, navigateTo: `/project/${pid}/dashboard` };
     },

@@ -9,25 +9,14 @@ export async function apiCall(
   method: string,
   path: string,
   body?: unknown,
-  isAuthEndpoint = false,
 ): Promise<SkillResult> {
   const base = ctx.apiBaseUrl.replace(/\/$/, '');
-  const prefix = isAuthEndpoint ? '' : '/v1';
-  const url = `${base}${prefix}${path}`;
+  const url = `${base}/v1${path}`;
 
   try {
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-    };
-
-    const token = ctx.getAuthToken();
-    if (token) {
-      headers['Authorization'] = `Token ${token}`;
-    }
-
     const res = await fetch(url, {
       method,
-      headers,
+      headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
       body: body ? JSON.stringify(body) : undefined,
     });
