@@ -24,8 +24,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.78.0",
-    "@deepgram/sdk": "^5.0.0",
-    "@lukeocodes/composite-voice": "file:///Users/lukeoliff/Projects/lukeocodes/composite-voice",
+    "@lukeocodes/composite-voice": "^0.0.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },

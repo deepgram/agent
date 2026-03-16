@@ -4,10 +4,10 @@ export interface ConsoleAgentConfig {
   buttonId?: string;
   /** ID of the container element for inline embedding */
   containerId?: string;
-  /** Proxy URL for Anthropic LLM requests (default: /api/proxy/anthropic) */
-  anthropicProxyUrl?: string;
-  /** Proxy URL for Deepgram requests — STT and TTS share one endpoint (default: /api/proxy/deepgram) */
-  deepgramProxyUrl?: string;
+  /** Base URL for the DX API (default: https://api.dx.deepgram.com) */
+  dxApiUrl?: string;
+  /** Base URL for the Deepgram management API (default: https://manage.deepgram.com) */
+  manageUrl?: string;
   /** Current project ID from the console */
   projectId?: string;
   /** Base URL for console API (defaults to current origin) */

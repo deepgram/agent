@@ -8,13 +8,15 @@ export type { Skill, SkillCategory, ChatMessage, AgentState } from './types';
 /**
  * Initialize the Deepgram Console Agent widget.
  *
+ * When embedded in the Deepgram Console (console.deepgram.com), the widget
+ * authenticates automatically via the session cookie through the DX API.
+ *
  * @example
  * ```js
  * import { init } from '@deepgram/console-agent';
  * init({
- *   anthropicProxyUrl: '/api/proxy/anthropic',
- *   deepgramSttProxyUrl: '/api/proxy/deepgram/listen',
- *   deepgramTtsProxyUrl: '/api/proxy/deepgram/speak',
+ *   dxApiUrl: 'https://api.dx.deepgram.com',
+ *   manageUrl: 'https://manage.deepgram.com',
  * });
  * ```
  */

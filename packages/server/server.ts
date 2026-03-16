@@ -41,21 +41,7 @@ const proxy = createExpressProxy({
   cors: { origins: CORS_ORIGINS },
 });
 
-// Patch response headers before the proxy writes them:
-// - Strip Content-Encoding (proxy decodes gzip but keeps the header)
-// - Allow all request headers in CORS (Anthropic SDK sends x-stainless-* etc.)
-app.use((req, res, next) => {
-  const originalSetHeader = res.setHeader.bind(res);
-  res.setHeader = (name: string, value: string | number | readonly string[]) => {
-    const lower = name.toLowerCase();
-    if (lower === 'content-encoding') return res;
-    if (lower === 'access-control-allow-headers') {
-      return originalSetHeader(name, '*');
-    }
-    return originalSetHeader(name, value);
-  };
-  proxy.middleware(req, res, next);
-});
+app.use(proxy.middleware);
 
 // Health check (used by fly.io)
 app.get('/health', (_req, res) => {

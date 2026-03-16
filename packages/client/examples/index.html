@@ -28,17 +28,17 @@
       Click it to open the voice + chat assistant.
     </p>
     <p>
-      Start the proxy server with <code>pnpm --filter @deepgram/console-agent-server dev</code>,
-      then the widget connects at <code>/api/proxy/anthropic</code> and
-      <code>/api/proxy/deepgram</code>.
+      This demo authenticates through the DX API via session cookie.
+      It must be served from a <code>*.deepgram.com</code> subdomain
+      to access the session cookie.
     </p>
   </div>
 
   <script type="module">
     import { init } from '../src/index.ts';
     init({
-      anthropicProxyUrl: 'http://localhost:3001/api/proxy/anthropic',
-      deepgramProxyUrl: 'http://localhost:3001/api/proxy/deepgram',
+      dxApiUrl: 'https://api.dx.deepgram.com',
+      manageUrl: 'https://manage.deepgram.com',
     });
   </script>
 </body>

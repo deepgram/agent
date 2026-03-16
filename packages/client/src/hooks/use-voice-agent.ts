@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ConsoleAgentConfig } from '../types';
 import type { CompositeVoice as CompositeVoiceType, LLMToolDefinition, LLMToolCall, LLMToolResult } from '@lukeocodes/composite-voice';
+import { authenticate } from '../services/auth';
+import type { DxApiCredentials } from '../services/auth';
 
 interface VoiceAgentState {
   isListening: boolean;
@@ -41,14 +43,32 @@ export function useVoiceAgent(
   });
 
   const agentRef = useRef<CompositeVoiceType | null>(null);
+  const credentialsRef = useRef<DxApiCredentials | null>(null);
   const listeningStartedRef = useRef(false);
   const callbacksRef = useRef(callbacks);
   callbacksRef.current = callbacks;
+
+  const dxApiUrl = config.dxApiUrl ?? 'https://api.dx.deepgram.com';
+  const dxApiWsUrl = dxApiUrl.replace(/^http/, 'ws');
+
+  /** Obtain or refresh DX API credentials via the auth chain. */
+  const ensureCredentials = useCallback(async (): Promise<DxApiCredentials> => {
+    const existing = credentialsRef.current;
+    // Re-use if still valid with 60s buffer
+    if (existing && existing.expiresAt.getTime() - Date.now() > 60_000) {
+      return existing;
+    }
+    const creds = await authenticate(config);
+    credentialsRef.current = creds;
+    return creds;
+  }, [config]);
 
   const initAgent = useCallback(async () => {
     if (agentRef.current) return agentRef.current;
 
     try {
+      const credentials = await ensureCredentials();
+
       const {
         CompositeVoice,
         MicrophoneInput,
@@ -58,33 +78,28 @@ export function useVoiceAgent(
         BrowserAudioOutput,
       } = await import('@lukeocodes/composite-voice');
 
-      const deepgramProxyUrl = config.deepgramProxyUrl ?? '/api/proxy/deepgram';
-
       const agent = new CompositeVoice({
         providers: [
-          new MicrophoneInput({
-            sampleRate: 16000,
-            channels: 1,
-            echoCancellation: true,
-            noiseSuppression: true,
-            autoGainControl: true,
-          }),
+          new MicrophoneInput(),
           new DeepgramSTT({
-            proxyUrl: deepgramProxyUrl,
+            endpoint: `${dxApiWsUrl}/deepgram`,
+            apiKey: credentials.token,
+            authType: 'bearer',
             options: {
               model: 'nova-3',
-              encoding: 'linear16',
-              sampleRate: 16000,
             },
           }),
           new AnthropicLLM({
-            proxyUrl: config.anthropicProxyUrl ?? '/api/proxy/anthropic',
+            endpoint: `${dxApiUrl}/anthropic`,
+            apiKey: credentials.token,
             model: 'claude-haiku-4-5-20251001',
             systemPrompt,
             maxTokens: 512,
           }),
           new DeepgramTTS({
-            proxyUrl: deepgramProxyUrl,
+            endpoint: `${dxApiWsUrl}/deepgram`,
+            apiKey: credentials.token,
+            authType: 'bearer',
             voice: 'aura-2-thalia-en',
           }),
           new BrowserAudioOutput({
@@ -149,7 +164,7 @@ export function useVoiceAgent(
       setState((s) => ({ ...s, error: `Failed to initialize voice agent: ${msg}` }));
       return null;
     }
-  }, [config, systemPrompt, toolsConfig]);
+  }, [config, systemPrompt, toolsConfig, dxApiUrl, ensureCredentials]);
 
   const start = useCallback(async () => {
     const agent = await initAgent();
@@ -191,11 +206,9 @@ export function useVoiceAgent(
   const toggleInput = useCallback(async () => {
     const agent = agentRef.current;
     if (!agent || !listeningStartedRef.current) {
-      // Agent not created, or mic capture never started — do full start
       await start();
       return;
     }
-    // Mic was started before — toggle pause/resume
     if (agent.isInputMuted) {
       await agent.unmuteInput();
       setState((s) => ({ ...s, isInputMuted: false }));
@@ -208,7 +221,6 @@ export function useVoiceAgent(
   const toggleOutput = useCallback(async () => {
     let agent = agentRef.current;
     if (!agent) {
-      // Initialize agent so we can set the mute preference
       agent = await initAgent();
       if (!agent) return;
       await agent.initialize();

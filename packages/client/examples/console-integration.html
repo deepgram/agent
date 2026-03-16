@@ -13,10 +13,9 @@
   import { init } from 'http://localhost:5174/src/index.ts';
 
   init({
-    // Proxy URLs — point to the fly.io-deployed proxy server
-    // (or localhost:3001 for local dev)
-    anthropicProxyUrl: 'https://deepgram-console-agent-proxy.fly.dev/api/proxy/anthropic',
-    deepgramProxyUrl: 'https://deepgram-console-agent-proxy.fly.dev/api/proxy/deepgram',
+    // DX API handles auth + proxying for Deepgram and Anthropic
+    dxApiUrl: 'https://api.dx.deepgram.com',
+    manageUrl: 'https://manage.deepgram.com',
 
     // Optional: override console API base URL (defaults to current origin)
     // apiBaseUrl: 'https://api.deepgram.com',
