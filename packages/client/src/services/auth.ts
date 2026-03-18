@@ -1,4 +1,5 @@
 import type { ConsoleAgentConfig } from '../types';
+import { getProjectIdFromUrl } from '../utils/state';
 
 export interface DxApiCredentials {
   token: string;
@@ -8,33 +9,50 @@ export interface DxApiCredentials {
 /**
  * Authenticate through the DX API auth chain:
  *
- * 1. Session cookie → manage.deepgram.com/v1/auth/grant → temporary access_token
- * 2. access_token → api.dx.deepgram.com/auth/token → custom JWT
- *
- * The session cookie is sent automatically (httpOnly, *.deepgram.com wildcard).
+ * 1. Get project ID from the current console URL
+ * 2. Create a short-lived API key on that project via manage.deepgram.com
+ *    (session cookie sent automatically via credentials: 'include')
+ * 3. Exchange that key for a dx-api wrapper JWT
+ *    (dx-api embeds a service credential instead of the temp key)
  */
 export async function authenticate(config: ConsoleAgentConfig): Promise<DxApiCredentials> {
   const manageUrl = config.manageUrl ?? 'https://manage.deepgram.com';
   const dxApiUrl = config.dxApiUrl ?? 'https://api.dx.deepgram.com';
 
-  // Step 1: Exchange session cookie for a temporary scoped credential via auth/grant
-  const grantRes = await fetch(`${manageUrl}/v1/auth/grant`, {
+  const projectId = config.projectId ?? getProjectIdFromUrl();
+  if (!projectId) {
+    throw new Error('No project ID available — navigate to a project first');
+  }
+
+  // Step 1: Create a short-lived API key on the current project
+  const keyRes = await fetch(`${manageUrl}/v1/projects/${projectId}/keys`, {
     method: 'POST',
     credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      comment: 'dx-api session key',
+      scopes: ['member'],
+      time_to_live_in_seconds: 3600,
+    }),
   });
 
-  if (!grantRes.ok) {
-    const body = await grantRes.text().catch(() => '');
-    throw new Error(`auth/grant failed (${grantRes.status}): ${body}`);
+  if (!keyRes.ok) {
+    const body = await keyRes.text().catch(() => '');
+    throw new Error(`Failed to create session key (${keyRes.status}): ${body}`);
   }
 
-  const grant: { access_token: string; expires_in: number } = await grantRes.json();
+  const keyData: { key: string } = await keyRes.json();
+  if (!keyData.key) {
+    throw new Error('No key returned from manage API');
+  }
 
-  // Step 2: Exchange the temporary credential for a DX API JWT
+  // Step 2: Exchange the temp key for a dx-api wrapper JWT
   const tokenRes = await fetch(`${dxApiUrl}/auth/token`, {
     method: 'POST',
-    headers: { Authorization: `Token ${grant.access_token}` },
+    headers: {
+      Authorization: `Token ${keyData.key}`,
+      'X-DX-Auth-Mode': 'session',
+    },
   });
 
   if (!tokenRes.ok) {
