@@ -16,18 +16,13 @@ export const settingsSkills: Skill[] = [
   {
     id: 'settings-update-name',
     name: 'Update Name',
-    description: 'Update the user\'s first and/or last name',
+    description: 'Navigate to settings where the user can update their name',
     category: 'settings',
-    risk: 'confirm',
-    parameters: [
-      { name: 'firstName', type: 'string', description: 'New first name', required: false },
-      { name: 'lastName', type: 'string', description: 'New last name', required: false },
-    ],
-    execute: async (params, ctx) => {
-      const body: Record<string, unknown> = {};
-      if (params.firstName) body.first_name = params.firstName;
-      if (params.lastName) body.last_name = params.lastName;
-      return apiCall(ctx, 'PATCH', '/auth/profile', body);
+    risk: 'safe',
+    parameters: [],
+    execute: async (_params, ctx) => {
+      ctx.navigate('/settings');
+      return { success: true, message: 'Navigated to Settings. You can update your name from here.', navigateTo: '/settings' };
     },
   },
   {

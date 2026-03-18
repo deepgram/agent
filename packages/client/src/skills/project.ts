@@ -32,28 +32,26 @@ export const projectSkills: Skill[] = [
   {
     id: 'project-create',
     name: 'Create Project',
-    description: 'Create a new project',
+    description: 'Navigate to project creation — guide the user to create a new project from the console',
     category: 'project',
-    risk: 'confirm',
-    parameters: [
-      { name: 'name', type: 'string', description: 'Name for the new project', required: true },
-    ],
-    execute: async (params, ctx) => {
-      return apiCall(ctx, 'POST', '/projects', { name: params.name });
+    risk: 'safe',
+    parameters: [],
+    execute: async (_params, ctx) => {
+      ctx.navigate('/projects/new');
+      return { success: true, message: 'Navigated to the new project page. You can create your project from here.', navigateTo: '/projects/new' };
     },
   },
   {
     id: 'project-rename',
     name: 'Rename Project',
-    description: 'Rename the current project',
+    description: 'Navigate to project settings where the user can rename the project',
     category: 'project',
-    risk: 'confirm',
-    parameters: [
-      { name: 'name', type: 'string', description: 'New name for the project', required: true },
-    ],
-    execute: async (params, ctx) => {
+    risk: 'safe',
+    parameters: [],
+    execute: async (_params, ctx) => {
       if (!ctx.projectId) return { success: false, message: 'No project selected.' };
-      return apiCall(ctx, 'PATCH', `/projects/${ctx.projectId}`, { name: params.name });
+      ctx.navigate(`/project/${ctx.projectId}/settings`);
+      return { success: true, message: 'Navigated to project settings. You can rename the project from here.', navigateTo: `/project/${ctx.projectId}/settings` };
     },
   },
   {

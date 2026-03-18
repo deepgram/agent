@@ -122,51 +122,27 @@ export const billingSkills: Skill[] = [
   {
     id: 'billing-auto-recharge-update',
     name: 'Update Auto-Recharge',
-    description: 'Enable or configure auto-recharge settings',
+    description: 'Navigate to billing page where the user can configure auto-recharge settings',
     category: 'billing',
-    risk: 'confirm',
-    parameters: [
-      { name: 'enabled', type: 'boolean', description: 'Enable or disable auto-recharge', required: true },
-      { name: 'threshold', type: 'number', description: 'Balance threshold to trigger recharge', required: false },
-      { name: 'amount', type: 'number', description: 'Amount to recharge', required: false },
-    ],
-    execute: async (params, ctx) => {
-      if (!ctx.projectId) return { success: false, message: 'No project selected.' };
-      return apiCall(ctx, 'PUT', `/projects/${ctx.projectId}/auto-recharge`, {
-        active: params.enabled,
-        amount: params.amount,
-        threshold: params.threshold,
-      });
-    },
-  },
-  {
-    id: 'billing-auto-renew-enable',
-    name: 'Enable Auto-Renew',
-    description: 'Enable automatic plan renewal (requires plan ID and amount)',
-    category: 'billing',
-    risk: 'confirm',
-    parameters: [
-      { name: 'planId', type: 'string', description: 'The plan UUID to auto-renew', required: true },
-      { name: 'amount', type: 'number', description: 'Renewal amount in cents', required: true },
-    ],
-    execute: async (params, ctx) => {
-      if (!ctx.projectId) return { success: false, message: 'No project selected.' };
-      return apiCall(ctx, 'POST', `/projects/${ctx.projectId}/auto-renew`, {
-        plan_uuid: params.planId,
-        amount: params.amount,
-      });
-    },
-  },
-  {
-    id: 'billing-auto-renew-disable',
-    name: 'Disable Auto-Renew',
-    description: 'Disable automatic plan renewal',
-    category: 'billing',
-    risk: 'confirm',
+    risk: 'safe',
     parameters: [],
     execute: async (_params, ctx) => {
       if (!ctx.projectId) return { success: false, message: 'No project selected.' };
-      return apiCall(ctx, 'DELETE', `/projects/${ctx.projectId}/auto-renew`);
+      ctx.navigate(`/project/${ctx.projectId}/billing`);
+      return { success: true, message: 'Navigated to Billing. You can configure auto-recharge from here.', navigateTo: `/project/${ctx.projectId}/billing` };
+    },
+  },
+  {
+    id: 'billing-auto-renew',
+    name: 'Manage Auto-Renew',
+    description: 'Navigate to billing page where the user can enable or disable automatic plan renewal',
+    category: 'billing',
+    risk: 'safe',
+    parameters: [],
+    execute: async (_params, ctx) => {
+      if (!ctx.projectId) return { success: false, message: 'No project selected.' };
+      ctx.navigate(`/project/${ctx.projectId}/billing`);
+      return { success: true, message: 'Navigated to Billing. You can manage auto-renewal from here.', navigateTo: `/project/${ctx.projectId}/billing` };
     },
   },
   {

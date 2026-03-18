@@ -87,6 +87,8 @@ export function useVoiceAgent(
             authType: 'bearer',
             options: {
               model: 'nova-3',
+              encoding: 'linear16',
+              sampleRate: 16000,
             },
           }),
           new AnthropicLLM({

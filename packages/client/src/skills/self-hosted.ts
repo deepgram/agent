@@ -17,17 +17,14 @@ export const selfHostedSkills: Skill[] = [
   {
     id: 'selfhosted-create',
     name: 'Create Distribution Credential',
-    description: 'Create a new credential for self-hosted deployments',
+    description: 'Navigate to the self-hosted page where the user can create a new distribution credential',
     category: 'self-hosted',
-    risk: 'confirm',
-    parameters: [
-      { name: 'comment', type: 'string', description: 'Label for the credential', required: true },
-    ],
-    execute: async (params, ctx) => {
+    risk: 'safe',
+    parameters: [],
+    execute: async (_params, ctx) => {
       if (!ctx.projectId) return { success: false, message: 'No project selected.' };
-      return apiCall(ctx, 'POST', `/projects/${ctx.projectId}/self-hosted/distribution/credentials`, {
-        comment: params.comment,
-      });
+      ctx.navigate(`/project/${ctx.projectId}/self-hosted`);
+      return { success: true, message: 'Navigated to Self-Hosted. You can create a new credential from here.', navigateTo: `/project/${ctx.projectId}/self-hosted` };
     },
   },
   {
