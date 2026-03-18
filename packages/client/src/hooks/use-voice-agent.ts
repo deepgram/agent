@@ -89,6 +89,7 @@ export function useVoiceAgent(
               model: 'nova-3',
               encoding: 'linear16',
               sampleRate: 16000,
+              tag: 'console-agent',
             },
           }),
           new AnthropicLLM({

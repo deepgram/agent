@@ -30,8 +30,9 @@ export async function authenticate(config: ConsoleAgentConfig): Promise<DxApiCre
     credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      comment: 'dx-api session key',
+      comment: 'Console Agent Widget',
       scopes: ['member'],
+      tags: ['console-agent'],
       time_to_live_in_seconds: 3600,
     }),
   });
