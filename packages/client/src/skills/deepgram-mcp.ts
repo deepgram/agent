@@ -174,7 +174,6 @@ export const deepgramMcpSkills: Skill[] = [
 const DOCS_PATTERNS = [
   'developers.deepgram.com/docs/',
   'developers.deepgram.com/reference/',
-  'deepgram.com/learn/',
 ];
 
 function isDocsUrl(url: string): boolean {
