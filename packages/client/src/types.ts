@@ -61,11 +61,19 @@ export interface SkillContext {
   recentToolResults: Record<string, unknown>;
 }
 
+/** A source link to display in the chat UI (not spoken by TTS) */
+export interface SourceLink {
+  title: string;
+  url: string;
+}
+
 export interface SkillResult {
   success: boolean;
   message: string;
   data?: unknown;
   navigateTo?: string;
+  /** Links to show in the chat UI below the assistant's response. Never sent to TTS. */
+  sources?: SourceLink[];
 }
 
 /** A skill awaiting user confirmation before execution */
@@ -84,6 +92,8 @@ export interface ChatMessage {
   timestamp: number;
   skillUsed?: string;
   pendingSkill?: PendingSkill;
+  /** Source links to render as clickable cards below the message */
+  sources?: SourceLink[];
 }
 
 /** Persisted agent state for cross-page continuity */

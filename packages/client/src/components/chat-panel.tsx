@@ -43,6 +43,9 @@ export function ChatPanel({ config }: Props) {
   // Accumulate LLM chunks
   const streamingAccumRef = useRef('');
 
+  // Sources from the most recent tool call — attached to the next assistant message
+  const pendingSourcesRef = useRef<import('../types').SourceLink[]>([]);
+
   // Tool definitions (stable reference)
   const toolDefs = useRef(buildToolDefinitions()).current;
 
@@ -115,6 +118,11 @@ export function ChatPanel({ config }: Props) {
         context = `\n\n[Recent data from other tools for reference]\n${relevant}`;
       }
 
+      // Stash sources for the chat UI — they'll be attached to the next assistant message
+      if (result.sources?.length) {
+        pendingSourcesRef.current = result.sources;
+      }
+
       return { toolCallId: toolCall.id, content: resultContent + context, isError: !result.success };
     }
 
@@ -166,13 +174,19 @@ export function ChatPanel({ config }: Props) {
       streamingAccumRef.current = '';
       setStreamingText('');
 
-      // With tool use, the LLM text is clean (no skill blocks) — just add it
       if (text.trim()) {
+        // Attach any pending sources from the last tool call
+        const sources = pendingSourcesRef.current.length > 0
+          ? [...pendingSourcesRef.current]
+          : undefined;
+        pendingSourcesRef.current = [];
+
         const msg: ChatMessage = {
           id: generateId(),
           role: 'assistant',
           content: text,
           timestamp: Date.now(),
+          sources,
         };
         setAgentState((prev) => addMessage(prev, msg));
       }

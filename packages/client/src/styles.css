@@ -194,6 +194,32 @@
   opacity: 0.6;
 }
 
+/* Source links — visual references from knowledge tools */
+.dg-agent-sources {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 6px 12px 2px;
+}
+.dg-agent-sources__link {
+  display: inline-block;
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: var(--dg-agent-bg-hover);
+  color: var(--dg-agent-accent);
+  text-decoration: none;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+.dg-agent-sources__link:hover {
+  background: var(--dg-agent-accent);
+  color: var(--dg-agent-bg);
+}
+
 /* Streaming cursor */
 .dg-agent-cursor {
   display: inline-block;

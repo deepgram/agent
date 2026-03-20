@@ -64,6 +64,24 @@ export function ChatMessageBubble({ message, onConfirm, onCancel, isPending }: P
         </div>
       )}
 
+      {/* Source links — visual only, never spoken by TTS */}
+      {message.sources && message.sources.length > 0 && (
+        <div className="dg-agent-sources">
+          {message.sources.map((src, i) => (
+            <a
+              key={i}
+              className="dg-agent-sources__link"
+              href={src.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              title={src.url}
+            >
+              {src.title}
+            </a>
+          ))}
+        </div>
+      )}
+
       <div className="dg-agent-message__time">
         {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
       </div>

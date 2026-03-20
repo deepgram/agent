@@ -1,20 +1,21 @@
-import type { Skill } from '../types';
+import type { Skill, SourceLink } from '../types';
 
 /**
  * Deepgram knowledge tools — answer technical questions via Kapa-backed
- * endpoints on dx-api. Two tools:
+ * endpoints on dx-api.
  *
- * - deepgram-mcp-search: fast retrieval of relevant doc chunks (no LLM)
- * - deepgram-mcp: full LLM-synthesized answer with sources
+ * - deepgram-mcp: fast semantic retrieval (default — used for most questions)
+ * - deepgram-mcp-chat: full LLM-synthesized answer (for complex questions)
  *
- * The LLM should prefer search for quick lookups and use chat for
- * complex questions that need a synthesized answer.
+ * Both return source links as visual-only content for the chat UI.
+ * The LLM never sees URLs — it gets text content and knows to say
+ * "I've shared some links in the chat" instead of reading them aloud.
  */
 export const deepgramMcpSkills: Skill[] = [
   {
-    id: 'deepgram-mcp-search',
-    name: 'Deepgram Search',
-    description: 'Search Deepgram documentation and return relevant excerpts. Use this for quick factual lookups like supported models, parameter names, SDK methods, or code examples. Faster than deepgram-mcp but returns raw document chunks instead of a synthesized answer.',
+    id: 'deepgram-mcp',
+    name: 'Deepgram MCP',
+    description: 'Search Deepgram documentation for relevant information. Use this for any technical question about Deepgram APIs, SDKs, models, features, pricing, or supported languages. Returns relevant documentation excerpts with source links shown in the chat.',
     category: 'navigation',
     risk: 'safe',
     parameters: [
@@ -41,18 +42,38 @@ export const deepgramMcpSkills: Skill[] = [
         }
 
         const data = await res.json();
-        // Retrieval returns a flat array of {source_url, content}
-        const results = Array.isArray(data) ? data : (data?.search_results ?? []);
+        const results: Array<{ source_url?: string; content?: string }> =
+          Array.isArray(data) ? data : [];
+
         if (results.length === 0) {
-          return { success: true, message: 'No results found.', data };
+          return { success: true, message: 'No results found for that query.' };
         }
 
-        // Return top results as structured content for the LLM to summarize
-        const formatted = results.slice(0, 5).map((r: { title?: string; content?: string; source_url?: string }) =>
-          `${r.content?.slice(0, 500) ?? ''}\nSource: ${r.source_url ?? 'unknown'}`
+        // Text content for the LLM — no URLs
+        const textContent = results.slice(0, 5).map((r) =>
+          r.content?.slice(0, 600) ?? ''
         ).join('\n\n---\n\n');
 
-        return { success: true, message: formatted, data };
+        // Source links for the chat UI — never spoken by TTS
+        const sources: SourceLink[] = results
+          .filter((r) => r.source_url)
+          .slice(0, 5)
+          .map((r) => ({
+            title: extractTitle(r.source_url!, r.content),
+            url: r.source_url!,
+          }));
+
+        // Tell the LLM about the links without including URLs
+        const linkHint = sources.length > 0
+          ? `\n\n[${sources.length} source link(s) are shown in the chat for the user to click.]`
+          : '';
+
+        return {
+          success: true,
+          message: textContent + linkHint,
+          data,
+          sources,
+        };
       } catch (err) {
         return {
           success: false,
@@ -62,9 +83,9 @@ export const deepgramMcpSkills: Skill[] = [
     },
   },
   {
-    id: 'deepgram-mcp',
-    name: 'Deepgram MCP',
-    description: 'Answer technical questions about Deepgram APIs, SDKs, models, features, and products with a full synthesized response and source links. Use this for complex or open-ended questions that need explanation, not just a quick fact lookup.',
+    id: 'deepgram-mcp-chat',
+    name: 'Deepgram MCP Chat',
+    description: 'Get a detailed, synthesized answer about Deepgram with source citations. Use this only for complex or open-ended questions that need a thorough explanation — it is slower than the default deepgram-mcp tool.',
     category: 'navigation',
     risk: 'safe',
     parameters: [
@@ -91,8 +112,30 @@ export const deepgramMcpSkills: Skill[] = [
         }
 
         const data = await res.json();
-        const answer = data?.answer ?? data?.text ?? JSON.stringify(data);
-        return { success: true, message: answer, data };
+        const answer: string = data?.answer ?? data?.text ?? JSON.stringify(data);
+
+        // Strip markdown URLs from the answer text so TTS doesn't read them
+        const spokenAnswer = answer.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1');
+
+        // Extract source links for the chat UI
+        const sources: SourceLink[] = (data?.relevant_sources ?? [])
+          .slice(0, 5)
+          .map((s: { title?: string; source_url?: string }) => ({
+            title: s.title?.split('|')[0]?.trim() ?? 'Source',
+            url: s.source_url ?? '',
+          }))
+          .filter((s: SourceLink) => s.url);
+
+        const linkHint = sources.length > 0
+          ? `\n\n[${sources.length} source link(s) are shown in the chat for the user to click.]`
+          : '';
+
+        return {
+          success: true,
+          message: spokenAnswer + linkHint,
+          data,
+          sources,
+        };
       } catch (err) {
         return {
           success: false,
@@ -102,3 +145,25 @@ export const deepgramMcpSkills: Skill[] = [
     },
   },
 ];
+
+/** Extract a human-readable title from a URL and optional content */
+function extractTitle(url: string, content?: string): string {
+  // Try to get title from content (first heading)
+  if (content) {
+    const heading = content.match(/^#+ (.+)$/m);
+    if (heading) {
+      // Take the last part after > (breadcrumb)
+      const parts = heading[1].split('>');
+      return parts[parts.length - 1].trim();
+    }
+  }
+  // Fall back to URL path
+  try {
+    const path = new URL(url).pathname;
+    const segments = path.split('/').filter(Boolean);
+    const last = segments[segments.length - 1] ?? 'Source';
+    return last.replace(/[-_]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+  } catch {
+    return 'Source';
+  }
+}
