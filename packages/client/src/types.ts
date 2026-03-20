@@ -50,6 +50,10 @@ export interface SkillParameter {
 export interface SkillContext {
   projectId: string | null;
   apiBaseUrl: string;
+  /** DX API base URL for relay services (Kapa, etc.) */
+  dxApiUrl: string;
+  /** DX API JWT token for authenticated relay calls */
+  dxApiToken: string | null;
   navigate: (path: string) => void;
   /** Get cached result from a previous tool execution */
   getToolResult: (skillId: string) => unknown | undefined;

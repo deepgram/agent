@@ -271,5 +271,8 @@ export function useVoiceAgent(
     };
   }, []);
 
-  return { ...state, start, stop, sendMessage, getHistory, toggleInput, toggleOutput };
+  /** Get the current dx-api JWT token (for skill executor to use). */
+  const getToken = useCallback(() => credentialsRef.current?.token ?? null, []);
+
+  return { ...state, start, stop, sendMessage, getHistory, toggleInput, toggleOutput, getToken };
 }

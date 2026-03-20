@@ -8,6 +8,7 @@ import { billingSkills } from './billing';
 import { usageSkills } from './usage';
 import { settingsSkills } from './settings';
 import { selfHostedSkills } from './self-hosted';
+import { deepgramMcpSkills } from './deepgram-mcp';
 
 /** All registered skills the agent can use */
 export const skillRegistry: Skill[] = [
@@ -19,6 +20,7 @@ export const skillRegistry: Skill[] = [
   ...usageSkills,
   ...settingsSkills,
   ...selfHostedSkills,
+  ...deepgramMcpSkills,
 ];
 
 /** Get a skill by ID */
@@ -51,7 +53,7 @@ export function buildToolDefinitions(): LLMToolDefinition[] {
 }
 
 /** Build the system prompt — tools carry the skill definitions, so this is just behavioral instructions */
-export function buildSkillSystemPrompt(projectId: string | null): string {
+export function buildSkillSystemPrompt(projectId: string | null, extraContext?: string): string {
   return `You are a helpful voice and chat assistant for the Deepgram Console — a developer dashboard for managing Deepgram API projects, keys, billing, usage, and team members.
 
 You have tools to help users with their projects, API keys, billing, team, usage, and settings.
@@ -84,5 +86,5 @@ Console features: API key, API keys, project, billing, usage, team, member, invi
 SDKs and developer terms: SDK, JavaScript, Python, Go, Rust, .NET, Node.js, React, webhook, callback.
 Audio and transcription features: diarization, punctuation, smart format, redaction, PCI, PII, entity detection, sentiment, summarization, topic detection, keyterm, keyword boosting, utterance, endpointing, interim results.
 Auth and infrastructure: JWT, Bearer token, API token, OAuth, concurrency, rate limit.
-`;
+${extraContext ?? ''}`;
 }

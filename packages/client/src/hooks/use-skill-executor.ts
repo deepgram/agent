@@ -7,14 +7,21 @@ import { getProjectIdFromUrl, getToolResult, storeToolResult, loadState } from '
  * Hook that provides skill execution with tool result caching.
  * Skills can read cached results from previous executions via ctx.getToolResult().
  */
-export function useSkillExecutor(config: ConsoleAgentConfig) {
+export function useSkillExecutor(
+  config: ConsoleAgentConfig,
+  getDxApiToken?: () => string | null,
+) {
   const configRef = useRef(config);
   configRef.current = config;
+  const tokenGetterRef = useRef(getDxApiToken);
+  tokenGetterRef.current = getDxApiToken;
 
   const buildContext = useCallback((): SkillContext => {
     return {
       projectId: configRef.current.projectId ?? getProjectIdFromUrl(),
       apiBaseUrl: configRef.current.apiBaseUrl ?? 'https://manage.deepgram.com',
+      dxApiUrl: configRef.current.dxApiUrl ?? 'https://api.dx.deepgram.com',
+      dxApiToken: tokenGetterRef.current?.() ?? null,
       navigate: (path: string) => {
         window.history.pushState({}, '', path);
         window.dispatchEvent(new PopStateEvent('popstate'));

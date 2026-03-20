@@ -8,6 +8,7 @@ import { useSkillExecutor } from '../hooks/use-skill-executor';
 import { buildSkillSystemPrompt, buildToolDefinitions } from '../skills/registry';
 import { getSkill } from '../skills/registry';
 import { addMessage, clearConversation, generateId, getProjectIdFromUrl, loadState, saveState } from '../utils/state';
+import { fetchGitHubSkills, buildGitHubSkillsPromptSection } from '../skills/github-skills';
 
 const AFFIRMATIVE_PATTERNS = /^\s*(yes|yeah|yep|yup|sure|ok|okay|go ahead|do it|confirm|proceed|absolutely|affirmative)\s*[.!]?\s*$/i;
 
@@ -24,8 +25,20 @@ export function ChatPanel({ config }: Props) {
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const projectId = config.projectId ?? getProjectIdFromUrl();
-  const systemPrompt = buildSkillSystemPrompt(projectId);
-  const { executeSkill } = useSkillExecutor(config);
+  const [githubSkillsContext, setGithubSkillsContext] = useState('');
+  const systemPrompt = buildSkillSystemPrompt(projectId, githubSkillsContext);
+
+  // Load GitHub skills on mount (async, non-blocking)
+  useEffect(() => {
+    fetchGitHubSkills().then((skills) => {
+      const section = buildGitHubSkillsPromptSection(skills);
+      if (section) setGithubSkillsContext(section);
+    }).catch(() => {}); // Silently fail — skills are optional enrichment
+  }, []);
+
+  // Token ref bridges the voice agent credentials to the skill executor
+  const dxApiTokenRef = useRef<() => string | null>(() => null);
+  const { executeSkill } = useSkillExecutor(config, () => dxApiTokenRef.current());
 
   // Accumulate LLM chunks
   const streamingAccumRef = useRef('');
@@ -173,6 +186,9 @@ export function ChatPanel({ config }: Props) {
     definitions: toolDefs,
     onToolCall: handleToolCall,
   });
+
+  // Bridge the voice agent's token to the skill executor
+  dxApiTokenRef.current = voiceAgent.getToken;
 
   // Auto-scroll to bottom
   useEffect(() => {
