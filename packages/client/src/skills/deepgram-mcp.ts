@@ -26,7 +26,7 @@ export const deepgramMcpSkills: Skill[] = [
       }
 
       try {
-        const res = await fetch(`${ctx.dxApiUrl}/kapa/retrieval/`, {
+        const res = await fetch(`${ctx.dxApiUrl}/kapa/retrieval`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -76,7 +76,7 @@ export const deepgramMcpSkills: Skill[] = [
       }
 
       try {
-        const res = await fetch(`${ctx.dxApiUrl}/kapa/chat/`, {
+        const res = await fetch(`${ctx.dxApiUrl}/kapa/chat`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
