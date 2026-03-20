@@ -26,7 +26,7 @@ export const deepgramMcpSkills: Skill[] = [
       }
 
       try {
-        const res = await fetch(`${ctx.dxApiUrl}/kapa/search`, {
+        const res = await fetch(`${ctx.dxApiUrl}/kapa/retrieval/`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -41,14 +41,15 @@ export const deepgramMcpSkills: Skill[] = [
         }
 
         const data = await res.json();
-        const results = data?.search_results ?? [];
+        // Retrieval returns a flat array of {source_url, content}
+        const results = Array.isArray(data) ? data : (data?.search_results ?? []);
         if (results.length === 0) {
           return { success: true, message: 'No results found.', data };
         }
 
         // Return top results as structured content for the LLM to summarize
         const formatted = results.slice(0, 5).map((r: { title?: string; content?: string; source_url?: string }) =>
-          `${r.title ?? 'Untitled'}\n${r.content?.slice(0, 500) ?? ''}\nSource: ${r.source_url ?? 'unknown'}`
+          `${r.content?.slice(0, 500) ?? ''}\nSource: ${r.source_url ?? 'unknown'}`
         ).join('\n\n---\n\n');
 
         return { success: true, message: formatted, data };
@@ -75,7 +76,7 @@ export const deepgramMcpSkills: Skill[] = [
       }
 
       try {
-        const res = await fetch(`${ctx.dxApiUrl}/kapa/chat`, {
+        const res = await fetch(`${ctx.dxApiUrl}/kapa/chat/`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
