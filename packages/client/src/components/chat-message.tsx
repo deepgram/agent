@@ -64,6 +64,21 @@ export function ChatMessageBubble({ message, onConfirm, onCancel, isPending }: P
         </div>
       )}
 
+      {/* CTA button — prominent link to the most relevant doc page */}
+      {message.cta && (
+        <div className="dg-agent-cta">
+          <a
+            className="dg-agent-cta__button"
+            href={message.cta.url}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {message.cta.title}
+            <span className="dg-agent-cta__arrow">&rarr;</span>
+          </a>
+        </div>
+      )}
+
       {/* Source links — visual only, never spoken by TTS */}
       {message.sources && message.sources.length > 0 && (
         <div className="dg-agent-sources">

@@ -55,24 +55,38 @@ export const deepgramMcpSkills: Skill[] = [
         ).join('\n\n---\n\n');
 
         // Source links for the chat UI — never spoken by TTS
+        const uniqueUrls = new Set<string>();
         const sources: SourceLink[] = results
-          .filter((r) => r.source_url)
+          .filter((r) => {
+            if (!r.source_url || uniqueUrls.has(r.source_url)) return false;
+            uniqueUrls.add(r.source_url);
+            return true;
+          })
           .slice(0, 5)
           .map((r) => ({
             title: extractTitle(r.source_url!, r.content),
             url: r.source_url!,
           }));
 
+        // Pick a CTA from the top result if it's a docs/guide page
+        const cta = pickCta(results[0]);
+
+        // Remove the CTA URL from sources to avoid duplication
+        const filteredSources = cta
+          ? sources.filter((s) => s.url !== cta.url)
+          : sources;
+
         // Tell the LLM about the links without including URLs
         const linkHint = sources.length > 0
-          ? `\n\n[${sources.length} source link(s) are shown in the chat for the user to click.]`
+          ? `\n\n[${sources.length} source link(s) are shown in the chat for the user to click.${cta ? ' A prominent link to the most relevant documentation page is also shown.' : ''}]`
           : '';
 
         return {
           success: true,
           message: textContent + linkHint,
           data,
-          sources,
+          sources: filteredSources,
+          cta,
         };
       } catch (err) {
         return {
@@ -126,15 +140,25 @@ export const deepgramMcpSkills: Skill[] = [
           }))
           .filter((s: SourceLink) => s.url);
 
+        // Pick a CTA from the top source if it's a docs page
+        const cta = sources.length > 0 && isDocsUrl(sources[0].url)
+          ? { title: `Read: ${sources[0].title}`, url: sources[0].url }
+          : undefined;
+
+        const filteredSources = cta
+          ? sources.filter((s) => s.url !== cta.url)
+          : sources;
+
         const linkHint = sources.length > 0
-          ? `\n\n[${sources.length} source link(s) are shown in the chat for the user to click.]`
+          ? `\n\n[${sources.length} source link(s) are shown in the chat for the user to click.${cta ? ' A prominent link to the most relevant documentation page is also shown.' : ''}]`
           : '';
 
         return {
           success: true,
           message: spokenAnswer + linkHint,
           data,
-          sources,
+          sources: filteredSources,
+          cta,
         };
       } catch (err) {
         return {
@@ -145,6 +169,26 @@ export const deepgramMcpSkills: Skill[] = [
     },
   },
 ];
+
+/** URLs that are good candidates for a prominent CTA button */
+const DOCS_PATTERNS = [
+  'developers.deepgram.com/docs/',
+  'developers.deepgram.com/reference/',
+  'deepgram.com/learn/',
+];
+
+function isDocsUrl(url: string): boolean {
+  return DOCS_PATTERNS.some((p) => url.includes(p));
+}
+
+/** Pick a CTA from the top retrieval result if it's a docs/guide page */
+function pickCta(
+  result: { source_url?: string; content?: string } | undefined,
+): SourceLink | undefined {
+  if (!result?.source_url || !isDocsUrl(result.source_url)) return undefined;
+  const title = extractTitle(result.source_url, result.content);
+  return { title: `Read: ${title}`, url: result.source_url };
+}
 
 /** Extract a human-readable title from a URL and optional content */
 function extractTitle(url: string, content?: string): string {

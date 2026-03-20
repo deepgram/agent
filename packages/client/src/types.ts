@@ -74,6 +74,8 @@ export interface SkillResult {
   navigateTo?: string;
   /** Links to show in the chat UI below the assistant's response. Never sent to TTS. */
   sources?: SourceLink[];
+  /** A prominent call-to-action link (e.g. "Read the full guide"). Never sent to TTS. */
+  cta?: SourceLink;
 }
 
 /** A skill awaiting user confirmation before execution */
@@ -92,8 +94,10 @@ export interface ChatMessage {
   timestamp: number;
   skillUsed?: string;
   pendingSkill?: PendingSkill;
-  /** Source links to render as clickable cards below the message */
+  /** Source links to render as clickable pills below the message */
   sources?: SourceLink[];
+  /** Prominent call-to-action link rendered as a button */
+  cta?: SourceLink;
 }
 
 /** Persisted agent state for cross-page continuity */

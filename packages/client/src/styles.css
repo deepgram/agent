@@ -194,6 +194,30 @@
   opacity: 0.6;
 }
 
+/* CTA button — prominent link to recommended docs page */
+.dg-agent-cta {
+  padding: 8px 12px 2px;
+}
+.dg-agent-cta__button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 6px;
+  background: var(--dg-agent-accent);
+  color: var(--dg-agent-bg);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: opacity 0.15s;
+}
+.dg-agent-cta__button:hover {
+  opacity: 0.85;
+}
+.dg-agent-cta__arrow {
+  font-size: 15px;
+}
+
 /* Source links — visual references from knowledge tools */
 .dg-agent-sources {
   display: flex;

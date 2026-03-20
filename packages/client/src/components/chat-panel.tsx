@@ -43,8 +43,9 @@ export function ChatPanel({ config }: Props) {
   // Accumulate LLM chunks
   const streamingAccumRef = useRef('');
 
-  // Sources from the most recent tool call — attached to the next assistant message
+  // Visual content from the most recent tool call — attached to the next assistant message
   const pendingSourcesRef = useRef<import('../types').SourceLink[]>([]);
+  const pendingCtaRef = useRef<import('../types').SourceLink | null>(null);
 
   // Tool definitions (stable reference)
   const toolDefs = useRef(buildToolDefinitions()).current;
@@ -118,9 +119,12 @@ export function ChatPanel({ config }: Props) {
         context = `\n\n[Recent data from other tools for reference]\n${relevant}`;
       }
 
-      // Stash sources for the chat UI — they'll be attached to the next assistant message
+      // Stash visual content for the chat UI — attached to the next assistant message
       if (result.sources?.length) {
         pendingSourcesRef.current = result.sources;
+      }
+      if (result.cta) {
+        pendingCtaRef.current = result.cta;
       }
 
       return { toolCallId: toolCall.id, content: resultContent + context, isError: !result.success };
@@ -175,11 +179,13 @@ export function ChatPanel({ config }: Props) {
       setStreamingText('');
 
       if (text.trim()) {
-        // Attach any pending sources from the last tool call
+        // Attach any pending visual content from the last tool call
         const sources = pendingSourcesRef.current.length > 0
           ? [...pendingSourcesRef.current]
           : undefined;
+        const cta = pendingCtaRef.current ?? undefined;
         pendingSourcesRef.current = [];
+        pendingCtaRef.current = null;
 
         const msg: ChatMessage = {
           id: generateId(),
@@ -187,6 +193,7 @@ export function ChatPanel({ config }: Props) {
           content: text,
           timestamp: Date.now(),
           sources,
+          cta,
         };
         setAgentState((prev) => addMessage(prev, msg));
       }
