@@ -77,9 +77,13 @@ export const deepgramMcpSkills: Skill[] = [
           : sources;
 
         // Tell the LLM about the links without including URLs
-        const linkHint = sources.length > 0
-          ? `\n\n[${sources.length} source link(s) are shown in the chat for the user to click.${cta ? ' A prominent link to the most relevant documentation page is also shown.' : ''}]`
-          : '';
+        let linkHint = '';
+        if (sources.length > 0) {
+          linkHint += `\n\n[${sources.length} source link(s) are shown in the chat for the user to click.]`;
+        }
+        if (cta) {
+          linkHint += `\n[A docs link button is shown to the user. End your response with [CTA: <short label max 40 chars>] to set the button text. Keep it concise like "Getting Started with STT" or "Streaming API Guide".]`;
+        }
 
         return {
           success: true,
@@ -149,9 +153,13 @@ export const deepgramMcpSkills: Skill[] = [
           ? sources.filter((s) => s.url !== cta.url)
           : sources;
 
-        const linkHint = sources.length > 0
-          ? `\n\n[${sources.length} source link(s) are shown in the chat for the user to click.${cta ? ' A prominent link to the most relevant documentation page is also shown.' : ''}]`
-          : '';
+        let linkHint = '';
+        if (sources.length > 0) {
+          linkHint += `\n\n[${sources.length} source link(s) are shown in the chat for the user to click.]`;
+        }
+        if (cta) {
+          linkHint += `\n[A docs link button is shown to the user. End your response with [CTA: <short label max 40 chars>] to set the button text. Keep it concise like "Getting Started with STT" or "Streaming API Guide".]`;
+        }
 
         return {
           success: true,
@@ -186,27 +194,42 @@ function pickCta(
 ): SourceLink | undefined {
   if (!result?.source_url || !isDocsUrl(result.source_url)) return undefined;
   const title = extractTitle(result.source_url, result.content);
-  return { title: `Read: ${title}`, url: result.source_url };
+  return { title: `${title} — Read the docs`, url: result.source_url };
 }
 
 /** Extract a human-readable title from a URL and optional content */
 function extractTitle(url: string, content?: string): string {
-  // Try to get title from content (first heading)
   if (content) {
+    // Try the first heading, taking the most specific breadcrumb part
     const heading = content.match(/^#+ (.+)$/m);
     if (heading) {
-      // Take the last part after > (breadcrumb)
-      const parts = heading[1].split('>');
-      return parts[parts.length - 1].trim();
+      const parts = heading[1].split('>').map((s) => s.trim());
+      // Find the most meaningful segment (skip generic ones like "Docs")
+      const meaningful = parts.find((p) =>
+        p.length > 3 && !/^(docs|reference|api|home)$/i.test(p)
+      );
+      if (meaningful) return meaningful;
+    }
+    // Try a ## subheading if the top heading was generic
+    const subheading = content.match(/^## (.+)$/m);
+    if (subheading && subheading[1].length > 3) {
+      return subheading[1].trim();
     }
   }
-  // Fall back to URL path
+  // Fall back to URL path — take the last meaningful segment
   try {
     const path = new URL(url).pathname;
     const segments = path.split('/').filter(Boolean);
-    const last = segments[segments.length - 1] ?? 'Source';
-    return last.replace(/[-_]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+    // Walk backwards to find a segment that isn't too short or generic
+    for (let i = segments.length - 1; i >= 0; i--) {
+      const seg = segments[i];
+      if (seg.length > 3 && !/^(docs|reference|api|v1|v2)$/i.test(seg)) {
+        return seg.replace(/[-_]/g, ' ').replace(/(^|\s)\w/g, (c) => c.toUpperCase());
+      }
+    }
+    const last = segments[segments.length - 1] ?? 'Documentation';
+    return last.replace(/[-_]/g, ' ').replace(/(^|\s)\w/g, (c) => c.toUpperCase());
   } catch {
-    return 'Source';
+    return 'Documentation';
   }
 }

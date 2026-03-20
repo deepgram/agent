@@ -194,53 +194,56 @@
   opacity: 0.6;
 }
 
-/* CTA button — prominent link to recommended docs page */
+/* CTA button — link to recommended docs page (inside bubble) */
 .dg-agent-cta {
-  padding: 8px 12px 2px;
+  margin-top: 10px;
 }
 .dg-agent-cta__button {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 16px;
+  padding: 7px 14px;
   border-radius: 6px;
-  background: var(--dg-agent-accent);
-  color: var(--dg-agent-bg);
-  font-size: 13px;
-  font-weight: 600;
+  border: 1px solid var(--dg-agent-primary);
+  background: transparent;
+  color: var(--dg-agent-primary);
+  font-size: 12px;
+  font-weight: 500;
   text-decoration: none;
-  transition: opacity 0.15s;
+  transition: background 0.15s, color 0.15s;
 }
 .dg-agent-cta__button:hover {
-  opacity: 0.85;
+  background: var(--dg-agent-primary);
+  color: var(--dg-agent-bg);
 }
 .dg-agent-cta__arrow {
-  font-size: 15px;
+  font-size: 14px;
+  opacity: 0.7;
 }
 
-/* Source links — visual references from knowledge tools */
+/* Source link pills — visual references inside the bubble */
 .dg-agent-sources {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
-  padding: 6px 12px 2px;
+  gap: 4px;
+  margin-top: 8px;
 }
 .dg-agent-sources__link {
   display: inline-block;
   font-size: 11px;
-  padding: 3px 8px;
-  border-radius: 4px;
-  background: var(--dg-agent-bg-hover);
-  color: var(--dg-agent-accent);
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: var(--dg-agent-border);
+  color: var(--dg-agent-text-dim);
   text-decoration: none;
-  max-width: 200px;
+  max-width: 180px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  transition: background 0.15s;
+  transition: background 0.15s, color 0.15s;
 }
 .dg-agent-sources__link:hover {
-  background: var(--dg-agent-accent);
+  background: var(--dg-agent-primary-dim);
   color: var(--dg-agent-bg);
 }
 

@@ -17,6 +17,12 @@ export function ChatMessageBubble({ message, onConfirm, onCancel, isPending }: P
 
   const isDangerous = message.pendingSkill?.risk === 'dangerous';
   const isConfirm = message.pendingSkill?.risk === 'confirm';
+  const hasCta = !!message.cta;
+  const hasSources = !!message.sources?.length;
+
+  if (message.role === 'assistant') {
+    console.log('[agent] Rendering assistant message:', { hasCta, cta: message.cta, hasSources, sourcesCount: message.sources?.length });
+  }
 
   return (
     <div
@@ -27,11 +33,47 @@ export function ChatMessageBubble({ message, onConfirm, onCancel, isPending }: P
           Executed: {message.skillUsed}
         </div>
       )}
-      {displayContent && (
-        <div className="dg-agent-message__content">
-          {displayContent}
-        </div>
-      )}
+
+      <div className="dg-agent-message__content">
+        {displayContent && (
+          <div className="dg-agent-message__text">
+            {displayContent}
+          </div>
+        )}
+
+        {/* CTA button — prominent link to the most relevant doc page */}
+        {hasCta && (
+          <div className="dg-agent-cta">
+            <a
+              className="dg-agent-cta__button"
+              href={message.cta!.url}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {message.cta!.title}
+              <span className="dg-agent-cta__arrow">&rarr;</span>
+            </a>
+          </div>
+        )}
+
+        {/* Source links — visual only, never spoken by TTS */}
+        {hasSources && (
+          <div className="dg-agent-sources">
+            {message.sources!.map((src, i) => (
+              <a
+                key={i}
+                className="dg-agent-sources__link"
+                href={src.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                title={src.url}
+              >
+                {src.title}
+              </a>
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* Confirmation UI for pending skills */}
       {message.pendingSkill && isPending && (
@@ -61,39 +103,6 @@ export function ChatMessageBubble({ message, onConfirm, onCancel, isPending }: P
       {message.pendingSkill && !isPending && (
         <div className="dg-agent-confirm dg-agent-confirm--resolved">
           <div className="dg-agent-confirm__label">Action resolved.</div>
-        </div>
-      )}
-
-      {/* CTA button — prominent link to the most relevant doc page */}
-      {message.cta && (
-        <div className="dg-agent-cta">
-          <a
-            className="dg-agent-cta__button"
-            href={message.cta.url}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            {message.cta.title}
-            <span className="dg-agent-cta__arrow">&rarr;</span>
-          </a>
-        </div>
-      )}
-
-      {/* Source links — visual only, never spoken by TTS */}
-      {message.sources && message.sources.length > 0 && (
-        <div className="dg-agent-sources">
-          {message.sources.map((src, i) => (
-            <a
-              key={i}
-              className="dg-agent-sources__link"
-              href={src.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              title={src.url}
-            >
-              {src.title}
-            </a>
-          ))}
         </div>
       )}
 

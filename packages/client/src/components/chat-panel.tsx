@@ -124,7 +124,11 @@ export function ChatPanel({ config }: Props) {
         pendingSourcesRef.current = result.sources;
       }
       if (result.cta) {
+        console.log('[agent] CTA set:', result.cta);
         pendingCtaRef.current = result.cta;
+      }
+      if (result.sources?.length) {
+        console.log('[agent] Sources set:', result.sources.length);
       }
 
       return { toolCallId: toolCall.id, content: resultContent + context, isError: !result.success };
@@ -183,14 +187,22 @@ export function ChatPanel({ config }: Props) {
         const sources = pendingSourcesRef.current.length > 0
           ? [...pendingSourcesRef.current]
           : undefined;
-        const cta = pendingCtaRef.current ?? undefined;
+        let cta = pendingCtaRef.current ?? undefined;
         pendingSourcesRef.current = [];
         pendingCtaRef.current = null;
+
+        // Extract [CTA: ...] from the LLM response — use it as the button title
+        let displayText = text;
+        const ctaMatch = text.match(/\[CTA:\s*(.+?)\]\s*$/);
+        if (ctaMatch && cta) {
+          cta = { ...cta, title: ctaMatch[1].trim() };
+          displayText = text.slice(0, ctaMatch.index).trimEnd();
+        }
 
         const msg: ChatMessage = {
           id: generateId(),
           role: 'assistant',
-          content: text,
+          content: displayText,
           timestamp: Date.now(),
           sources,
           cta,
