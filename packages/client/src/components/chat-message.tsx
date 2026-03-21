@@ -1,10 +1,58 @@
+import { useState } from 'react';
 import type { ChatMessage as ChatMessageType } from '../types';
+import { CodeModal } from './code-modal';
 
 interface Props {
   message: ChatMessageType;
   onConfirm?: () => void;
   onCancel?: () => void;
   isPending?: boolean;
+}
+
+/** Split message content into text segments and code blocks */
+function parseContent(text: string): Array<{ type: 'text'; value: string } | { type: 'code'; lang: string; value: string }> {
+  const parts: Array<{ type: 'text'; value: string } | { type: 'code'; lang: string; value: string }> = [];
+  const regex = /```(\w*)\n([\s\S]*?)```/g;
+  let lastIndex = 0;
+  let match;
+
+  while ((match = regex.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push({ type: 'text', value: text.slice(lastIndex, match.index) });
+    }
+    parts.push({ type: 'code', lang: match[1] || 'text', value: match[2].trimEnd() });
+    lastIndex = match.index + match[0].length;
+  }
+
+  if (lastIndex < text.length) {
+    parts.push({ type: 'text', value: text.slice(lastIndex) });
+  }
+
+  return parts;
+}
+
+function CodePreview({ lang, code }: { lang: string; code: string }) {
+  const [expanded, setExpanded] = useState(false);
+  const lines = code.split('\n');
+  const preview = lines.slice(0, 4).join('\n');
+  const truncated = lines.length > 4;
+
+  return (
+    <>
+      <div className="dg-agent-code-preview">
+        <div className="dg-agent-code-preview__header">
+          <span className="dg-agent-code-preview__lang">{lang}</span>
+          {truncated && (
+            <button className="dg-agent-code-preview__expand" onClick={() => setExpanded(true)}>
+              Expand
+            </button>
+          )}
+        </div>
+        <pre className="dg-agent-code-preview__pre"><code>{truncated ? preview + '\n...' : code}</code></pre>
+      </div>
+      {expanded && <CodeModal code={code} language={lang} onClose={() => setExpanded(false)} />}
+    </>
+  );
 }
 
 export function ChatMessageBubble({ message, onConfirm, onCancel, isPending }: Props) {
@@ -20,9 +68,7 @@ export function ChatMessageBubble({ message, onConfirm, onCancel, isPending }: P
   const hasCta = !!message.cta;
   const hasSources = !!message.sources?.length;
 
-  if (message.role === 'assistant') {
-    console.log('[agent] Rendering assistant message:', { hasCta, cta: message.cta, hasSources, sourcesCount: message.sources?.length });
-  }
+  const contentParts = displayContent ? parseContent(displayContent) : [];
 
   return (
     <div
@@ -35,13 +81,15 @@ export function ChatMessageBubble({ message, onConfirm, onCancel, isPending }: P
       )}
 
       <div className="dg-agent-message__content">
-        {displayContent && (
-          <div className="dg-agent-message__text">
-            {displayContent}
-          </div>
+        {contentParts.map((part, i) =>
+          part.type === 'text' ? (
+            part.value.trim() ? <div key={i} className="dg-agent-message__text">{part.value.trim()}</div> : null
+          ) : (
+            <CodePreview key={i} lang={part.lang} code={part.value} />
+          )
         )}
 
-        {/* CTA button — prominent link to the most relevant doc page */}
+        {/* CTA button */}
         {hasCta && (
           <div className="dg-agent-cta">
             <a
@@ -56,7 +104,7 @@ export function ChatMessageBubble({ message, onConfirm, onCancel, isPending }: P
           </div>
         )}
 
-        {/* Source links — visual only, never spoken by TTS */}
+        {/* Source link pills */}
         {hasSources && (
           <div className="dg-agent-sources">
             {message.sources!.map((src, i) => (

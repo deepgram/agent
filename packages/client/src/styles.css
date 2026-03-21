@@ -21,7 +21,7 @@
   position: fixed;
   top: 0;
   right: 0;
-  width: min(440px, 100vw);
+  width: min(540px, 100vw);
   height: 100vh;
   background: var(--dg-agent-bg);
   border-left: 1px solid var(--dg-agent-border);
@@ -245,6 +245,112 @@
 .dg-agent-sources__link:hover {
   background: var(--dg-agent-primary-dim);
   color: var(--dg-agent-bg);
+}
+
+/* Code preview — truncated snippet inside chat bubble */
+.dg-agent-code-preview {
+  margin-top: 8px;
+  border-radius: 6px;
+  background: var(--dg-agent-bg);
+  border: 1px solid var(--dg-agent-border);
+  overflow: hidden;
+}
+.dg-agent-code-preview__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 10px;
+  background: var(--dg-agent-border);
+}
+.dg-agent-code-preview__lang {
+  font-size: 10px;
+  color: var(--dg-agent-text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.dg-agent-code-preview__expand {
+  font-size: 11px;
+  color: var(--dg-agent-primary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+.dg-agent-code-preview__expand:hover {
+  text-decoration: underline;
+}
+.dg-agent-code-preview__pre {
+  margin: 0;
+  padding: 8px 10px;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--dg-agent-text);
+  font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+  overflow-x: auto;
+  white-space: pre;
+}
+
+/* Code modal — full snippet with copy */
+.dg-agent-code-modal__overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100001;
+}
+.dg-agent-code-modal {
+  width: min(720px, 90vw);
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  border-radius: 10px;
+  background: var(--dg-agent-bg);
+  border: 1px solid var(--dg-agent-border);
+  overflow: hidden;
+}
+.dg-agent-code-modal__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 14px;
+  background: var(--dg-agent-border);
+}
+.dg-agent-code-modal__lang {
+  font-size: 11px;
+  color: var(--dg-agent-text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.dg-agent-code-modal__actions {
+  display: flex;
+  gap: 8px;
+}
+.dg-agent-code-modal__btn {
+  font-size: 12px;
+  padding: 4px 12px;
+  border-radius: 4px;
+  border: 1px solid var(--dg-agent-border);
+  background: var(--dg-agent-surface);
+  color: var(--dg-agent-text);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.dg-agent-code-modal__btn:hover {
+  background: var(--dg-agent-primary-dim);
+  color: var(--dg-agent-bg);
+}
+.dg-agent-code-modal__pre {
+  margin: 0;
+  padding: 14px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--dg-agent-text);
+  font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+  overflow: auto;
+  flex: 1;
+  white-space: pre;
 }
 
 /* Streaming cursor */
