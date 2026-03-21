@@ -14,8 +14,8 @@ importers:
         specifier: ^0.78.0
         version: 0.78.0
       '@lukeocodes/composite-voice':
-        specifier: ^0.0.4
-        version: 0.0.4(@anthropic-ai/sdk@0.78.0)(ws@8.19.0)
+        specifier: file:../../../../lukeocodes/composite-voice
+        version: file:../../lukeocodes/composite-voice(@anthropic-ai/sdk@0.78.0)(ws@8.19.0)
       react:
         specifier: ^19.0.0
         version: 19.2.4
@@ -336,6 +336,24 @@ packages:
 
   '@lukeocodes/composite-voice@0.0.4':
     resolution: {integrity: sha512-57ZLjJuRBk0YPG4kjuF2ZhtNY78LO8R+C4OuMHatQVIJ/7zZomkpULF1j3x7EdRELKqF2L/3c28gbPsshowZ4A==}
+    engines: {node: '>=18.0.0'}
+    peerDependencies:
+      '@anthropic-ai/sdk': '>=0.67.0'
+      '@mlc-ai/web-llm': '>=0.2.74'
+      openai: '>=6.5.0'
+      ws: '>=8.0.0'
+    peerDependenciesMeta:
+      '@anthropic-ai/sdk':
+        optional: true
+      '@mlc-ai/web-llm':
+        optional: true
+      openai:
+        optional: true
+      ws:
+        optional: true
+
+  '@lukeocodes/composite-voice@file:../../lukeocodes/composite-voice':
+    resolution: {directory: ../../lukeocodes/composite-voice, type: directory}
     engines: {node: '>=18.0.0'}
     peerDependencies:
       '@anthropic-ai/sdk': '>=0.67.0'
@@ -1533,6 +1551,11 @@ snapshots:
       '@jridgewell/sourcemap-codec': 1.5.5
 
   '@lukeocodes/composite-voice@0.0.4(@anthropic-ai/sdk@0.78.0)(ws@8.19.0)':
+    optionalDependencies:
+      '@anthropic-ai/sdk': 0.78.0
+      ws: 8.19.0
+
+  '@lukeocodes/composite-voice@file:../../lukeocodes/composite-voice(@anthropic-ai/sdk@0.78.0)(ws@8.19.0)':
     optionalDependencies:
       '@anthropic-ai/sdk': 0.78.0
       ws: 8.19.0
