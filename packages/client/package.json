@@ -26,7 +26,8 @@
     "@anthropic-ai/sdk": "^0.78.0",
     "@lukeocodes/composite-voice": "file:../../../../lukeocodes/composite-voice",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "sugar-high": "^0.9.5"
   },
   "devDependencies": {
     "@types/react": "^19.0.0",

@@ -353,6 +353,23 @@
   white-space: pre;
 }
 
+/* sugar-high syntax highlighting — dark theme via CSS custom properties */
+.dg-agent-code-preview,
+.dg-agent-code-modal {
+  --sh-identifier: #c9d1d9;
+  --sh-keyword: #ff7b72;
+  --sh-string: #a5d6ff;
+  --sh-comment: #8b949e;
+  --sh-sign: #8b949e;
+  --sh-class: #ffa657;
+  --sh-number: #79c0ff;
+  --sh-property: #d2a8ff;
+  --sh-jsxliterals: #7ee787;
+  --sh-entity: #ffa657;
+  --sh-space: inherit;
+  --sh-break: inherit;
+}
+
 /* Streaming cursor */
 .dg-agent-cursor {
   display: inline-block;

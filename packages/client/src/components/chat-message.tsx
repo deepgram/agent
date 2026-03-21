@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { ChatMessage as ChatMessageType } from '../types';
 import { CodeModal } from './code-modal';
+import { highlight } from 'sugar-high';
 
 interface Props {
   message: ChatMessageType;
@@ -36,6 +37,7 @@ function CodePreview({ lang, code }: { lang: string; code: string }) {
   const lines = code.split('\n');
   const preview = lines.slice(0, 4).join('\n');
   const truncated = lines.length > 4;
+  const highlightedPreview = useMemo(() => highlight(truncated ? preview : code), [code, preview, truncated]);
 
   return (
     <>
@@ -48,7 +50,7 @@ function CodePreview({ lang, code }: { lang: string; code: string }) {
             </button>
           )}
         </div>
-        <pre className="dg-agent-code-preview__pre"><code>{truncated ? preview + '\n...' : code}</code></pre>
+        <pre className="dg-agent-code-preview__pre"><code dangerouslySetInnerHTML={{ __html: highlightedPreview }} /></pre>
       </div>
       {expanded && <CodeModal code={code} language={lang} onClose={() => setExpanded(false)} />}
     </>

@@ -1,4 +1,5 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
+import { highlight } from 'sugar-high';
 
 interface Props {
   code: string;
@@ -8,6 +9,7 @@ interface Props {
 
 export function CodeModal({ code, language, onClose }: Props) {
   const [copied, setCopied] = useState(false);
+  const highlighted = useMemo(() => highlight(code), [code]);
 
   const handleCopy = useCallback(() => {
     navigator.clipboard.writeText(code).then(() => {
@@ -30,7 +32,7 @@ export function CodeModal({ code, language, onClose }: Props) {
             </button>
           </div>
         </div>
-        <pre className="dg-agent-code-modal__pre"><code>{code}</code></pre>
+        <pre className="dg-agent-code-modal__pre"><code dangerouslySetInnerHTML={{ __html: highlighted }} /></pre>
       </div>
     </div>
   );
