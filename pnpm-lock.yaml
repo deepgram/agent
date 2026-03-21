@@ -14,8 +14,8 @@ importers:
         specifier: ^0.78.0
         version: 0.78.0
       '@lukeocodes/composite-voice':
-        specifier: file:../../../../lukeocodes/composite-voice
-        version: file:../../lukeocodes/composite-voice(@anthropic-ai/sdk@0.78.0)(ws@8.19.0)
+        specifier: ^0.0.5
+        version: 0.0.5(ws@8.19.0)
       preact:
         specifier: ^10.29.0
         version: 10.29.0
@@ -364,20 +364,14 @@ packages:
       ws:
         optional: true
 
-  '@lukeocodes/composite-voice@file:../../lukeocodes/composite-voice':
-    resolution: {directory: ../../lukeocodes/composite-voice, type: directory}
+  '@lukeocodes/composite-voice@0.0.5':
+    resolution: {integrity: sha512-fT5yAIXcQPBp3AcxvIcEgeLMnMHvEyvCZNobRLhF1y9hsnH36wNbDCsTnzWwVm2DeR3S/DB52XaB1NoLGRe25w==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
-      '@anthropic-ai/sdk': '>=0.67.0'
       '@mlc-ai/web-llm': '>=0.2.74'
-      openai: '>=6.5.0'
       ws: '>=8.0.0'
     peerDependenciesMeta:
-      '@anthropic-ai/sdk':
-        optional: true
       '@mlc-ai/web-llm':
-        optional: true
-      openai:
         optional: true
       ws:
         optional: true
@@ -1592,9 +1586,8 @@ snapshots:
       '@anthropic-ai/sdk': 0.78.0
       ws: 8.19.0
 
-  '@lukeocodes/composite-voice@file:../../lukeocodes/composite-voice(@anthropic-ai/sdk@0.78.0)(ws@8.19.0)':
+  '@lukeocodes/composite-voice@0.0.5(ws@8.19.0)':
     optionalDependencies:
-      '@anthropic-ai/sdk': 0.78.0
       ws: 8.19.0
 
   '@microsoft/api-extractor-model@7.33.4(@types/node@25.4.0)':
