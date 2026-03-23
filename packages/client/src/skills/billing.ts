@@ -128,8 +128,8 @@ export const billingSkills: Skill[] = [
     parameters: [],
     execute: async (_params, ctx) => {
       if (!ctx.projectId) return { success: false, message: 'No project selected.' };
-      ctx.navigate(`/project/${ctx.projectId}/billing`);
-      return { success: true, message: 'Navigated to Billing. You can configure auto-recharge from here.', navigateTo: `/project/${ctx.projectId}/billing` };
+      ctx.navigate(`/project/${ctx.projectId}/billing/overview`);
+      return { success: true, message: 'Navigated to Billing. You can configure auto-recharge from here.', navigateTo: `/project/${ctx.projectId}/billing/overview` };
     },
   },
   {
@@ -141,8 +141,8 @@ export const billingSkills: Skill[] = [
     parameters: [],
     execute: async (_params, ctx) => {
       if (!ctx.projectId) return { success: false, message: 'No project selected.' };
-      ctx.navigate(`/project/${ctx.projectId}/billing`);
-      return { success: true, message: 'Navigated to Billing. You can manage auto-renewal from here.', navigateTo: `/project/${ctx.projectId}/billing` };
+      ctx.navigate(`/project/${ctx.projectId}/billing/overview`);
+      return { success: true, message: 'Navigated to Billing. You can manage auto-renewal from here.', navigateTo: `/project/${ctx.projectId}/billing/overview` };
     },
   },
   {

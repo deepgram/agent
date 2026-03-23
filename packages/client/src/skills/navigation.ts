@@ -51,7 +51,7 @@ export const navigationSkills: Skill[] = [
     parameters: [],
     execute: async (_params, ctx) => {
       if (!ctx.projectId) return { success: false, message: 'No project selected.' };
-      return nav(`/project/${ctx.projectId}/billing`, 'Billing', ctx);
+      return nav(`/project/${ctx.projectId}/billing/overview`, 'Billing', ctx);
     },
   },
   {
@@ -64,6 +64,54 @@ export const navigationSkills: Skill[] = [
     execute: async (_params, ctx) => {
       if (!ctx.projectId) return { success: false, message: 'No project selected.' };
       return nav(`/project/${ctx.projectId}/usage`, 'Usage', ctx);
+    },
+  },
+  {
+    id: 'nav-usage-stt',
+    name: 'Go to Speech-to-Text Usage',
+    description: 'Navigate to the speech-to-text (STT / listen) usage page',
+    category: 'navigation',
+    risk: 'safe',
+    parameters: [],
+    execute: async (_params, ctx) => {
+      if (!ctx.projectId) return { success: false, message: 'No project selected.' };
+      return nav(`/project/${ctx.projectId}/usage/listen`, 'Speech-to-Text Usage', ctx);
+    },
+  },
+  {
+    id: 'nav-usage-tts',
+    name: 'Go to Text-to-Speech Usage',
+    description: 'Navigate to the text-to-speech (TTS / speak) usage page',
+    category: 'navigation',
+    risk: 'safe',
+    parameters: [],
+    execute: async (_params, ctx) => {
+      if (!ctx.projectId) return { success: false, message: 'No project selected.' };
+      return nav(`/project/${ctx.projectId}/usage/speak`, 'Text-to-Speech Usage', ctx);
+    },
+  },
+  {
+    id: 'nav-usage-agent',
+    name: 'Go to Voice Agent Usage',
+    description: 'Navigate to the voice agent usage page',
+    category: 'navigation',
+    risk: 'safe',
+    parameters: [],
+    execute: async (_params, ctx) => {
+      if (!ctx.projectId) return { success: false, message: 'No project selected.' };
+      return nav(`/project/${ctx.projectId}/usage/agent`, 'Voice Agent Usage', ctx);
+    },
+  },
+  {
+    id: 'nav-usage-intelligence',
+    name: 'Go to Text Intelligence Usage',
+    description: 'Navigate to the text intelligence (read / audio intelligence) usage page',
+    category: 'navigation',
+    risk: 'safe',
+    parameters: [],
+    execute: async (_params, ctx) => {
+      if (!ctx.projectId) return { success: false, message: 'No project selected.' };
+      return nav(`/project/${ctx.projectId}/usage/read`, 'Text Intelligence Usage', ctx);
     },
   },
   {
