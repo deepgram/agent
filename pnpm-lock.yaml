@@ -14,8 +14,8 @@ importers:
         specifier: ^0.78.0
         version: 0.78.0
       '@lukeocodes/composite-voice':
-        specifier: ^0.0.5
-        version: 0.0.5(ws@8.19.0)
+        specifier: ^0.1.0
+        version: 0.1.0(ws@8.19.0)
       preact:
         specifier: ^10.29.0
         version: 10.29.0
@@ -364,8 +364,8 @@ packages:
       ws:
         optional: true
 
-  '@lukeocodes/composite-voice@0.0.5':
-    resolution: {integrity: sha512-fT5yAIXcQPBp3AcxvIcEgeLMnMHvEyvCZNobRLhF1y9hsnH36wNbDCsTnzWwVm2DeR3S/DB52XaB1NoLGRe25w==}
+  '@lukeocodes/composite-voice@0.1.0':
+    resolution: {integrity: sha512-MphfxK4mSKvPC7h40XDlOZtceS9vsVepV8IWRaSNJFujWCbhA0w+OQptUEg/X5ri4AOem/PnxZMGvGTFIENPVg==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
       '@mlc-ai/web-llm': '>=0.2.74'
@@ -1586,7 +1586,7 @@ snapshots:
       '@anthropic-ai/sdk': 0.78.0
       ws: 8.19.0
 
-  '@lukeocodes/composite-voice@0.0.5(ws@8.19.0)':
+  '@lukeocodes/composite-voice@0.1.0(ws@8.19.0)':
     optionalDependencies:
       ws: 8.19.0
 
