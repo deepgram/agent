@@ -128,7 +128,7 @@ export function useVoiceAgent(
             endpoint: `${dxApiWsUrl}/deepgram`,
             apiKey: credentials.token,
             authType: 'bearer',
-            voice: 'aura-2-thalia-en',
+            voice: 'aura-2-helena-en',
           }),
           new BrowserAudioOutput({
             minBufferDuration: 300,
