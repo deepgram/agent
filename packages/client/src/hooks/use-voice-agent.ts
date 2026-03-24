@@ -78,6 +78,9 @@ export function useVoiceAgent(
         BrowserAudioOutput,
       } = await import('@lukeocodes/composite-voice');
 
+      // TODO: Add 'session' to WebSocket subprotocols when composite-voice supports extraProtocols
+      // This will send Sec-WebSocket-Protocol: bearer,<token>,session to signal dx-api
+      // to use session-based credential resolution for STT/TTS WebSocket connections.
       const agent = new CompositeVoice({
         providers: [
           new MicrophoneInput(),
