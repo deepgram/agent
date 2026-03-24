@@ -7,17 +7,17 @@ export interface DxApiCredentials {
 }
 
 /**
- * Authenticate through the DX API auth chain:
+ * Authenticate through the DX ID token exchange:
  *
  * 1. Get project ID from the current console URL
  * 2. Create a short-lived API key on that project via manage.deepgram.com
  *    (session cookie sent automatically via credentials: 'include')
- * 3. Exchange that key for a dx-api wrapper JWT
- *    (dx-api embeds a service credential instead of the temp key)
+ * 3. Exchange that key for a dx-id access token via OAuth token exchange
+ *    (dx-id encrypts the credential and signs an RS256 JWT)
  */
 export async function authenticate(config: ConsoleAgentConfig): Promise<DxApiCredentials> {
   const manageUrl = config.manageUrl ?? 'https://manage.deepgram.com';
-  const dxApiUrl = config.dxApiUrl ?? 'https://api.dx.deepgram.com';
+  const idServiceUrl = config.idServiceUrl ?? 'https://id.dx.deepgram.com';
 
   const projectId = config.projectId ?? getProjectIdFromUrl();
   if (!projectId) {
@@ -33,7 +33,7 @@ export async function authenticate(config: ConsoleAgentConfig): Promise<DxApiCre
       comment: 'Console Agent Widget',
       scopes: ['member'],
       tags: ['console-agent'],
-      time_to_live_in_seconds: 3600,
+      time_to_live_in_seconds: 300,
     }),
   });
 
@@ -47,24 +47,30 @@ export async function authenticate(config: ConsoleAgentConfig): Promise<DxApiCre
     throw new Error('No key returned from manage API');
   }
 
-  // Step 2: Exchange the temp key for a dx-api wrapper JWT
-  const tokenRes = await fetch(`${dxApiUrl}/auth/token`, {
+  // Step 2: Exchange the temp key for a dx-id access token via OAuth token exchange
+  const body = new URLSearchParams({
+    grant_type: 'urn:ietf:params:oauth:grant-type:token-exchange',
+    subject_token: keyData.key,
+    subject_token_type: 'urn:ietf:params:oauth:token-type:access_token',
+    pid: projectId,
+  });
+
+  const tokenRes = await fetch(`${idServiceUrl}/token`, {
     method: 'POST',
-    headers: {
-      Authorization: `Token ${keyData.key}`,
-      'X-DX-Auth-Mode': 'session',
-    },
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: body.toString(),
   });
 
   if (!tokenRes.ok) {
-    const body = await tokenRes.text().catch(() => '');
-    throw new Error(`dx-api auth/token failed (${tokenRes.status}): ${body}`);
+    const errBody = await tokenRes.text().catch(() => '');
+    throw new Error(`dx-id token exchange failed (${tokenRes.status}): ${errBody}`);
   }
 
-  const tokenData: { token: string; expires_at: string } = await tokenRes.json();
+  const tokenData: { access_token: string; token_type: string; expires_in: number } =
+    await tokenRes.json();
 
   return {
-    token: tokenData.token,
-    expiresAt: new Date(tokenData.expires_at),
+    token: tokenData.access_token,
+    expiresAt: new Date(Date.now() + tokenData.expires_in * 1000),
   };
 }
