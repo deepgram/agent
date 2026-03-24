@@ -8,6 +8,8 @@ export interface ConsoleAgentConfig {
   dxApiUrl?: string;
   /** Base URL for the Deepgram management API (default: https://manage.deepgram.com) */
   manageUrl?: string;
+  /** Base URL for the DX identity service (default: https://id.dx.deepgram.com) */
+  idServiceUrl?: string;
   /** Current project ID from the console */
   projectId?: string;
   /** Base URL for console API (defaults to current origin) */
