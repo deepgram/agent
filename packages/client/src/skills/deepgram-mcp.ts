@@ -32,6 +32,7 @@ export const deepgramMcpSkills: Skill[] = [
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${ctx.dxApiToken}`,
+            'X-DX-Auth-Mode': 'session',
           },
           body: JSON.stringify({ query: params.query }),
         });
@@ -120,6 +121,7 @@ export const deepgramMcpSkills: Skill[] = [
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${ctx.dxApiToken}`,
+            'X-DX-Auth-Mode': 'session',
           },
           body: JSON.stringify({ query: params.question }),
         });
