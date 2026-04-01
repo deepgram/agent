@@ -16,31 +16,6 @@
   <script src="../../dist/deepgram-agent.umd.js"></script>
   <script type="module">
 
-    // ─── Console API client ───────────────────────────────────────────────────
-
-    async function apiCall(ctx, method, path, body) {
-      const base = ctx.apiBaseUrl.replace(/\/$/, '');
-      const url = `${base}/v1${path}`;
-      try {
-        const res = await fetch(url, {
-          method,
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: body ? JSON.stringify(body) : undefined,
-        });
-        if (!res.ok) {
-          const text = await res.text();
-          return { success: false, message: `API error (${res.status}): ${text || res.statusText}` };
-        }
-        if (res.status === 204 || res.headers.get('content-length') === '0') {
-          return { success: true, message: 'Done.' };
-        }
-        const data = await res.json();
-        return { success: true, message: 'Success.', data };
-      } catch (err) {
-        return { success: false, message: `Network error: ${err instanceof Error ? err.message : String(err)}` };
-      }
-    }
 
     // ─── Navigation skills ────────────────────────────────────────────────────
 
@@ -255,7 +230,7 @@
         risk: 'safe',
         parameters: [],
         execute: async (_params, ctx) => {
-          const res = await apiCall(ctx, 'GET', '/projects_with_scopes');
+          const res = await DeepgramAgent.apiCall(ctx, 'GET', '/projects_with_scopes');
           if (!res.success) return res;
           const projects = res.data.projects;
           const list = projects.map((p) => `• ${p.name} (${p.role}) — ${p.project_id}`).join('\n');
@@ -271,7 +246,7 @@
         parameters: [],
         execute: async (_params, ctx) => {
           if (!ctx.projectId) return { success: false, message: 'No project selected.' };
-          return apiCall(ctx, 'GET', `/projects/${ctx.projectId}`);
+          return DeepgramAgent.apiCall(ctx, 'GET', `/projects/${ctx.projectId}`);
         },
       },
       {
@@ -334,7 +309,7 @@
         parameters: [],
         execute: async (_params, ctx) => {
           if (!ctx.projectId) return { success: false, message: 'No project selected.' };
-          return apiCall(ctx, 'GET', `/projects/${ctx.projectId}/concurrency-limits`);
+          return DeepgramAgent.apiCall(ctx, 'GET', `/projects/${ctx.projectId}/concurrency-limits`);
         },
       },
       {
@@ -380,7 +355,7 @@
         parameters: [],
         execute: async (_params, ctx) => {
           if (!ctx.projectId) return { success: false, message: 'No project selected.' };
-          const res = await apiCall(ctx, 'GET', `/projects/${ctx.projectId}/keys?include_comment_metadata=true`);
+          const res = await DeepgramAgent.apiCall(ctx, 'GET', `/projects/${ctx.projectId}/keys?include_comment_metadata=true`);
           if (!res.success) return res;
           const keys = res.data.api_keys;
           const list = keys.map((k) => `• ${k.comment || '(unnamed)'} — ${k.api_key_id.slice(0, 8)}... (${k.scopes?.join(', ') || 'all scopes'})`).join('\n');
@@ -431,7 +406,7 @@
         parameters: [],
         execute: async (_params, ctx) => {
           if (!ctx.projectId) return { success: false, message: 'No project selected.' };
-          const res = await apiCall(ctx, 'GET', `/projects/${ctx.projectId}/members`);
+          const res = await DeepgramAgent.apiCall(ctx, 'GET', `/projects/${ctx.projectId}/members`);
           if (!res.success) return res;
           const members = res.data.members;
           const list = members.map((m) => `• ${m.first_name} ${m.last_name} (${m.email}) — ${m.scopes?.join(', ')}`).join('\n');
@@ -460,7 +435,7 @@
         parameters: [],
         execute: async (_params, ctx) => {
           if (!ctx.projectId) return { success: false, message: 'No project selected.' };
-          const res = await apiCall(ctx, 'GET', `/projects/${ctx.projectId}/invites`);
+          const res = await DeepgramAgent.apiCall(ctx, 'GET', `/projects/${ctx.projectId}/invites`);
           if (!res.success) return res;
           const invites = res.data.invites;
           if (invites.length === 0) return { success: true, message: 'No pending invitations.', data: invites };
@@ -521,7 +496,7 @@
         parameters: [],
         execute: async (_params, ctx) => {
           if (!ctx.projectId) return { success: false, message: 'No project selected.' };
-          const res = await apiCall(ctx, 'GET', `/projects/${ctx.projectId}/balances?format=detailed`);
+          const res = await DeepgramAgent.apiCall(ctx, 'GET', `/projects/${ctx.projectId}/balances?format=detailed`);
           if (!res.success) return res;
           const list = res.data.balances.map((b) => `• $${b.dollar_amount.toFixed(2)} (${b.preferred_units}) — expires ${new Date(b.expiration).toLocaleDateString()}`).join('\n');
           return { success: true, message: `Balance:\n${list}`, data: res.data };
@@ -538,7 +513,7 @@
         ],
         execute: async (params, ctx) => {
           if (!ctx.projectId) return { success: false, message: 'No project selected.' };
-          return apiCall(ctx, 'GET', `/projects/${ctx.projectId}/purchases?limit=10&page=${params.page || 1}`);
+          return DeepgramAgent.apiCall(ctx, 'GET', `/projects/${ctx.projectId}/purchases?limit=10&page=${params.page || 1}`);
         },
       },
       {
@@ -550,7 +525,7 @@
         parameters: [],
         execute: async (_params, ctx) => {
           if (!ctx.projectId) return { success: false, message: 'No project selected.' };
-          return apiCall(ctx, 'GET', `/projects/${ctx.projectId}/plan`);
+          return DeepgramAgent.apiCall(ctx, 'GET', `/projects/${ctx.projectId}/plan`);
         },
       },
       {
@@ -561,7 +536,7 @@
         risk: 'safe',
         parameters: [],
         execute: async (_params, ctx) => {
-          return apiCall(ctx, 'GET', '/plans');
+          return DeepgramAgent.apiCall(ctx, 'GET', '/plans');
         },
       },
       {
@@ -573,7 +548,7 @@
         parameters: [],
         execute: async (_params, ctx) => {
           if (!ctx.projectId) return { success: false, message: 'No project selected.' };
-          return apiCall(ctx, 'GET', `/projects/${ctx.projectId}/billing/settings`);
+          return DeepgramAgent.apiCall(ctx, 'GET', `/projects/${ctx.projectId}/billing/settings`);
         },
       },
       {
@@ -594,7 +569,7 @@
           if (params.to) qp.set('to', params.to);
           if (params.groupBy) qp.set('group_by', params.groupBy);
           const qs = qp.toString() ? `?${qp.toString()}` : '';
-          return apiCall(ctx, 'GET', `/projects/${ctx.projectId}/billing/breakdown${qs}`);
+          return DeepgramAgent.apiCall(ctx, 'GET', `/projects/${ctx.projectId}/billing/breakdown${qs}`);
         },
       },
       {
@@ -609,7 +584,7 @@
         ],
         execute: async (params, ctx) => {
           if (!ctx.projectId) return { success: false, message: 'No project selected.' };
-          return apiCall(ctx, 'POST', `/projects/${ctx.projectId}/billing/export/breakdown`, { from: params.from, to: params.to });
+          return DeepgramAgent.apiCall(ctx, 'POST', `/projects/${ctx.projectId}/billing/export/breakdown`, { from: params.from, to: params.to });
         },
       },
       {
@@ -621,7 +596,7 @@
         parameters: [],
         execute: async (_params, ctx) => {
           if (!ctx.projectId) return { success: false, message: 'No project selected.' };
-          return apiCall(ctx, 'GET', `/projects/${ctx.projectId}/auto-recharge`);
+          return DeepgramAgent.apiCall(ctx, 'GET', `/projects/${ctx.projectId}/auto-recharge`);
         },
       },
       {
@@ -659,7 +634,7 @@
         parameters: [],
         execute: async (_params, ctx) => {
           if (!ctx.projectId) return { success: false, message: 'No project selected.' };
-          return apiCall(ctx, 'GET', `/projects/${ctx.projectId}/stripe-payment-methods`);
+          return DeepgramAgent.apiCall(ctx, 'GET', `/projects/${ctx.projectId}/stripe-payment-methods`);
         },
       },
       {
@@ -696,7 +671,7 @@
           if (params.from) qp.set('from', params.from);
           if (params.to) qp.set('to', params.to);
           const qs = qp.toString() ? `?${qp.toString()}` : '';
-          return apiCall(ctx, 'GET', `/projects/${ctx.projectId}/usage/breakdown${qs}`);
+          return DeepgramAgent.apiCall(ctx, 'GET', `/projects/${ctx.projectId}/usage/breakdown${qs}`);
         },
       },
       {
@@ -711,7 +686,7 @@
         execute: async (params, ctx) => {
           if (!ctx.projectId) return { success: false, message: 'No project selected.' };
           const segments = params.endpoint ? ['usage', 'fields', params.endpoint] : ['usage', 'fields'];
-          return apiCall(ctx, 'GET', `/projects/${ctx.projectId}/${segments.join('/')}`);
+          return DeepgramAgent.apiCall(ctx, 'GET', `/projects/${ctx.projectId}/${segments.join('/')}`);
         },
       },
       {
@@ -729,7 +704,7 @@
           const qp = new URLSearchParams();
           qp.set('from', params.from);
           qp.set('to', params.to);
-          return apiCall(ctx, 'GET', `/projects/${ctx.projectId}/usage/export/breakdown?${qp.toString()}`);
+          return DeepgramAgent.apiCall(ctx, 'GET', `/projects/${ctx.projectId}/usage/export/breakdown?${qp.toString()}`);
         },
       },
       {
@@ -751,7 +726,7 @@
           if (params.to) qp.set('to', params.to);
           qp.set('limit', String(params.limit || 10));
           qp.set('page', String(params.page || 1));
-          return apiCall(ctx, 'GET', `/projects/${ctx.projectId}/requests?${qp.toString()}`);
+          return DeepgramAgent.apiCall(ctx, 'GET', `/projects/${ctx.projectId}/requests?${qp.toString()}`);
         },
       },
       {
@@ -765,7 +740,7 @@
         ],
         execute: async (params, ctx) => {
           if (!ctx.projectId) return { success: false, message: 'No project selected.' };
-          return apiCall(ctx, 'GET', `/projects/${ctx.projectId}/requests/${params.requestId}`);
+          return DeepgramAgent.apiCall(ctx, 'GET', `/projects/${ctx.projectId}/requests/${params.requestId}`);
         },
       },
     ];
@@ -781,7 +756,7 @@
         risk: 'safe',
         parameters: [],
         execute: async (_params, ctx) => {
-          return apiCall(ctx, 'GET', '/auth/user');
+          return DeepgramAgent.apiCall(ctx, 'GET', '/auth/user');
         },
       },
       {
@@ -822,7 +797,7 @@
         parameters: [],
         execute: async (_params, ctx) => {
           if (!ctx.projectId) return { success: false, message: 'No project selected.' };
-          return apiCall(ctx, 'GET', `/projects/${ctx.projectId}/self-hosted/distribution/credentials`);
+          return DeepgramAgent.apiCall(ctx, 'GET', `/projects/${ctx.projectId}/self-hosted/distribution/credentials`);
         },
       },
       {
