@@ -108,6 +108,7 @@
   border-radius: 4px;
   display: flex;
   align-items: center;
+  margin-left: auto;
 }
 
 .dg-agent-panel__btn:hover {
