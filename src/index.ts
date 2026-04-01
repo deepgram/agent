@@ -8,7 +8,7 @@ export { buildToolDefinitions } from './skills';
 export { apiCall } from './skills/api';
 export { deepgramKnowledgeSkill } from './skills/deepgram-mcp';
 export { fetchDeepgramSkillsContext } from './skills/github-context';
-export { BASE_AGENT_GUIDELINES } from './prompt/base';
+export { BASE_AGENT_GUIDELINES, SIDEBAR_LAYOUT, INLINE_LAYOUT } from './prompt/base';
 
 /**
  * Initialize the Deepgram agent widget.

@@ -3,15 +3,17 @@ import { CODE_HANDLING } from './code-handling';
 import { TEXT_NORMALISATION } from './text-normalisation';
 import { TOOL_GUIDELINES } from './tools';
 
-const UI_LAYOUT = `## UI Layout
-You are displayed in a sidebar panel. Below the chat message area, the user sees (left to right): a microphone toggle, a speaker toggle, a text input field, and a send button.`;
+export const SIDEBAR_LAYOUT = `## UI Layout
+You are displayed in a sidebar panel on the right side of the page. Below the chat message area, the user sees (left to right): a microphone toggle, a speaker toggle, a text input field, and a send button.`;
+
+export const INLINE_LAYOUT = `## UI Layout
+You are embedded inline within the page. Below the chat message area, the user sees (left to right): a microphone toggle, a speaker toggle, a text input field, and a send button.`;
 
 /**
- * Universal behavioral guidelines for any voice agent deployment.
- * Always prepended to the system prompt — not optional.
+ * Universal behavioral guidelines — TTS formatting, tool use rules, conversation behavior.
+ * Combined with a layout description (SIDEBAR_LAYOUT or INLINE_LAYOUT) to form the full base prompt.
  */
 export const BASE_AGENT_GUIDELINES = [
-  UI_LAYOUT,
   BEHAVIORAL_GUIDELINES,
   TEXT_NORMALISATION,
   CODE_HANDLING,

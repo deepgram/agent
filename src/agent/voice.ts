@@ -231,10 +231,6 @@ export function useVoiceAgent(
     await agent.sendMessage(text);
   }, [initAgent]);
 
-  const getHistory = useCallback(() => {
-    return agentRef.current?.getHistory() ?? [];
-  }, []);
-
   const toggleInput = useCallback(async () => {
     const agent = agentRef.current;
     if (!agent || !listeningStartedRef.current) {
@@ -278,5 +274,5 @@ export function useVoiceAgent(
   /** Get the current dx-api JWT token (for skill executor to use). */
   const getToken = useCallback(() => credentialsRef.current?.token ?? null, []);
 
-  return { ...state, start, stop, sendMessage, getHistory, toggleInput, toggleOutput, getToken };
+  return { ...state, start, stop, sendMessage, toggleInput, toggleOutput, getToken };
 }

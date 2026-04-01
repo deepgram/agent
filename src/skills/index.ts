@@ -6,11 +6,6 @@ export function getSkill(id: string, skills: Skill[]): Skill | undefined {
   return skills.find((s) => s.id === id);
 }
 
-/** Get all skills in a category from a given skill set */
-export function getSkillsByCategory(category: string, skills: Skill[]): Skill[] {
-  return skills.filter((s) => s.category === category);
-}
-
 /** Convert a skill set to LLM tool definitions for Anthropic tool use */
 export function buildToolDefinitions(skills: Skill[]): LLMToolDefinition[] {
   return skills.map((skill) => ({

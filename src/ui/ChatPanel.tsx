@@ -8,7 +8,7 @@ import { useSkillExecutor } from '../skills/executor';
 import { buildToolDefinitions, getSkill } from '../skills';
 import { deepgramKnowledgeSkill } from '../skills/deepgram-mcp';
 import { fetchDeepgramSkillsContext } from '../skills/github-context';
-import { BASE_AGENT_GUIDELINES } from '../prompt/base';
+import { BASE_AGENT_GUIDELINES, SIDEBAR_LAYOUT, INLINE_LAYOUT } from '../prompt/base';
 import { addMessage, clearConversation, generateId, getProjectIdFromUrl, loadState, saveState } from '../state';
 
 const AFFIRMATIVE_PATTERNS = /^\s*(yes|yeah|yep|yup|sure|ok|okay|go ahead|do it|confirm|proceed|absolutely|affirmative)\s*[.!]?\s*$/i;
@@ -27,15 +27,19 @@ export function ChatPanel({ config }: Props) {
 
   const projectId = config.projectId ?? getProjectIdFromUrl();
 
+  // Layout description — sidebar for buttonId, inline for containerId
+  const layoutGuideline = config.containerId ? INLINE_LAYOUT : SIDEBAR_LAYOUT;
+
   // Site-specific skills merged with built-in skills
   const siteSkills = config.skills ?? [];
   const allSkills = [deepgramKnowledgeSkill, ...siteSkills];
 
   // Deepgram knowledge context — fetched on mount, appended to system prompt
   const [deepgramContext, setDeepgramContext] = useState('');
+  const basePrompt = `${layoutGuideline}\n\n${BASE_AGENT_GUIDELINES}`;
   const systemPrompt = config.systemPrompt
-    ? `${BASE_AGENT_GUIDELINES}\n\n${config.systemPrompt}${deepgramContext ? `\n\n${deepgramContext}` : ''}`
-    : `${BASE_AGENT_GUIDELINES}${deepgramContext ? `\n\n${deepgramContext}` : ''}`;
+    ? `${basePrompt}\n\n${config.systemPrompt}${deepgramContext ? `\n\n${deepgramContext}` : ''}`
+    : `${basePrompt}${deepgramContext ? `\n\n${deepgramContext}` : ''}`;
 
   useEffect(() => {
     fetchDeepgramSkillsContext().then((ctx) => {
