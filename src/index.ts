@@ -5,8 +5,6 @@ import { orchestrate } from './orchestrator';
 export type { ConsoleAgentConfig, AgentModelConfig } from './types';
 export type { Skill, SkillCategory, SkillParameter, SkillContext, SkillResult, SkillRisk, ChatMessage, AgentState } from './types';
 export { buildToolDefinitions } from './skills';
-export { skillRegistry } from './console';
-export { buildConsoleSystemPrompt } from './prompt/console';
 export { BASE_AGENT_GUIDELINES } from './prompt/base';
 
 /**

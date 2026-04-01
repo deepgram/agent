@@ -14,22 +14,469 @@
   <button id="dg-ask-ai-btn" type="button">Ask AI</button>
 
   <script src="../../dist/deepgram-agent.umd.js"></script>
-  <script>
-    // Detect project ID from the console URL (e.g. /projects/{id}/...)
+  <script type="module">
+
+    // ─── Console API client ───────────────────────────────────────────────────
+
+    async function apiCall(ctx, method, path, body) {
+      const base = ctx.apiBaseUrl.replace(/\/$/, '');
+      const url = `${base}/v1${path}`;
+      try {
+        const res = await fetch(url, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: body ? JSON.stringify(body) : undefined,
+        });
+        if (!res.ok) {
+          const text = await res.text();
+          return { success: false, message: `API error (${res.status}): ${text || res.statusText}` };
+        }
+        if (res.status === 204 || res.headers.get('content-length') === '0') {
+          return { success: true, message: 'Done.' };
+        }
+        const data = await res.json();
+        return { success: true, message: 'Success.', data };
+      } catch (err) {
+        return { success: false, message: `Network error: ${err instanceof Error ? err.message : String(err)}` };
+      }
+    }
+
+    // ─── Navigation skills ────────────────────────────────────────────────────
+
+    function nav(path, label, ctx) {
+      ctx.navigate(path);
+      return { success: true, message: `Navigated to ${label}.`, navigateTo: path };
+    }
+
+    const navigationSkills = [
+      { id: 'nav-dashboard', name: 'Go to Dashboard', description: 'Navigate to the project dashboard/overview page', category: 'navigation', risk: 'safe', parameters: [],
+        execute: async (_p, ctx) => { if (!ctx.projectId) return { success: false, message: 'No project selected.' }; return nav(`/project/${ctx.projectId}/dashboard`, 'Dashboard', ctx); } },
+      { id: 'nav-keys', name: 'Go to API Keys', description: 'Navigate to the API keys management page', category: 'navigation', risk: 'safe', parameters: [],
+        execute: async (_p, ctx) => { if (!ctx.projectId) return { success: false, message: 'No project selected.' }; return nav(`/project/${ctx.projectId}/keys`, 'API Keys', ctx); } },
+      { id: 'nav-team', name: 'Go to Team', description: 'Navigate to the team/members management page', category: 'navigation', risk: 'safe', parameters: [],
+        execute: async (_p, ctx) => { if (!ctx.projectId) return { success: false, message: 'No project selected.' }; return nav(`/project/${ctx.projectId}/team`, 'Team', ctx); } },
+      { id: 'nav-billing', name: 'Go to Billing', description: 'Navigate to the billing overview page', category: 'navigation', risk: 'safe', parameters: [],
+        execute: async (_p, ctx) => { if (!ctx.projectId) return { success: false, message: 'No project selected.' }; return nav(`/project/${ctx.projectId}/billing/overview`, 'Billing', ctx); } },
+      { id: 'nav-usage', name: 'Go to Usage', description: 'Navigate to the usage overview page', category: 'navigation', risk: 'safe', parameters: [],
+        execute: async (_p, ctx) => { if (!ctx.projectId) return { success: false, message: 'No project selected.' }; return nav(`/project/${ctx.projectId}/usage`, 'Usage', ctx); } },
+      { id: 'nav-usage-stt', name: 'Go to Speech-to-Text Usage', description: 'Navigate to the speech-to-text (STT / listen) usage page', category: 'navigation', risk: 'safe', parameters: [],
+        execute: async (_p, ctx) => { if (!ctx.projectId) return { success: false, message: 'No project selected.' }; return nav(`/project/${ctx.projectId}/usage/listen`, 'Speech-to-Text Usage', ctx); } },
+      { id: 'nav-usage-tts', name: 'Go to Text-to-Speech Usage', description: 'Navigate to the text-to-speech (TTS / speak) usage page', category: 'navigation', risk: 'safe', parameters: [],
+        execute: async (_p, ctx) => { if (!ctx.projectId) return { success: false, message: 'No project selected.' }; return nav(`/project/${ctx.projectId}/usage/speak`, 'Text-to-Speech Usage', ctx); } },
+      { id: 'nav-usage-agent', name: 'Go to Voice Agent Usage', description: 'Navigate to the voice agent usage page', category: 'navigation', risk: 'safe', parameters: [],
+        execute: async (_p, ctx) => { if (!ctx.projectId) return { success: false, message: 'No project selected.' }; return nav(`/project/${ctx.projectId}/usage/agent`, 'Voice Agent Usage', ctx); } },
+      { id: 'nav-usage-intelligence', name: 'Go to Text Intelligence Usage', description: 'Navigate to the text intelligence (read / audio intelligence) usage page', category: 'navigation', risk: 'safe', parameters: [],
+        execute: async (_p, ctx) => { if (!ctx.projectId) return { success: false, message: 'No project selected.' }; return nav(`/project/${ctx.projectId}/usage/read`, 'Text Intelligence Usage', ctx); } },
+      { id: 'nav-usage-logs', name: 'Go to Usage Logs', description: 'Navigate to detailed request logs', category: 'navigation', risk: 'safe', parameters: [],
+        execute: async (_p, ctx) => { if (!ctx.projectId) return { success: false, message: 'No project selected.' }; return nav(`/project/${ctx.projectId}/usage/logs`, 'Usage Logs', ctx); } },
+      { id: 'nav-billing-spend', name: 'Go to Spend Analysis', description: 'Navigate to the spend analysis page', category: 'navigation', risk: 'safe', parameters: [],
+        execute: async (_p, ctx) => { if (!ctx.projectId) return { success: false, message: 'No project selected.' }; return nav(`/project/${ctx.projectId}/billing/spend`, 'Spend Analysis', ctx); } },
+      { id: 'nav-billing-credits', name: 'Go to Credit History', description: 'Navigate to the credit history page', category: 'navigation', risk: 'safe', parameters: [],
+        execute: async (_p, ctx) => { if (!ctx.projectId) return { success: false, message: 'No project selected.' }; return nav(`/project/${ctx.projectId}/billing/credit-history`, 'Credit History', ctx); } },
+      { id: 'nav-billing-payment', name: 'Go to Payment Info', description: 'Navigate to payment method management', category: 'navigation', risk: 'safe', parameters: [],
+        execute: async (_p, ctx) => { if (!ctx.projectId) return { success: false, message: 'No project selected.' }; return nav(`/project/${ctx.projectId}/billing/payment-info`, 'Payment Info', ctx); } },
+      { id: 'nav-settings', name: 'Go to User Settings', description: 'Navigate to user profile settings', category: 'navigation', risk: 'safe', parameters: [],
+        execute: async (_p, ctx) => nav('/settings', 'User Settings', ctx) },
+      { id: 'nav-self-hosted', name: 'Go to Self-Hosted', description: 'Navigate to self-hosted/on-premises credentials page', category: 'navigation', risk: 'safe', parameters: [],
+        execute: async (_p, ctx) => { if (!ctx.projectId) return { success: false, message: 'No project selected.' }; return nav(`/project/${ctx.projectId}/self-hosted`, 'Self-Hosted', ctx); } },
+      { id: 'nav-page', name: 'Navigate to Page', description: 'Navigate to any console page by path', category: 'navigation', risk: 'safe',
+        parameters: [{ name: 'path', type: 'string', description: 'The URL path to navigate to', required: true }],
+        execute: async (params, ctx) => nav(params.path, params.path, ctx) },
+    ];
+
+    // ─── Project skills ───────────────────────────────────────────────────────
+
+    const projectSkills = [
+      { id: 'project-list', name: 'List Projects', description: 'List all projects the user has access to', category: 'project', risk: 'safe', parameters: [],
+        execute: async (_p, ctx) => {
+          const res = await apiCall(ctx, 'GET', '/projects_with_scopes');
+          if (!res.success) return res;
+          const projects = res.data.projects;
+          const list = projects.map((p) => `• ${p.name} (${p.role}) — ${p.project_id}`).join('\n');
+          return { success: true, message: `You have ${projects.length} project(s):\n${list}`, data: projects };
+        },
+      },
+      { id: 'project-details', name: 'Get Project Details', description: 'Get full details of the current project', category: 'project', risk: 'safe', parameters: [],
+        execute: async (_p, ctx) => { if (!ctx.projectId) return { success: false, message: 'No project selected.' }; return apiCall(ctx, 'GET', `/projects/${ctx.projectId}`); } },
+      { id: 'project-create', name: 'Create Project', description: 'Navigate to project creation', category: 'project', risk: 'safe', parameters: [],
+        execute: async (_p, ctx) => { ctx.navigate('/projects/new'); return { success: true, message: 'Navigated to the new project page. You can create your project from here.', navigateTo: '/projects/new' }; } },
+      { id: 'project-rename', name: 'Rename Project', description: 'Navigate to project settings where the user can rename the project', category: 'project', risk: 'safe', parameters: [],
+        execute: async (_p, ctx) => { if (!ctx.projectId) return { success: false, message: 'No project selected.' }; ctx.navigate(`/project/${ctx.projectId}/settings`); return { success: true, message: 'Navigated to project settings. You can rename the project from here.', navigateTo: `/project/${ctx.projectId}/settings` }; } },
+      { id: 'project-delete', name: 'Delete Project', description: 'Navigate to project settings where the user can delete the project manually', category: 'project', risk: 'dangerous', parameters: [],
+        execute: async (_p, ctx) => { if (!ctx.projectId) return { success: false, message: 'No project selected.' }; ctx.navigate(`/project/${ctx.projectId}/settings`); return { success: true, message: 'Navigated to project settings. You can delete the project from there.', navigateTo: `/project/${ctx.projectId}/settings` }; } },
+      { id: 'project-leave', name: 'Leave Project', description: 'Navigate to project settings where the user can leave the project manually', category: 'project', risk: 'dangerous', parameters: [],
+        execute: async (_p, ctx) => { if (!ctx.projectId) return { success: false, message: 'No project selected.' }; ctx.navigate(`/project/${ctx.projectId}/settings`); return { success: true, message: 'Navigated to project settings. You can leave the project from there.', navigateTo: `/project/${ctx.projectId}/settings` }; } },
+      { id: 'project-concurrency-limits', name: 'View Concurrency Limits', description: 'Get the concurrency limits for the current project', category: 'project', risk: 'safe', parameters: [],
+        execute: async (_p, ctx) => { if (!ctx.projectId) return { success: false, message: 'No project selected.' }; return apiCall(ctx, 'GET', `/projects/${ctx.projectId}/concurrency-limits`); } },
+      { id: 'project-switch', name: 'Switch Project', description: 'Switch to a different project by navigating to its dashboard. Use the project UUID from project-list results, never a project name.', category: 'project', risk: 'safe',
+        parameters: [{ name: 'projectId', type: 'string', description: 'The project UUID to switch to (from project-list results)', required: true }],
+        execute: async (params, ctx) => {
+          let pid = params.projectId;
+          const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+          if (!uuidPattern.test(pid)) {
+            const cached = ctx.getToolResult('project-list');
+            if (cached?.projects) {
+              const match = cached.projects.find((p) => p.name.toLowerCase() === pid.toLowerCase());
+              if (match) { pid = match.project_id; }
+              else return { success: false, message: `Could not find a project named "${pid}". Use project-list first.` };
+            } else {
+              return { success: false, message: `"${pid}" is not a valid project UUID. Use project-list first to get the correct ID.` };
+            }
+          }
+          ctx.navigate(`/project/${pid}/dashboard`);
+          return { success: true, message: `Switched to project ${pid}.`, navigateTo: `/project/${pid}/dashboard` };
+        },
+      },
+    ];
+
+    // ─── API key skills ───────────────────────────────────────────────────────
+
+    const apiKeySkills = [
+      { id: 'keys-list', name: 'List API Keys', description: 'List all API keys for the current project', category: 'api-keys', risk: 'safe', parameters: [],
+        execute: async (_p, ctx) => {
+          if (!ctx.projectId) return { success: false, message: 'No project selected.' };
+          const res = await apiCall(ctx, 'GET', `/projects/${ctx.projectId}/keys?include_comment_metadata=true`);
+          if (!res.success) return res;
+          const keys = res.data.api_keys;
+          const list = keys.map((k) => `• ${k.comment || '(unnamed)'} — ${k.api_key_id.slice(0, 8)}... (${k.scopes?.join(', ') || 'all scopes'})`).join('\n');
+          return { success: true, message: `${keys.length} API key(s):\n${list}`, data: keys };
+        },
+      },
+      { id: 'keys-create', name: 'Create API Key', description: 'Navigate to the API keys page with the create form open', category: 'api-keys', risk: 'safe', parameters: [],
+        execute: async (_p, ctx) => {
+          if (!ctx.projectId) return { success: false, message: 'No project selected.' };
+          ctx.navigate(`/project/${ctx.projectId}/keys?action=create`);
+          return { success: true, message: 'Opened the Create API Key form. Name your key and click "Create Key" — the secret will appear for you to copy.', navigateTo: `/project/${ctx.projectId}/keys?action=create` };
+        },
+      },
+      { id: 'keys-delete', name: 'Delete API Key', description: 'Navigate to API keys page where the user can delete a key manually', category: 'api-keys', risk: 'dangerous', parameters: [],
+        execute: async (_p, ctx) => { if (!ctx.projectId) return { success: false, message: 'No project selected.' }; ctx.navigate(`/project/${ctx.projectId}/keys`); return { success: true, message: 'Navigated to API Keys. You can delete keys from there.', navigateTo: `/project/${ctx.projectId}/keys` }; } },
+    ];
+
+    // ─── Team skills ──────────────────────────────────────────────────────────
+
+    const teamSkills = [
+      { id: 'team-list', name: 'List Team Members', description: 'List all members of the current project', category: 'team', risk: 'safe', parameters: [],
+        execute: async (_p, ctx) => {
+          if (!ctx.projectId) return { success: false, message: 'No project selected.' };
+          const res = await apiCall(ctx, 'GET', `/projects/${ctx.projectId}/members`);
+          if (!res.success) return res;
+          const members = res.data.members;
+          const list = members.map((m) => `• ${m.first_name} ${m.last_name} (${m.email}) — ${m.scopes?.join(', ')}`).join('\n');
+          return { success: true, message: `${members.length} member(s):\n${list}`, data: members };
+        },
+      },
+      { id: 'team-invite', name: 'Invite Team Member', description: 'Navigate to the team page where the user can send an invitation', category: 'team', risk: 'safe', parameters: [],
+        execute: async (_p, ctx) => { if (!ctx.projectId) return { success: false, message: 'No project selected.' }; ctx.navigate(`/project/${ctx.projectId}/team`); return { success: true, message: 'Navigated to Team. You can invite new members from here.', navigateTo: `/project/${ctx.projectId}/team` }; } },
+      { id: 'team-list-invites', name: 'List Pending Invites', description: 'List all pending team invitations', category: 'team', risk: 'safe', parameters: [],
+        execute: async (_p, ctx) => {
+          if (!ctx.projectId) return { success: false, message: 'No project selected.' };
+          const res = await apiCall(ctx, 'GET', `/projects/${ctx.projectId}/invites`);
+          if (!res.success) return res;
+          const invites = res.data.invites;
+          if (invites.length === 0) return { success: true, message: 'No pending invitations.', data: invites };
+          const list = invites.map((i) => `• ${i.email} (${i.scope})`).join('\n');
+          return { success: true, message: `${invites.length} pending invite(s):\n${list}`, data: invites };
+        },
+      },
+      { id: 'team-cancel-invite', name: 'Cancel Invitation', description: 'Navigate to team page where the user can revoke a pending invitation', category: 'team', risk: 'dangerous', parameters: [],
+        execute: async (_p, ctx) => { if (!ctx.projectId) return { success: false, message: 'No project selected.' }; ctx.navigate(`/project/${ctx.projectId}/team`); return { success: true, message: 'Navigated to Team. You can revoke invitations from there.', navigateTo: `/project/${ctx.projectId}/team` }; } },
+      { id: 'team-remove', name: 'Remove Team Member', description: 'Navigate to team page where the user can remove a member', category: 'team', risk: 'dangerous', parameters: [],
+        execute: async (_p, ctx) => { if (!ctx.projectId) return { success: false, message: 'No project selected.' }; ctx.navigate(`/project/${ctx.projectId}/team`); return { success: true, message: 'Navigated to Team. You can remove members from there.', navigateTo: `/project/${ctx.projectId}/team` }; } },
+      { id: 'team-change-role', name: 'Change Member Role', description: "Navigate to the team page where the user can change a member's role", category: 'team', risk: 'safe', parameters: [],
+        execute: async (_p, ctx) => { if (!ctx.projectId) return { success: false, message: 'No project selected.' }; ctx.navigate(`/project/${ctx.projectId}/team`); return { success: true, message: 'Navigated to Team. You can change member roles from here.', navigateTo: `/project/${ctx.projectId}/team` }; } },
+    ];
+
+    // ─── Billing skills ───────────────────────────────────────────────────────
+
+    const billingSkills = [
+      { id: 'billing-balance', name: 'Check Balance', description: 'Get the current credit balance for the project', category: 'billing', risk: 'safe', parameters: [],
+        execute: async (_p, ctx) => {
+          if (!ctx.projectId) return { success: false, message: 'No project selected.' };
+          const res = await apiCall(ctx, 'GET', `/projects/${ctx.projectId}/balances?format=detailed`);
+          if (!res.success) return res;
+          const list = res.data.balances.map((b) => `• $${b.dollar_amount.toFixed(2)} (${b.preferred_units}) — expires ${new Date(b.expiration).toLocaleDateString()}`).join('\n');
+          return { success: true, message: `Balance:\n${list}`, data: res.data };
+        },
+      },
+      { id: 'billing-purchases', name: 'View Purchase History', description: 'Get the purchase/transaction history for the project', category: 'billing', risk: 'safe',
+        parameters: [{ name: 'page', type: 'number', description: 'Page number (default 1)', required: false }],
+        execute: async (params, ctx) => { if (!ctx.projectId) return { success: false, message: 'No project selected.' }; return apiCall(ctx, 'GET', `/projects/${ctx.projectId}/purchases?limit=10&page=${params.page || 1}`); } },
+      { id: 'billing-plan', name: 'View Current Plan', description: 'Get the current plan for the project', category: 'billing', risk: 'safe', parameters: [],
+        execute: async (_p, ctx) => { if (!ctx.projectId) return { success: false, message: 'No project selected.' }; return apiCall(ctx, 'GET', `/projects/${ctx.projectId}/plan`); } },
+      { id: 'billing-plans-available', name: 'List Available Plans', description: 'Show all available pricing plans', category: 'billing', risk: 'safe', parameters: [],
+        execute: async (_p, ctx) => apiCall(ctx, 'GET', '/plans') },
+      { id: 'billing-settings', name: 'View Billing Settings', description: 'Get billing settings including billing kind and contract status', category: 'billing', risk: 'safe', parameters: [],
+        execute: async (_p, ctx) => { if (!ctx.projectId) return { success: false, message: 'No project selected.' }; return apiCall(ctx, 'GET', `/projects/${ctx.projectId}/billing/settings`); } },
+      { id: 'billing-spend-breakdown', name: 'View Spend Breakdown', description: 'Get billing spend breakdown grouped by line item, tags, deployment, or accessor', category: 'billing', risk: 'safe',
+        parameters: [
+          { name: 'from', type: 'string', description: 'Start date (ISO 8601)', required: false },
+          { name: 'to', type: 'string', description: 'End date (ISO 8601)', required: false },
+          { name: 'groupBy', type: 'enum', description: 'Group spend data by', required: false, enumValues: ['line_item', 'tags', 'deployment', 'accessor'] },
+        ],
+        execute: async (params, ctx) => {
+          if (!ctx.projectId) return { success: false, message: 'No project selected.' };
+          const qp = new URLSearchParams();
+          if (params.from) qp.set('from', params.from);
+          if (params.to) qp.set('to', params.to);
+          if (params.groupBy) qp.set('group_by', params.groupBy);
+          const qs = qp.toString() ? `?${qp.toString()}` : '';
+          return apiCall(ctx, 'GET', `/projects/${ctx.projectId}/billing/breakdown${qs}`);
+        },
+      },
+      { id: 'billing-spend-export', name: 'Export Spend CSV', description: 'Export billing spend breakdown data as CSV', category: 'billing', risk: 'safe',
+        parameters: [{ name: 'from', type: 'string', description: 'Start date (ISO 8601)', required: true }, { name: 'to', type: 'string', description: 'End date (ISO 8601)', required: true }],
+        execute: async (params, ctx) => { if (!ctx.projectId) return { success: false, message: 'No project selected.' }; return apiCall(ctx, 'POST', `/projects/${ctx.projectId}/billing/export/breakdown`, { from: params.from, to: params.to }); } },
+      { id: 'billing-auto-recharge-status', name: 'Check Auto-Recharge', description: 'Get auto-recharge settings for the project', category: 'billing', risk: 'safe', parameters: [],
+        execute: async (_p, ctx) => { if (!ctx.projectId) return { success: false, message: 'No project selected.' }; return apiCall(ctx, 'GET', `/projects/${ctx.projectId}/auto-recharge`); } },
+      { id: 'billing-auto-recharge-update', name: 'Update Auto-Recharge', description: 'Navigate to billing page where the user can configure auto-recharge settings', category: 'billing', risk: 'safe', parameters: [],
+        execute: async (_p, ctx) => { if (!ctx.projectId) return { success: false, message: 'No project selected.' }; ctx.navigate(`/project/${ctx.projectId}/billing/overview`); return { success: true, message: 'Navigated to Billing. You can configure auto-recharge from here.', navigateTo: `/project/${ctx.projectId}/billing/overview` }; } },
+      { id: 'billing-auto-renew', name: 'Manage Auto-Renew', description: 'Navigate to billing page where the user can manage automatic plan renewal', category: 'billing', risk: 'safe', parameters: [],
+        execute: async (_p, ctx) => { if (!ctx.projectId) return { success: false, message: 'No project selected.' }; ctx.navigate(`/project/${ctx.projectId}/billing/overview`); return { success: true, message: 'Navigated to Billing. You can manage auto-renewal from here.', navigateTo: `/project/${ctx.projectId}/billing/overview` }; } },
+      { id: 'billing-payment-methods', name: 'List Payment Methods', description: 'List saved payment methods', category: 'billing', risk: 'safe', parameters: [],
+        execute: async (_p, ctx) => { if (!ctx.projectId) return { success: false, message: 'No project selected.' }; return apiCall(ctx, 'GET', `/projects/${ctx.projectId}/stripe-payment-methods`); } },
+      { id: 'billing-delete-payment-method', name: 'Delete Payment Method', description: 'Navigate to payment info page where the user can remove a payment method', category: 'billing', risk: 'dangerous', parameters: [],
+        execute: async (_p, ctx) => { if (!ctx.projectId) return { success: false, message: 'No project selected.' }; ctx.navigate(`/project/${ctx.projectId}/billing/payment-info`); return { success: true, message: 'Navigated to Payment Info. You can remove payment methods from there.', navigateTo: `/project/${ctx.projectId}/billing/payment-info` }; } },
+    ];
+
+    // ─── Usage skills ─────────────────────────────────────────────────────────
+
+    const usageSkills = [
+      { id: 'usage-overview', name: 'View Usage Overview', description: 'Get usage summary for the project, optionally filtered by date range', category: 'usage', risk: 'safe',
+        parameters: [{ name: 'from', type: 'string', description: 'Start date (ISO 8601)', required: false }, { name: 'to', type: 'string', description: 'End date (ISO 8601)', required: false }],
+        execute: async (params, ctx) => {
+          if (!ctx.projectId) return { success: false, message: 'No project selected.' };
+          const qp = new URLSearchParams();
+          if (params.from) qp.set('from', params.from);
+          if (params.to) qp.set('to', params.to);
+          const qs = qp.toString() ? `?${qp.toString()}` : '';
+          return apiCall(ctx, 'GET', `/projects/${ctx.projectId}/usage/breakdown${qs}`);
+        },
+      },
+      { id: 'usage-fields', name: 'Get Usage Fields', description: 'Get available models, features, tags, and processing methods for filtering usage data', category: 'usage', risk: 'safe',
+        parameters: [{ name: 'endpoint', type: 'string', description: 'Filter by endpoint (e.g. listen, speak, agent)', required: false }],
+        execute: async (params, ctx) => {
+          if (!ctx.projectId) return { success: false, message: 'No project selected.' };
+          const segments = params.endpoint ? ['usage', 'fields', params.endpoint] : ['usage', 'fields'];
+          return apiCall(ctx, 'GET', `/projects/${ctx.projectId}/${segments.join('/')}`);
+        },
+      },
+      { id: 'usage-export', name: 'Export Usage CSV', description: 'Export usage breakdown data as CSV for a given date range', category: 'usage', risk: 'safe',
+        parameters: [{ name: 'from', type: 'string', description: 'Start date (ISO 8601)', required: true }, { name: 'to', type: 'string', description: 'End date (ISO 8601)', required: true }],
+        execute: async (params, ctx) => { if (!ctx.projectId) return { success: false, message: 'No project selected.' }; const qp = new URLSearchParams(); qp.set('from', params.from); qp.set('to', params.to); return apiCall(ctx, 'GET', `/projects/${ctx.projectId}/usage/export/breakdown?${qp.toString()}`); } },
+      { id: 'usage-logs', name: 'View Request Logs', description: 'Get detailed request-level logs with pagination', category: 'usage', risk: 'safe',
+        parameters: [
+          { name: 'from', type: 'string', description: 'Start date (ISO 8601)', required: false },
+          { name: 'to', type: 'string', description: 'End date (ISO 8601)', required: false },
+          { name: 'limit', type: 'number', description: 'Number of results (default 10)', required: false },
+          { name: 'page', type: 'number', description: 'Page number (default 1)', required: false },
+        ],
+        execute: async (params, ctx) => {
+          if (!ctx.projectId) return { success: false, message: 'No project selected.' };
+          const qp = new URLSearchParams();
+          if (params.from) qp.set('from', params.from);
+          if (params.to) qp.set('to', params.to);
+          qp.set('limit', String(params.limit || 10));
+          qp.set('page', String(params.page || 1));
+          return apiCall(ctx, 'GET', `/projects/${ctx.projectId}/requests?${qp.toString()}`);
+        },
+      },
+      { id: 'usage-request-detail', name: 'View Request Details', description: 'Get full details of a specific API request by its ID', category: 'usage', risk: 'safe',
+        parameters: [{ name: 'requestId', type: 'string', description: 'The request ID to look up', required: true }],
+        execute: async (params, ctx) => { if (!ctx.projectId) return { success: false, message: 'No project selected.' }; return apiCall(ctx, 'GET', `/projects/${ctx.projectId}/requests/${params.requestId}`); } },
+    ];
+
+    // ─── Settings skills ──────────────────────────────────────────────────────
+
+    const settingsSkills = [
+      { id: 'settings-profile', name: 'View Profile', description: 'Get the current user profile information', category: 'settings', risk: 'safe', parameters: [],
+        execute: async (_p, ctx) => apiCall(ctx, 'GET', '/auth/user') },
+      { id: 'settings-update-name', name: 'Update Name', description: 'Navigate to settings where the user can update their name', category: 'settings', risk: 'safe', parameters: [],
+        execute: async (_p, ctx) => { ctx.navigate('/settings'); return { success: true, message: 'Navigated to Settings. You can update your name from here.', navigateTo: '/settings' }; } },
+      { id: 'settings-change-password', name: 'Change Password', description: 'Navigate to settings page where the user can change their password', category: 'settings', risk: 'dangerous', parameters: [],
+        execute: async (_p, ctx) => { ctx.navigate('/settings'); return { success: true, message: 'Navigated to Settings. You can change your password from there.', navigateTo: '/settings' }; } },
+    ];
+
+    // ─── Self-hosted skills ───────────────────────────────────────────────────
+
+    const selfHostedSkills = [
+      { id: 'selfhosted-list', name: 'List Distribution Credentials', description: 'List all self-hosted distribution credentials', category: 'self-hosted', risk: 'safe', parameters: [],
+        execute: async (_p, ctx) => { if (!ctx.projectId) return { success: false, message: 'No project selected.' }; return apiCall(ctx, 'GET', `/projects/${ctx.projectId}/self-hosted/distribution/credentials`); } },
+      { id: 'selfhosted-create', name: 'Create Distribution Credential', description: 'Navigate to the self-hosted page to create a new distribution credential', category: 'self-hosted', risk: 'safe', parameters: [],
+        execute: async (_p, ctx) => { if (!ctx.projectId) return { success: false, message: 'No project selected.' }; ctx.navigate(`/project/${ctx.projectId}/self-hosted`); return { success: true, message: 'Navigated to Self-Hosted. You can create a new credential from here.', navigateTo: `/project/${ctx.projectId}/self-hosted` }; } },
+      { id: 'selfhosted-delete', name: 'Delete Distribution Credential', description: 'Navigate to self-hosted page where the user can delete a credential', category: 'self-hosted', risk: 'dangerous', parameters: [],
+        execute: async (_p, ctx) => { if (!ctx.projectId) return { success: false, message: 'No project selected.' }; ctx.navigate(`/project/${ctx.projectId}/self-hosted`); return { success: true, message: 'Navigated to Self-Hosted. You can delete credentials from there.', navigateTo: `/project/${ctx.projectId}/self-hosted` }; } },
+    ];
+
+    // ─── Deepgram MCP skills ──────────────────────────────────────────────────
+
+    const DOCS_PATTERNS = ['developers.deepgram.com/docs/', 'developers.deepgram.com/reference/'];
+    const isDocsUrl = (url) => DOCS_PATTERNS.some((p) => url.includes(p));
+
+    function extractTitle(url, content) {
+      if (content) {
+        const heading = content.match(/^#+ (.+)$/m);
+        if (heading) {
+          const parts = heading[1].split('>').map((s) => s.trim());
+          const meaningful = parts.find((p) => p.length > 3 && !/^(docs|reference|api|home)$/i.test(p));
+          if (meaningful) return meaningful;
+        }
+        const subheading = content.match(/^## (.+)$/m);
+        if (subheading && subheading[1].length > 3) return subheading[1].trim();
+      }
+      try {
+        const path = new URL(url).pathname;
+        const segments = path.split('/').filter(Boolean);
+        for (let i = segments.length - 1; i >= 0; i--) {
+          const seg = segments[i];
+          if (seg.length > 3 && !/^(docs|reference|api|v1|v2)$/i.test(seg))
+            return seg.replace(/[-_]/g, ' ').replace(/(^|\s)\w/g, (c) => c.toUpperCase());
+        }
+        const last = segments[segments.length - 1] ?? 'Documentation';
+        return last.replace(/[-_]/g, ' ').replace(/(^|\s)\w/g, (c) => c.toUpperCase());
+      } catch { return 'Documentation'; }
+    }
+
+    const mcpSkills = [
+      { id: 'deepgram-mcp', name: 'Deepgram MCP', description: 'Search Deepgram documentation for relevant information. Use this for any technical question about Deepgram APIs, SDKs, models, features, pricing, or supported languages.', category: 'navigation', risk: 'safe',
+        parameters: [{ name: 'query', type: 'string', description: 'The search query', required: true }],
+        execute: async (params, ctx) => {
+          if (!ctx.dxApiToken) return { success: false, message: 'Not authenticated with DX API. Please try again.' };
+          try {
+            const res = await fetch(`${ctx.dxApiUrl}/kapa/retrieval`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${ctx.dxApiToken}`, 'X-DX-Auth-Mode': 'session' },
+              body: JSON.stringify({ query: params.query }),
+            });
+            if (!res.ok) { const text = await res.text(); return { success: false, message: `Search error (${res.status}): ${text}` }; }
+            const data = await res.json();
+            const results = Array.isArray(data) ? data : [];
+            if (results.length === 0) return { success: true, message: 'No results found for that query.' };
+            const textContent = results.slice(0, 5).map((r) => r.content?.slice(0, 600) ?? '').join('\n\n---\n\n');
+            const uniqueUrls = new Set();
+            const sources = results.filter((r) => { if (!r.source_url || uniqueUrls.has(r.source_url)) return false; uniqueUrls.add(r.source_url); return true; }).slice(0, 5).map((r) => ({ title: extractTitle(r.source_url, r.content), url: r.source_url }));
+            const topResult = results[0];
+            const cta = topResult?.source_url && isDocsUrl(topResult.source_url) ? { title: `${extractTitle(topResult.source_url, topResult.content)} — Read the docs`, url: topResult.source_url } : undefined;
+            const filteredSources = cta ? sources.filter((s) => s.url !== cta.url) : sources;
+            let linkHint = '';
+            if (sources.length > 0) linkHint += `\n\n[${sources.length} source link(s) are shown in the chat for the user to click.]`;
+            if (cta) linkHint += `\n[A docs link button is shown to the user. End your response with [CTA: <short label max 40 chars>] to set the button text.]`;
+            return { success: true, message: textContent + linkHint, data, sources: filteredSources, cta };
+          } catch (err) {
+            return { success: false, message: `Search failed: ${err instanceof Error ? err.message : String(err)}` };
+          }
+        },
+      },
+      { id: 'deepgram-mcp-chat', name: 'Deepgram MCP Chat', description: 'Get a detailed, synthesized answer about Deepgram with source citations. Use only for complex questions that need thorough explanation — slower than deepgram-mcp.', category: 'navigation', risk: 'safe',
+        parameters: [{ name: 'question', type: 'string', description: 'The technical question to answer', required: true }],
+        execute: async (params, ctx) => {
+          if (!ctx.dxApiToken) return { success: false, message: 'Not authenticated with DX API. Please try again.' };
+          try {
+            const res = await fetch(`${ctx.dxApiUrl}/kapa/chat`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${ctx.dxApiToken}`, 'X-DX-Auth-Mode': 'session' },
+              body: JSON.stringify({ query: params.question }),
+            });
+            if (!res.ok) { const text = await res.text(); return { success: false, message: `Deepgram MCP error (${res.status}): ${text}` }; }
+            const data = await res.json();
+            const answer = data?.answer ?? data?.text ?? JSON.stringify(data);
+            const spokenAnswer = answer.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1');
+            const sources = (data?.relevant_sources ?? []).slice(0, 5).map((s) => ({ title: s.title?.split('|')[0]?.trim() ?? 'Source', url: s.source_url ?? '' })).filter((s) => s.url);
+            const cta = sources.length > 0 && isDocsUrl(sources[0].url) ? { title: `Read: ${sources[0].title}`, url: sources[0].url } : undefined;
+            const filteredSources = cta ? sources.filter((s) => s.url !== cta.url) : sources;
+            let linkHint = '';
+            if (sources.length > 0) linkHint += `\n\n[${sources.length} source link(s) are shown in the chat for the user to click.]`;
+            if (cta) linkHint += `\n[A docs link button is shown to the user. End your response with [CTA: <short label max 40 chars>] to set the button text.]`;
+            return { success: true, message: spokenAnswer + linkHint, data, sources: filteredSources, cta };
+          } catch (err) {
+            return { success: false, message: `Failed to query Deepgram MCP: ${err instanceof Error ? err.message : String(err)}` };
+          }
+        },
+      },
+    ];
+
+    // ─── GitHub skills context ────────────────────────────────────────────────
+
+    async function fetchGitHubSkills() {
+      try {
+        const releaseRes = await fetch('https://api.github.com/repos/deepgram/skills/releases/latest', { headers: { 'Accept': 'application/vnd.github+json' } });
+        if (!releaseRes.ok) return [];
+        const release = await releaseRes.json();
+        const treeRes = await fetch(`https://api.github.com/repos/deepgram/skills/git/trees/${release.tag_name}?recursive=1`, { headers: { 'Accept': 'application/vnd.github+json' } });
+        if (!treeRes.ok) return [];
+        const tree = await treeRes.json();
+        const skillFiles = tree.tree.filter((f) => f.type === 'blob' && f.path.match(/^skills\/[^/]+\/SKILL\.md$/));
+        const results = await Promise.allSettled(skillFiles.map(async (f) => {
+          const blobRes = await fetch(f.url, { headers: { 'Accept': 'application/vnd.github.raw+json' } });
+          if (!blobRes.ok) return null;
+          const text = await blobRes.text();
+          const match = text.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
+          if (!match) return null;
+          const nameMatch = match[1].match(/^name:\s*(.+)$/m);
+          const descMatch = match[1].match(/^description:\s*(.+)$/m);
+          if (!nameMatch) return null;
+          return { name: nameMatch[1].trim(), description: descMatch ? descMatch[1].trim() : '', content: match[2].trim() };
+        }));
+        return results.filter((r) => r.status === 'fulfilled' && r.value).map((r) => r.value);
+      } catch { return []; }
+    }
+
+    // ─── System prompt ────────────────────────────────────────────────────────
+    // NOTE: BASE_AGENT_GUIDELINES (TTS formatting, behavioral rules) are
+    // automatically prepended by the widget. Only console-specific context here.
+
+    function buildSystemPrompt(projectId, extraContext = '') {
+      return `You are a helpful voice and chat assistant for the Deepgram Console — a developer dashboard for managing Deepgram API projects, keys, billing, usage, and team members.
+
+You have tools to help users with their projects, API keys, billing, team, usage, and settings.
+
+Your tools fall into two categories. Read tools fetch data so you can answer questions. Navigation tools take the user to the right page in the console where they can make changes themselves.
+
+${projectId ? `The user is currently viewing project: ${projectId}` : 'No project is currently selected.'}
+
+## Console Guidelines
+- If a tool requires a project and none is selected, ask the user to select one first.
+- When a user wants to change something (create, update, delete), navigate them to the right page and tell them what to do there.
+- When switching projects: use the project-switch tool with the project UUID from a previous project-list result. NEVER pass the project name as the projectId.
+
+## Vocabulary
+Use these exact spellings and capitalizations when referring to Deepgram products, features, and terminology:
+
+Products and models: Deepgram, Nova, Nova-3, Nova-2, Aura, Aura-2, Flux.
+APIs and services: speech-to-text, text-to-speech, STT, TTS, voice agent, audio intelligence, real-time, streaming, WebSocket, REST API.
+Console features: API key, API keys, project, billing, usage, team, member, invite, dashboard, auto-recharge, auto-renew, credits, balance, self-hosted, on-premises, on-prem.
+SDKs and developer terms: SDK, JavaScript, Python, Go, Rust, .NET, Node.js, React, webhook, callback.
+Audio and transcription features: diarization, punctuation, smart format, redaction, PCI, PII, entity detection, sentiment, summarization, topic detection, keyterm, keyword boosting, utterance, endpointing, interim results.
+Auth and infrastructure: JWT, Bearer token, API token, OAuth, concurrency, rate limit.
+${extraContext}`;
+    }
+
+    // ─── Init ─────────────────────────────────────────────────────────────────
+
     const projectId = window.location.pathname.match(/\/projects?\/([^/]+)/)?.[1] ?? null;
+    const ghSkills = await fetchGitHubSkills();
+    const extraContext = ghSkills.length > 0
+      ? `\n\n## Deepgram Knowledge Base\nUse the following knowledge to answer technical questions about Deepgram.\n\n${ghSkills.map((s) => `### ${s.name}\n${s.description}\n\n${s.content}`).join('\n\n---\n\n')}`
+      : '';
 
     DeepgramAgent.init({
       buttonId: 'dg-ask-ai-btn',
       staging: window.location.hostname.includes('staging'),
-
-      // Console skill set: navigation, projects, API keys,
-      // billing, team, usage, settings, self-hosted, MCP docs search.
-      skills: DeepgramAgent.skillRegistry,
-
-      // Console system prompt — includes Deepgram identity, tool guidance,
-      // vocabulary, and the universal BASE_AGENT_GUIDELINES.
-      systemPrompt: DeepgramAgent.buildConsoleSystemPrompt(projectId),
+      skills: [
+        ...navigationSkills,
+        ...projectSkills,
+        ...apiKeySkills,
+        ...teamSkills,
+        ...billingSkills,
+        ...usageSkills,
+        ...settingsSkills,
+        ...selfHostedSkills,
+        ...mcpSkills,
+      ],
+      systemPrompt: buildSystemPrompt(projectId, extraContext),
     });
+
   </script>
 
 </body>
