@@ -9,7 +9,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@lukeocodes/composite-voice": "^0.0.4",
+    "@lukeocodes/composite-voice": "^0.1.1",
     "express": "^5.1.0"
   },
   "devDependencies": {
