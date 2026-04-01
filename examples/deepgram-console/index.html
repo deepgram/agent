@@ -15,17 +15,20 @@
 
   <script src="../../dist/deepgram-agent.umd.js"></script>
   <script>
+    // Detect project ID from the console URL (e.g. /projects/{id}/...)
+    const projectId = window.location.pathname.match(/\/projects?\/([^/]+)/)?.[1] ?? null;
+
     DeepgramAgent.init({
       buttonId: 'dg-ask-ai-btn',
       staging: window.location.hostname.includes('staging'),
 
-      // Explicit console skill set — navigation, projects, API keys,
-      // billing, team, usage, settings, self-hosted, and MCP docs search.
+      // Console skill set: navigation, projects, API keys,
+      // billing, team, usage, settings, self-hosted, MCP docs search.
       skills: DeepgramAgent.skillRegistry,
 
-      // systemPrompt is intentionally omitted: the widget builds the console
-      // prompt dynamically using the current project ID from the URL and any
-      // available GitHub skills context. Pass systemPrompt here to override.
+      // Console system prompt — includes Deepgram identity, tool guidance,
+      // vocabulary, and the universal BASE_AGENT_GUIDELINES.
+      systemPrompt: DeepgramAgent.buildConsoleSystemPrompt(projectId),
     });
   </script>
 

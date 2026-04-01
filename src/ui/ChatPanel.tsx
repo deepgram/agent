@@ -5,11 +5,9 @@ import { ChatMessageBubble } from './ChatMessage';
 import { MicrophoneIcon, MicrophoneMutedIcon, SendIcon, SpeakerIcon, SpeakerMutedIcon, ClearIcon } from './icons';
 import { useVoiceAgent } from '../agent/voice';
 import { useSkillExecutor } from '../skills/executor';
-import { buildToolDefinitions, getSkill, skillRegistry } from '../skills';
-import { buildConsoleSystemPrompt } from '../prompt/console';
+import { buildToolDefinitions, getSkill } from '../skills';
 import { BASE_AGENT_GUIDELINES } from '../prompt/base';
 import { addMessage, clearConversation, generateId, getProjectIdFromUrl, loadState, saveState } from '../state';
-import { fetchGitHubSkills, buildGitHubSkillsPromptSection } from '../skills/github';
 
 const AFFIRMATIVE_PATTERNS = /^\s*(yes|yeah|yep|yup|sure|ok|okay|go ahead|do it|confirm|proceed|absolutely|affirmative)\s*[.!]?\s*$/i;
 
@@ -26,19 +24,10 @@ export function ChatPanel({ config }: Props) {
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const projectId = config.projectId ?? getProjectIdFromUrl();
-  const skills = config.skills ?? skillRegistry;
-  const [githubSkillsContext, setGithubSkillsContext] = useState('');
+  const skills = config.skills ?? [];
   const systemPrompt = config.systemPrompt
     ? `${BASE_AGENT_GUIDELINES}\n\n${config.systemPrompt}`
-    : buildConsoleSystemPrompt(projectId, githubSkillsContext);
-
-  // Load GitHub skills on mount (async, non-blocking)
-  useEffect(() => {
-    fetchGitHubSkills().then((ghSkills) => {
-      const section = buildGitHubSkillsPromptSection(ghSkills);
-      if (section) setGithubSkillsContext(section);
-    }).catch(() => {}); // Silently fail — skills are optional enrichment
-  }, []);
+    : BASE_AGENT_GUIDELINES;
 
   // Token ref bridges the voice agent credentials to the skill executor
   const dxApiTokenRef = useRef<() => string | null>(() => null);

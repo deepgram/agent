@@ -1,4 +1,4 @@
-import type { Skill, SourceLink } from '../types';
+import type { Skill, SourceLink } from '../../types';
 
 /**
  * Deepgram knowledge tools — answer technical questions via Kapa-backed

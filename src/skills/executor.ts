@@ -1,6 +1,6 @@
 import { useCallback, useRef } from 'react';
 import type { ConsoleAgentConfig, SkillContext, SkillResult } from '../types';
-import { getSkill, skillRegistry } from './index';
+import { getSkill } from './index';
 import { getUrlConfig } from '../agent/config';
 import { getProjectIdFromUrl, getToolResult, storeToolResult, loadState } from '../state';
 
@@ -35,7 +35,7 @@ export function useSkillExecutor(
 
   /** Execute a skill by ID with params, caching the result */
   const executeSkill = useCallback(async (skillId: string, params: Record<string, unknown>): Promise<SkillResult> => {
-    const skills = configRef.current.skills ?? skillRegistry;
+    const skills = configRef.current.skills ?? [];
     const skill = getSkill(skillId, skills);
     if (!skill) {
       return { success: false, message: `Unknown skill: ${skillId}` };
@@ -55,6 +55,6 @@ export function useSkillExecutor(
 
   return {
     executeSkill,
-    skills: config.skills ?? skillRegistry,
+    skills: config.skills ?? [],
   };
 }

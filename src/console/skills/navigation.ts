@@ -1,4 +1,4 @@
-import type { Skill, SkillContext, SkillResult } from '../types';
+import type { Skill, SkillContext, SkillResult } from '../../types';
 
 function nav(path: string, label: string, ctx: SkillContext): SkillResult {
   ctx.navigate(path);

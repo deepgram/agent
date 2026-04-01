@@ -1,5 +1,5 @@
-import type { Skill } from '../types';
-import { apiCall } from './api';
+import type { Skill } from '../../types';
+import { apiCall } from '../../skills/api';
 
 export const selfHostedSkills: Skill[] = [
   {
