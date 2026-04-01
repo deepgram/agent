@@ -6,7 +6,51 @@ settings:
 
 importers:
 
-  .: {}
+  .:
+    dependencies:
+      '@anthropic-ai/sdk':
+        specifier: ^0.78.0
+        version: 0.78.0
+      '@lukeocodes/composite-voice':
+        specifier: ^0.1.1
+        version: 0.1.1(ws@8.19.0)
+      preact:
+        specifier: ^10.29.0
+        version: 10.29.0
+      react:
+        specifier: ^19.0.0
+        version: 19.2.4
+      react-dom:
+        specifier: ^19.0.0
+        version: 19.2.4(react@19.2.4)
+      sugar-high:
+        specifier: ^0.9.5
+        version: 0.9.5
+    devDependencies:
+      '@types/react':
+        specifier: ^19.0.0
+        version: 19.2.14
+      '@types/react-dom':
+        specifier: ^19.0.0
+        version: 19.2.3(@types/react@19.2.14)
+      '@vitejs/plugin-react':
+        specifier: ^4.3.0
+        version: 4.7.0(vite@6.4.1(@types/node@25.4.0)(terser@5.46.1))
+      terser:
+        specifier: ^5.46.1
+        version: 5.46.1
+      typescript:
+        specifier: ^5.7.0
+        version: 5.9.3
+      vite:
+        specifier: ^6.0.0
+        version: 6.4.1(@types/node@25.4.0)(terser@5.46.1)
+      vite-plugin-css-injected-by-js:
+        specifier: ^3.5.2
+        version: 3.5.2(vite@6.4.1(@types/node@25.4.0)(terser@5.46.1))
+      vite-plugin-dts:
+        specifier: ^4.3.0
+        version: 4.5.4(@types/node@25.4.0)(rollup@4.59.0)(typescript@5.9.3)(vite@6.4.1(@types/node@25.4.0)(terser@5.46.1))
 
   packages/client:
     dependencies:

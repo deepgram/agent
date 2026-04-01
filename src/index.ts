@@ -13,7 +13,7 @@ export { BASE_AGENT_GUIDELINES } from './prompt/base';
  *
  * @example
  * ```js
- * import { init } from '@deepgram/agent-client';
+ * import { init } from '@deepgram/agent';
  * init({ buttonId: 'dg-ask-ai-btn' });
  * ```
  */

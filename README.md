@@ -2,35 +2,20 @@
 
 A voice and chat AI agent widget for Deepgram-powered sites, powered by [@lukeocodes/composite-voice](https://github.com/lukeocodes/composite-voice).
 
-## Architecture
-
-pnpm monorepo with two packages:
-
-### `packages/client` — Widget
-
-A React widget that embeds into any site as a sidebar or inline chat panel. Features:
+## What it does
 
 - Unified voice and text chat through composite-voice's 5-role pipeline (Input → STT → LLM → TTS → Output)
 - Deepgram Nova-3 for speech-to-text, Claude Haiku for LLM, Deepgram Aura-2 for text-to-speech
-- Mic and speaker toggles for independent control of audio input/output
+- Mic and speaker toggles for independent audio input/output control
 - Skill system — pass your own tools, or use the built-in Deepgram Console skill set
 - Risk-aware tool execution — safe skills run immediately, confirm/dangerous skills gate on user approval
 - localStorage state persistence across page reloads
 - Built as a UMD bundle (`DeepgramAgent`) for embedding via `<script>` tag
 
-### `packages/server` — Proxy
-
-An Express proxy server that keeps API keys server-side:
-
-- WebSocket proxy for Deepgram STT and TTS
-- HTTP proxy for Anthropic LLM
-- CORS and header fixes for browser SDK compatibility
-
 ## Prerequisites
 
 - [Node.js](https://nodejs.org/) 20+
 - [pnpm](https://pnpm.io/) 9+
-- [Bun](https://bun.sh/) (for running the proxy server)
 
 ## Setup
 
@@ -43,19 +28,14 @@ pnpm install
 ## Development
 
 ```bash
-# Start both client dev server and proxy server
-pnpm dev
-
-# Or run individually:
-cd packages/server && bun server.ts   # Proxy on :3001
-cd packages/client && pnpm dev        # Vite dev on :5173
+pnpm dev    # Vite dev server on :5173
 ```
 
 ## Build
 
 ```bash
 pnpm build
-# Output: packages/client/dist/deepgram-agent.umd.js
+# Output: dist/deepgram-agent.umd.js
 ```
 
 ## Embedding

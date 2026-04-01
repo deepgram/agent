@@ -6,7 +6,6 @@ Thanks for your interest in contributing to the Deepgram Agent!
 
 - [Node.js](https://nodejs.org/) 20+
 - [pnpm](https://pnpm.io/) 9+
-- [Bun](https://bun.sh/) (for running the proxy server)
 
 ## Setup
 
@@ -19,11 +18,10 @@ pnpm install
 ## Development
 
 ```bash
-# Start both packages in development mode
 pnpm dev
 ```
 
-The client dev server runs on `:5173` and the proxy server on `:3001`.
+The dev server runs on `:5173`.
 
 ## Building
 
@@ -35,19 +33,18 @@ pnpm build
 
 1. Create a feature branch from `main`
 2. Make your changes
-3. Ensure the client builds cleanly: `pnpm build`
-4. Test your changes against the console UI
-5. Commit using [conventional commits](https://www.conventionalcommits.org/) format
-6. Open a pull request
+3. Ensure the build is clean: `pnpm build`
+4. Commit using [conventional commits](https://www.conventionalcommits.org/) format
+5. Open a pull request
 
 ## Commit Messages
 
 This project uses conventional commits:
 
 ```
-feat(client): add new skill for managing models
-fix(server): resolve CORS header issue
-docs: update deployment instructions
+feat(skills): add new skill for managing models
+fix(agent): resolve auth token refresh edge case
+docs: update embedding instructions
 ```
 
 ## Questions?
