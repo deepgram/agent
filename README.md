@@ -7,7 +7,7 @@ A voice and chat AI agent widget for Deepgram-powered sites, powered by [@lukeoc
 - Unified voice and text chat through composite-voice's 5-role pipeline (Input → STT → LLM → TTS → Output)
 - Deepgram Nova-3 for speech-to-text, Claude Haiku for LLM, Deepgram Aura-2 for text-to-speech
 - Mic and speaker toggles for independent audio input/output control
-- Skill system — pass your own tools, or use the built-in Deepgram Console skill set
+- Skill system — pass any tools you define; the widget has no built-in skills
 - Risk-aware tool execution — safe skills run immediately, confirm/dangerous skills gate on user approval
 - localStorage state persistence across page reloads
 - Built as a UMD bundle (`DeepgramAgent`) for embedding via `<script>` tag
@@ -40,13 +40,17 @@ pnpm build
 
 ## Embedding
 
-Load the built bundle and call `DeepgramAgent.init()`. See [`examples/`](examples/) for full working integrations:
+Load the built bundle and call `DeepgramAgent.init()`.
 
-| Example | Site | Pattern |
-|---|---|---|
-| [`deepgram-console`](examples/deepgram-console/) | Deepgram Console | FAB toggle, built-in skill set |
-| [`deepgram-docs`](examples/deepgram-docs/) | Deepgram Docs | Inline embed, custom docs skills |
-| [`deepgram-web`](examples/deepgram-web/) | Deepgram Web | FAB toggle, custom marketing skills |
+### Examples
+
+Three reference integrations are in [`examples/`](examples/), each showing a different deployment pattern:
+
+**[`deepgram-console`](examples/deepgram-console/index.html)** — FAB toggle sidebar for the Deepgram Console. All 57 skills (navigation, projects, API keys, team, billing, usage, settings, self-hosted, MCP docs search), the system prompt, vocabulary, and GitHub skills context fetching are defined inline. This is the full reference for a production console integration.
+
+**[`deepgram-docs`](examples/deepgram-docs/index.html)** — Inline embed (mounts into a container div rather than a floating sidebar) for a documentation site. Shows custom skills wired to a `/api/docs/search` endpoint with `sources` responses.
+
+**[`deepgram-web`](examples/deepgram-web/index.html)** — FAB toggle for a marketing site. Shows custom skills for pricing, sign-up navigation, and use-case matching with `cta` responses.
 
 ### Staging
 
@@ -56,7 +60,8 @@ Pass `staging: true` (or detect from hostname) to switch all endpoints to stagin
 DeepgramAgent.init({
   buttonId: 'dg-ask-ai-btn',
   staging: window.location.hostname.includes('staging'),
-  skills: DeepgramAgent.skillRegistry,
+  skills: mySkills,
+  systemPrompt: 'You are an assistant for...',
 });
 ```
 
