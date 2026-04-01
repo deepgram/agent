@@ -296,7 +296,6 @@ export function ChatPanel({ config }: Props) {
   return (
     <div className="dg-agent-panel">
       <div className="dg-agent-panel__header">
-        <span className="dg-agent-panel__title">{config.name ?? 'Assistant'}</span>
         <button className="dg-agent-panel__btn" onClick={handleClear} title="Clear conversation">
           <ClearIcon />
         </button>
