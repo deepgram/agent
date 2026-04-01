@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Deepgram Console — AI Assistant</title>
+</head>
+<body>
+
+  <!--
+    In the real console this button lives in the top nav, rendered by Elm.
+    The widget attaches a click handler to it by ID.
+  -->
+  <button id="dg-ask-ai-btn" type="button">Ask AI</button>
+
+  <script src="../../packages/client/dist/deepgram-agent.umd.js"></script>
+  <script>
+    DeepgramAgent.init({
+      buttonId: 'dg-ask-ai-btn',
+      staging: window.location.hostname.includes('staging'),
+
+      // Explicit console skill set — navigation, projects, API keys,
+      // billing, team, usage, settings, self-hosted, and MCP docs search.
+      skills: DeepgramAgent.skillRegistry,
+
+      // systemPrompt is intentionally omitted: the widget builds the console
+      // prompt dynamically using the current project ID from the URL and any
+      // available GitHub skills context. Pass systemPrompt here to override.
+    });
+  </script>
+
+</body>
+</html>

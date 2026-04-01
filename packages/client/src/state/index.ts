@@ -1,6 +1,6 @@
 import type { AgentState, ChatMessage } from '../types';
 
-const STORAGE_KEY = 'dg-console-agent-state';
+const STORAGE_KEY = 'dg-agent-state';
 
 /** Load persisted agent state from localStorage */
 export function loadState(): AgentState {

@@ -69,16 +69,7 @@ export async function fetchGitHubSkills(): Promise<ParsedSkill[]> {
     const release: GitHubRelease = await releaseRes.json();
     if (cacheTag === release.tag_name && cachedSkills) return cachedSkills;
 
-    // 2. Fetch the zipball as an ArrayBuffer
-    const zipRes = await fetch(release.zipball_url);
-    if (!zipRes.ok) {
-      console.warn('[agent] Failed to fetch skills zipball:', zipRes.status);
-      return [];
-    }
-
-    // 3. Use the browser's DecompressionStream + manual zip parsing,
-    //    or fall back to fetching individual files via the GitHub tree API.
-    //    Since zip parsing in the browser is complex, use the tree API instead.
+    // Fetch individual SKILL.md files via the GitHub Git Tree API
     const skills = await fetchSkillsViaTree(release.tag_name);
 
     cachedSkills = skills;

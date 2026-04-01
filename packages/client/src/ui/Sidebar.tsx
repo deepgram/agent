@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { ConsoleAgentConfig } from '../types';
-import { ChatPanel } from './chat-panel';
+import { ChatPanel } from './ChatPanel';
 import { CloseIcon, AgentIcon } from './icons';
 
 interface Props {

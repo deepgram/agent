@@ -1,16 +1,16 @@
 {
-  "name": "@deepgram/console-agent-client",
+  "name": "@deepgram/agent-client",
   "version": "0.0.1",
-  "description": "Voice + chat agent widget for the Deepgram Console UI",
+  "description": "Voice + chat agent widget for Deepgram-powered sites",
   "type": "module",
-  "main": "dist/deepgram-console-agent.umd.js",
-  "module": "dist/deepgram-console-agent.es.js",
+  "main": "dist/deepgram-agent.umd.js",
+  "module": "dist/deepgram-agent.es.js",
   "types": "dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/deepgram-console-agent.es.js",
-      "require": "./dist/deepgram-console-agent.umd.js"
+      "import": "./dist/deepgram-agent.es.js",
+      "require": "./dist/deepgram-agent.umd.js"
     }
   },
   "files": [
@@ -24,7 +24,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.78.0",
-    "@lukeocodes/composite-voice": "^0.1.0",
+    "@lukeocodes/composite-voice": "^0.1.1",
     "preact": "^10.29.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

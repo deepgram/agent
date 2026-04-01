@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for your interest in contributing to the Deepgram Console Agent!
+Thanks for your interest in contributing to the Deepgram Agent!
 
 ## Prerequisites
 
@@ -11,8 +11,8 @@ Thanks for your interest in contributing to the Deepgram Console Agent!
 ## Setup
 
 ```bash
-git clone git@github.com:deepgram/deepgram-console-agent.git
-cd deepgram-console-agent
+git clone git@github.com:deepgram/agent.git
+cd agent
 pnpm install
 ```
 

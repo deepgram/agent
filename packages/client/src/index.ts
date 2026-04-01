@@ -2,23 +2,19 @@ import './styles.css';
 import type { ConsoleAgentConfig } from './types';
 import { orchestrate } from './orchestrator';
 
-export type { ConsoleAgentConfig } from './types';
-export type { Skill, SkillCategory, ChatMessage, AgentState } from './types';
+export type { ConsoleAgentConfig, AgentModelConfig } from './types';
+export type { Skill, SkillCategory, SkillParameter, SkillContext, SkillResult, SkillRisk, ChatMessage, AgentState } from './types';
+export { skillRegistry, buildToolDefinitions } from './skills';
+export { buildConsoleSystemPrompt } from './prompt/console';
+export { BASE_AGENT_GUIDELINES } from './prompt/base';
 
 /**
- * Initialize the Deepgram Console Agent widget.
- *
- * When embedded in the Deepgram Console (console.deepgram.com), the widget
- * authenticates automatically via the session cookie through the DX ID service.
+ * Initialize the Deepgram agent widget.
  *
  * @example
  * ```js
- * import { init } from '@deepgram/console-agent';
- * init({
- *   dxApiUrl: 'https://api.dx.deepgram.com',
- *   manageUrl: 'https://manage.deepgram.com',
- *   idServiceUrl: 'https://id.dx.deepgram.com',
- * });
+ * import { init } from '@deepgram/agent-client';
+ * init({ buttonId: 'dg-ask-ai-btn' });
  * ```
  */
 export function init(config: ConsoleAgentConfig = {}): void {

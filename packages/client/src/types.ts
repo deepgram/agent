@@ -1,19 +1,38 @@
+/** Agent model and voice configuration */
+export interface AgentModelConfig {
+  /** LLM model ID (default: 'claude-haiku-4-5-20251001') */
+  llmModel?: string;
+  /** STT model (default: 'nova-3') */
+  sttModel?: string;
+  /** TTS voice (default: 'aura-2-helena-en') */
+  ttsVoice?: string;
+  /** Max LLM response tokens (default: 512) */
+  maxTokens?: number;
+}
+
 /** Configuration for the console agent widget */
 export interface ConsoleAgentConfig {
   /** ID of the button element that toggles the agent panel */
   buttonId?: string;
   /** ID of the container element for inline embedding */
   containerId?: string;
-  /** Base URL for the DX API (default: https://api.dx.deepgram.com) */
-  dxApiUrl?: string;
-  /** Base URL for the Deepgram management API (default: https://manage.deepgram.com) */
-  manageUrl?: string;
-  /** Base URL for the DX identity service (default: https://id.dx.deepgram.com) */
-  idServiceUrl?: string;
+  /** Use staging environment endpoints (default: false) */
+  staging?: boolean;
   /** Current project ID from the console */
   projectId?: string;
-  /** Base URL for console API (defaults to current origin) */
-  apiBaseUrl?: string;
+  /**
+   * Skills (tools) the agent can execute. When provided, replaces the built-in
+   * Deepgram Console skill registry. Import and pass `skillRegistry` from this
+   * package if you want to keep the built-in skills.
+   */
+  skills?: Skill[];
+  /**
+   * System prompt for the agent. When provided, replaces the built-in
+   * Deepgram Console system prompt.
+   */
+  systemPrompt?: string;
+  /** Model and voice overrides for the underlying voice pipeline */
+  agent?: AgentModelConfig;
 }
 
 /** Risk level determines what confirmation the agent requires before executing */
@@ -30,16 +49,7 @@ export interface Skill {
   execute: (params: Record<string, unknown>, context: SkillContext) => Promise<SkillResult>;
 }
 
-export type SkillCategory =
-  | 'navigation'
-  | 'project'
-  | 'api-keys'
-  | 'team'
-  | 'billing'
-  | 'usage'
-  | 'settings'
-  | 'self-hosted'
-  | 'auth';
+export type SkillCategory = string;
 
 export interface SkillParameter {
   name: string;

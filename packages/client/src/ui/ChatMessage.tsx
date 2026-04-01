@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import type { ChatMessage as ChatMessageType } from '../types';
-import { CodeModal } from './code-modal';
+import { CodeModal } from './CodeModal';
 import { highlight } from 'sugar-high';
 
 interface Props {
@@ -91,7 +91,6 @@ export function ChatMessageBubble({ message, onConfirm, onCancel, isPending }: P
           )
         )}
 
-        {/* CTA button */}
         {hasCta && (
           <div className="dg-agent-cta">
             <a
@@ -106,7 +105,6 @@ export function ChatMessageBubble({ message, onConfirm, onCancel, isPending }: P
           </div>
         )}
 
-        {/* Source link pills */}
         {hasSources && (
           <div className="dg-agent-sources">
             {message.sources!.map((src, i) => (
@@ -125,7 +123,6 @@ export function ChatMessageBubble({ message, onConfirm, onCancel, isPending }: P
         )}
       </div>
 
-      {/* Confirmation UI for pending skills */}
       {message.pendingSkill && isPending && (
         <div className={`dg-agent-confirm ${isDangerous ? 'dg-agent-confirm--dangerous' : 'dg-agent-confirm--confirm'}`}>
           {isDangerous && (
@@ -149,7 +146,6 @@ export function ChatMessageBubble({ message, onConfirm, onCancel, isPending }: P
         </div>
       )}
 
-      {/* Show expired pending state */}
       {message.pendingSkill && !isPending && (
         <div className="dg-agent-confirm dg-agent-confirm--resolved">
           <div className="dg-agent-confirm__label">Action resolved.</div>

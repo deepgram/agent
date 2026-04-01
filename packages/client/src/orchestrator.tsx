@@ -1,7 +1,7 @@
 import { createRoot } from 'react-dom/client';
 import type { ConsoleAgentConfig } from './types';
-import { Sidebar } from './components/sidebar';
-import { InlineChat } from './components/inline';
+import { Sidebar } from './ui/Sidebar';
+import { InlineChat } from './ui/InlineChat';
 
 let sidebarRoot: ReturnType<typeof createRoot> | null = null;
 let sidebarContainer: HTMLDivElement | null = null;
@@ -51,7 +51,6 @@ function toggleSidebar(config: ConsoleAgentConfig): void {
     unmountSidebar();
   }
 
-  // Update button active state using the configured buttonId
   const btn = config.buttonId ? document.getElementById(config.buttonId) : null;
   if (btn) {
     btn.classList.toggle('dg-ask-ai-btn--active', sidebarOpen);
@@ -61,7 +60,7 @@ function toggleSidebar(config: ConsoleAgentConfig): void {
 function mountSidebar(config: ConsoleAgentConfig): void {
   if (sidebarContainer) return;
   sidebarContainer = document.createElement('div');
-  sidebarContainer.id = 'dg-console-agent-sidebar';
+  sidebarContainer.id = 'dg-agent-sidebar';
   document.body.appendChild(sidebarContainer);
   sidebarRoot = createRoot(sidebarContainer);
   sidebarRoot.render(

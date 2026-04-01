@@ -1,5 +1,5 @@
 import type { Skill } from '../types';
-import { apiCall } from '../utils/api';
+import { apiCall } from './api';
 
 export const settingsSkills: Skill[] = [
   {

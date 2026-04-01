@@ -23,9 +23,9 @@ export default defineConfig({
   build: {
     lib: {
       entry: 'src/index.ts',
-      name: 'DeepgramConsoleAgent',
+      name: 'DeepgramAgent',
       formats: ['umd'],
-      fileName: () => 'deepgram-console-agent.umd.js',
+      fileName: () => 'deepgram-agent.umd.js',
     },
     minify: 'terser',
     terserOptions: {

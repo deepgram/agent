@@ -1,5 +1,6 @@
 import type { ConsoleAgentConfig } from '../types';
-import { getProjectIdFromUrl } from '../utils/state';
+import { getUrlConfig } from './config';
+import { getProjectIdFromUrl } from '../state';
 
 export interface DxApiCredentials {
   token: string;
@@ -16,8 +17,7 @@ export interface DxApiCredentials {
  *    (dx-id encrypts the credential and signs an RS256 JWT)
  */
 export async function authenticate(config: ConsoleAgentConfig): Promise<DxApiCredentials> {
-  const manageUrl = config.manageUrl ?? 'https://manage.deepgram.com';
-  const idServiceUrl = config.idServiceUrl ?? 'https://id.dx.deepgram.com';
+  const { manageUrl, idServiceUrl } = getUrlConfig(config.staging);
 
   const projectId = config.projectId ?? getProjectIdFromUrl();
   if (!projectId) {
@@ -30,9 +30,9 @@ export async function authenticate(config: ConsoleAgentConfig): Promise<DxApiCre
     credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      comment: 'Console Agent Widget',
+      comment: 'Deepgram Agent Widget',
       scopes: ['member'],
-      tags: ['console-agent'],
+      tags: ['deepgram-agent'],
       time_to_live_in_seconds: 300,
     }),
   });

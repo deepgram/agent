@@ -1,14 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { AgentState, ChatMessage, ConsoleAgentConfig, PendingSkill } from '../types';
 import type { LLMToolCall, LLMToolResult } from '@lukeocodes/composite-voice';
-import { ChatMessageBubble } from './chat-message';
+import { ChatMessageBubble } from './ChatMessage';
 import { MicrophoneIcon, MicrophoneMutedIcon, SendIcon, SpeakerIcon, SpeakerMutedIcon, ClearIcon } from './icons';
-import { useVoiceAgent } from '../hooks/use-voice-agent';
-import { useSkillExecutor } from '../hooks/use-skill-executor';
-import { buildSkillSystemPrompt, buildToolDefinitions } from '../skills/registry';
-import { getSkill } from '../skills/registry';
-import { addMessage, clearConversation, generateId, getProjectIdFromUrl, loadState, saveState } from '../utils/state';
-import { fetchGitHubSkills, buildGitHubSkillsPromptSection } from '../skills/github-skills';
+import { useVoiceAgent } from '../agent/voice';
+import { useSkillExecutor } from '../skills/executor';
+import { buildToolDefinitions, getSkill, skillRegistry } from '../skills';
+import { buildConsoleSystemPrompt } from '../prompt/console';
+import { BASE_AGENT_GUIDELINES } from '../prompt/base';
+import { addMessage, clearConversation, generateId, getProjectIdFromUrl, loadState, saveState } from '../state';
+import { fetchGitHubSkills, buildGitHubSkillsPromptSection } from '../skills/github';
 
 const AFFIRMATIVE_PATTERNS = /^\s*(yes|yeah|yep|yup|sure|ok|okay|go ahead|do it|confirm|proceed|absolutely|affirmative)\s*[.!]?\s*$/i;
 
@@ -25,13 +26,16 @@ export function ChatPanel({ config }: Props) {
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const projectId = config.projectId ?? getProjectIdFromUrl();
+  const skills = config.skills ?? skillRegistry;
   const [githubSkillsContext, setGithubSkillsContext] = useState('');
-  const systemPrompt = buildSkillSystemPrompt(projectId, githubSkillsContext);
+  const systemPrompt = config.systemPrompt
+    ? `${BASE_AGENT_GUIDELINES}\n\n${config.systemPrompt}`
+    : buildConsoleSystemPrompt(projectId, githubSkillsContext);
 
   // Load GitHub skills on mount (async, non-blocking)
   useEffect(() => {
-    fetchGitHubSkills().then((skills) => {
-      const section = buildGitHubSkillsPromptSection(skills);
+    fetchGitHubSkills().then((ghSkills) => {
+      const section = buildGitHubSkillsPromptSection(ghSkills);
       if (section) setGithubSkillsContext(section);
     }).catch(() => {}); // Silently fail — skills are optional enrichment
   }, []);
@@ -47,8 +51,8 @@ export function ChatPanel({ config }: Props) {
   const pendingSourcesRef = useRef<import('../types').SourceLink[]>([]);
   const pendingCtaRef = useRef<import('../types').SourceLink | null>(null);
 
-  // Tool definitions (stable reference)
-  const toolDefs = useRef(buildToolDefinitions()).current;
+  // Tool definitions (stable reference, derived from config skills)
+  const toolDefs = useRef(buildToolDefinitions(skills)).current;
 
   /** Execute a pending skill (after confirmation) and return tool result */
   const confirmAndExecute = useCallback(async (skill: PendingSkill) => {
@@ -83,7 +87,7 @@ export function ChatPanel({ config }: Props) {
    * Safe skills execute immediately. Confirm/dangerous return an "awaiting" result.
    */
   const handleToolCall = useCallback(async (toolCall: LLMToolCall): Promise<LLMToolResult> => {
-    const skill = getSkill(toolCall.name);
+    const skill = getSkill(toolCall.name, skills);
     if (!skill) {
       return { toolCallId: toolCall.id, content: JSON.stringify({ error: `Unknown tool: ${toolCall.name}` }), isError: true };
     }
@@ -107,7 +111,6 @@ export function ChatPanel({ config }: Props) {
         : result.message;
 
       // Append recent tool results as context so the LLM has reference data
-      // (e.g., project UUIDs from a previous project-list call)
       const state = loadState();
       const cachedKeys = Object.keys(state.recentToolResults ?? {}).filter((k) => k !== toolCall.name);
       let context = '';
@@ -119,22 +122,13 @@ export function ChatPanel({ config }: Props) {
         context = `\n\n[Recent data from other tools for reference]\n${relevant}`;
       }
 
-      // Stash visual content for the chat UI — attached to the next assistant message
-      if (result.sources?.length) {
-        pendingSourcesRef.current = result.sources;
-      }
-      if (result.cta) {
-        console.log('[agent] CTA set:', result.cta);
-        pendingCtaRef.current = result.cta;
-      }
-      if (result.sources?.length) {
-        console.log('[agent] Sources set:', result.sources.length);
-      }
+      if (result.sources?.length) pendingSourcesRef.current = result.sources;
+      if (result.cta) pendingCtaRef.current = result.cta;
 
       return { toolCallId: toolCall.id, content: resultContent + context, isError: !result.success };
     }
 
-    // Confirm/dangerous: return pending message, the LLM will tell the user
+    // Confirm: return pending message, LLM will tell the user
     if (skill.risk === 'confirm') {
       setPendingSkill({
         skillId: skill.id,
@@ -155,12 +149,11 @@ export function ChatPanel({ config }: Props) {
       content: result.message,
       isError: !result.success,
     };
-  }, [executeSkill]);
+  }, [executeSkill, skills]);
 
   const voiceAgent = useVoiceAgent(config, systemPrompt, {
     onTranscript: useCallback((text: string, isFinal: boolean) => {
       if (isFinal && text.trim()) {
-        // Check if this is a voice confirmation for a pending 'confirm' skill
         if (pendingSkill?.risk === 'confirm' && AFFIRMATIVE_PATTERNS.test(text)) {
           setAgentState((prev) =>
             addMessage(prev, { id: generateId(), role: 'user', content: text, timestamp: Date.now() })
@@ -183,7 +176,6 @@ export function ChatPanel({ config }: Props) {
       setStreamingText('');
 
       if (text.trim()) {
-        // Attach any pending visual content from the last tool call
         const sources = pendingSourcesRef.current.length > 0
           ? [...pendingSourcesRef.current]
           : undefined;
@@ -191,7 +183,6 @@ export function ChatPanel({ config }: Props) {
         pendingSourcesRef.current = [];
         pendingCtaRef.current = null;
 
-        // Extract [CTA: ...] from the LLM response — use it as the button title
         let displayText = text;
         const ctaMatch = text.match(/\[CTA:\s*(.+?)\]\s*$/);
         if (ctaMatch && cta) {
@@ -247,13 +238,11 @@ export function ChatPanel({ config }: Props) {
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Send text via composite-voice's sendMessage (unified pipeline)
   const handleSendText = useCallback(async () => {
     const text = input.trim();
     if (!text) return;
     setInput('');
 
-    // Check if this is a text confirmation for a pending 'confirm' skill
     if (pendingSkill?.risk === 'confirm' && AFFIRMATIVE_PATTERNS.test(text)) {
       setAgentState((prev) =>
         addMessage(prev, { id: generateId(), role: 'user', content: text, timestamp: Date.now() })
@@ -262,7 +251,6 @@ export function ChatPanel({ config }: Props) {
       return;
     }
 
-    // If there's a pending skill and user didn't confirm, cancel it
     if (pendingSkill) {
       cancelPending();
     }

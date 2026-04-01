@@ -1,5 +1,5 @@
 import type { ConsoleAgentConfig } from '../types';
-import { ChatPanel } from './chat-panel';
+import { ChatPanel } from './ChatPanel';
 
 interface Props {
   config: ConsoleAgentConfig;

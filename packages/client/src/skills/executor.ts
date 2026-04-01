@@ -1,7 +1,8 @@
 import { useCallback, useRef } from 'react';
 import type { ConsoleAgentConfig, SkillContext, SkillResult } from '../types';
-import { getSkill, skillRegistry } from '../skills/registry';
-import { getProjectIdFromUrl, getToolResult, storeToolResult, loadState } from '../utils/state';
+import { getSkill, skillRegistry } from './index';
+import { getUrlConfig } from '../agent/config';
+import { getProjectIdFromUrl, getToolResult, storeToolResult, loadState } from '../state';
 
 /**
  * Hook that provides skill execution with tool result caching.
@@ -17,10 +18,11 @@ export function useSkillExecutor(
   tokenGetterRef.current = getDxApiToken;
 
   const buildContext = useCallback((): SkillContext => {
+    const { apiBaseUrl, dxApiUrl } = getUrlConfig(configRef.current.staging);
     return {
       projectId: configRef.current.projectId ?? getProjectIdFromUrl(),
-      apiBaseUrl: configRef.current.apiBaseUrl ?? 'https://manage.deepgram.com',
-      dxApiUrl: configRef.current.dxApiUrl ?? 'https://api.dx.deepgram.com',
+      apiBaseUrl,
+      dxApiUrl,
       dxApiToken: tokenGetterRef.current?.() ?? null,
       navigate: (path: string) => {
         window.history.pushState({}, '', path);
@@ -33,7 +35,8 @@ export function useSkillExecutor(
 
   /** Execute a skill by ID with params, caching the result */
   const executeSkill = useCallback(async (skillId: string, params: Record<string, unknown>): Promise<SkillResult> => {
-    const skill = getSkill(skillId);
+    const skills = configRef.current.skills ?? skillRegistry;
+    const skill = getSkill(skillId, skills);
     if (!skill) {
       return { success: false, message: `Unknown skill: ${skillId}` };
     }
@@ -52,6 +55,6 @@ export function useSkillExecutor(
 
   return {
     executeSkill,
-    skills: skillRegistry,
+    skills: config.skills ?? skillRegistry,
   };
 }

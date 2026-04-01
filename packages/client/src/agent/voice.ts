@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ConsoleAgentConfig } from '../types';
 import type { CompositeVoice as CompositeVoiceType, LLMToolDefinition, LLMToolCall, LLMToolResult } from '@lukeocodes/composite-voice';
-import { authenticate } from '../services/auth';
-import type { DxApiCredentials } from '../services/auth';
+import { authenticate } from './auth';
+import type { DxApiCredentials } from './auth';
+import { getUrlConfig } from './config';
 
 interface VoiceAgentState {
   isListening: boolean;
@@ -48,7 +49,7 @@ export function useVoiceAgent(
   const callbacksRef = useRef(callbacks);
   callbacksRef.current = callbacks;
 
-  const dxApiUrl = config.dxApiUrl ?? 'https://api.dx.deepgram.com';
+  const { dxApiUrl } = getUrlConfig(config.staging);
   const dxApiWsUrl = dxApiUrl.replace(/^http/, 'ws');
 
   /** Obtain or refresh DX API credentials via the auth chain. */
@@ -89,10 +90,10 @@ export function useVoiceAgent(
             apiKey: credentials.token,
             authType: 'bearer',
             options: {
-              model: 'nova-3',
+              model: config.agent?.sttModel ?? 'nova-3',
               encoding: 'linear16',
               sampleRate: 16000,
-              tag: 'console-agent',
+              tag: 'deepgram-agent',
               keyterms: [
                 // Deepgram products & models
                 'Deepgram', 'Nova', 'Nova-3', 'Nova-2', 'Aura', 'Aura-2', 'Flux',
@@ -123,15 +124,15 @@ export function useVoiceAgent(
           new AnthropicLLM({
             endpoint: `${dxApiUrl}/anthropic`,
             apiKey: credentials.token,
-            model: 'claude-haiku-4-5-20251001',
+            model: config.agent?.llmModel ?? 'claude-haiku-4-5-20251001',
             systemPrompt,
-            maxTokens: 512,
+            maxTokens: config.agent?.maxTokens ?? 512,
           }),
           new DeepgramTTS({
             endpoint: `${dxApiWsUrl}/deepgram`,
             apiKey: credentials.token,
             authType: 'bearer',
-            voice: 'aura-2-helena-en',
+            voice: config.agent?.ttsVoice ?? 'aura-2-helena-en',
           }),
           new BrowserAudioOutput({
             minBufferDuration: 300,
@@ -195,7 +196,7 @@ export function useVoiceAgent(
       setState((s) => ({ ...s, error: `Failed to initialize voice agent: ${msg}` }));
       return null;
     }
-  }, [config, systemPrompt, toolsConfig, dxApiUrl, ensureCredentials]);
+  }, [config, systemPrompt, toolsConfig, dxApiUrl, dxApiWsUrl, ensureCredentials]);
 
   const start = useCallback(async () => {
     const agent = await initAgent();

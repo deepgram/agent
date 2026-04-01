@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Deepgram Docs — AI Assistant</title>
+</head>
+<body>
+
+  <!--
+    Inline embedding: the widget mounts directly into this container
+    rather than floating in a sidebar toggled by a button.
+  -->
+  <div id="dg-agent-container"></div>
+
+  <script src="../../packages/client/dist/deepgram-agent.umd.js"></script>
+  <script>
+    DeepgramAgent.init({
+      containerId: 'dg-agent-container',
+      staging: window.location.hostname.includes('staging'),
+
+      systemPrompt: `You are an AI assistant embedded in the Deepgram developer documentation.
+Help developers find answers, navigate to relevant docs pages, and understand how to use
+Deepgram APIs, SDKs, and features. Keep answers concise and link to specific pages when helpful.`,
+
+      skills: [
+        {
+          id: 'search-docs',
+          name: 'Search Documentation',
+          description: 'Search the Deepgram documentation for a topic or question',
+          category: 'docs',
+          risk: 'safe',
+          parameters: [
+            {
+              name: 'query',
+              type: 'string',
+              description: 'What to search for in the docs',
+              required: true,
+            },
+          ],
+          execute: async ({ query }) => {
+            const res = await fetch(`/api/docs/search?q=${encodeURIComponent(query)}`);
+            const data = await res.json();
+            return {
+              success: true,
+              message: `Found ${data.results.length} results for "${query}"`,
+              data: data.results,
+              sources: data.results.slice(0, 3).map((r) => ({ title: r.title, url: r.url })),
+            };
+          },
+        },
+        {
+          id: 'navigate-docs',
+          name: 'Go to Docs Page',
+          description: 'Navigate the user to a specific documentation page',
+          category: 'docs',
+          risk: 'safe',
+          parameters: [
+            {
+              name: 'path',
+              type: 'string',
+              description: 'Docs path to navigate to, e.g. /docs/getting-started',
+              required: true,
+            },
+          ],
+          execute: async ({ path }) => {
+            window.location.href = path;
+            return { success: true, message: `Navigating to ${path}` };
+          },
+        },
+      ],
+    });
+  </script>
+
+</body>
+</html>
