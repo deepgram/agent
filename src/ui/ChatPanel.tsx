@@ -6,6 +6,8 @@ import { MicrophoneIcon, MicrophoneMutedIcon, SendIcon, SpeakerIcon, SpeakerMute
 import { useVoiceAgent } from '../agent/voice';
 import { useSkillExecutor } from '../skills/executor';
 import { buildToolDefinitions, getSkill } from '../skills';
+import { deepgramKnowledgeSkill } from '../skills/deepgram-mcp';
+import { fetchDeepgramSkillsContext } from '../skills/github-context';
 import { BASE_AGENT_GUIDELINES } from '../prompt/base';
 import { addMessage, clearConversation, generateId, getProjectIdFromUrl, loadState, saveState } from '../state';
 
@@ -24,10 +26,22 @@ export function ChatPanel({ config }: Props) {
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const projectId = config.projectId ?? getProjectIdFromUrl();
-  const skills = config.skills ?? [];
+
+  // Site-specific skills merged with built-in skills
+  const siteSkills = config.skills ?? [];
+  const allSkills = [deepgramKnowledgeSkill, ...siteSkills];
+
+  // Deepgram knowledge context — fetched on mount, appended to system prompt
+  const [deepgramContext, setDeepgramContext] = useState('');
   const systemPrompt = config.systemPrompt
-    ? `${BASE_AGENT_GUIDELINES}\n\n${config.systemPrompt}`
-    : BASE_AGENT_GUIDELINES;
+    ? `${BASE_AGENT_GUIDELINES}\n\n${config.systemPrompt}${deepgramContext ? `\n\n${deepgramContext}` : ''}`
+    : `${BASE_AGENT_GUIDELINES}${deepgramContext ? `\n\n${deepgramContext}` : ''}`;
+
+  useEffect(() => {
+    fetchDeepgramSkillsContext().then((ctx) => {
+      if (ctx) setDeepgramContext(ctx);
+    }).catch(() => {});
+  }, []);
 
   // Token ref bridges the voice agent credentials to the skill executor
   const dxApiTokenRef = useRef<() => string | null>(() => null);
@@ -40,8 +54,8 @@ export function ChatPanel({ config }: Props) {
   const pendingSourcesRef = useRef<import('../types').SourceLink[]>([]);
   const pendingCtaRef = useRef<import('../types').SourceLink | null>(null);
 
-  // Tool definitions (stable reference, derived from config skills)
-  const toolDefs = useRef(buildToolDefinitions(skills)).current;
+  // Tool definitions: built-in skills + site skills
+  const toolDefs = useRef(buildToolDefinitions(allSkills)).current;
 
   /** Execute a pending skill (after confirmation) and return tool result */
   const confirmAndExecute = useCallback(async (skill: PendingSkill) => {
@@ -76,7 +90,7 @@ export function ChatPanel({ config }: Props) {
    * Safe skills execute immediately. Confirm/dangerous return an "awaiting" result.
    */
   const handleToolCall = useCallback(async (toolCall: LLMToolCall): Promise<LLMToolResult> => {
-    const skill = getSkill(toolCall.name, skills);
+    const skill = getSkill(toolCall.name, allSkills);
     if (!skill) {
       return { toolCallId: toolCall.id, content: JSON.stringify({ error: `Unknown tool: ${toolCall.name}` }), isError: true };
     }
@@ -138,7 +152,7 @@ export function ChatPanel({ config }: Props) {
       content: result.message,
       isError: !result.success,
     };
-  }, [executeSkill, skills]);
+  }, [executeSkill, allSkills]);
 
   const voiceAgent = useVoiceAgent(config, systemPrompt, {
     onTranscript: useCallback((text: string, isFinal: boolean) => {

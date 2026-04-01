@@ -5,6 +5,8 @@ import { orchestrate } from './orchestrator';
 export type { ConsoleAgentConfig, AgentModelConfig } from './types';
 export type { Skill, SkillCategory, SkillParameter, SkillContext, SkillResult, SkillRisk, ChatMessage, AgentState } from './types';
 export { buildToolDefinitions } from './skills';
+export { deepgramKnowledgeSkill } from './skills/deepgram-mcp';
+export { fetchDeepgramSkillsContext } from './skills/github-context';
 export { BASE_AGENT_GUIDELINES } from './prompt/base';
 
 /**
