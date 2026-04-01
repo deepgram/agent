@@ -16,7 +16,6 @@
   <script src="../../dist/deepgram-agent.umd.js"></script>
   <script type="module">
 
-
     // ─── Navigation skills ────────────────────────────────────────────────────
 
     function nav(path, label, ctx) {
@@ -828,189 +827,11 @@
       },
     ];
 
-    // ─── Deepgram MCP skills ──────────────────────────────────────────────────
-
-    const DOCS_PATTERNS = ['developers.deepgram.com/docs/', 'developers.deepgram.com/reference/'];
-
-    function isDocsUrl(url) {
-      return DOCS_PATTERNS.some((p) => url.includes(p));
-    }
-
-    function extractTitle(url, content) {
-      if (content) {
-        const heading = content.match(/^#+ (.+)$/m);
-        if (heading) {
-          const parts = heading[1].split('>').map((s) => s.trim());
-          const meaningful = parts.find((p) => p.length > 3 && !/^(docs|reference|api|home)$/i.test(p));
-          if (meaningful) return meaningful;
-        }
-        const subheading = content.match(/^## (.+)$/m);
-        if (subheading && subheading[1].length > 3) return subheading[1].trim();
-      }
-      try {
-        const path = new URL(url).pathname;
-        const segments = path.split('/').filter(Boolean);
-        for (let i = segments.length - 1; i >= 0; i--) {
-          const seg = segments[i];
-          if (seg.length > 3 && !/^(docs|reference|api|v1|v2)$/i.test(seg)) {
-            return seg.replace(/[-_]/g, ' ').replace(/(^|\s)\w/g, (c) => c.toUpperCase());
-          }
-        }
-        const last = segments[segments.length - 1] ?? 'Documentation';
-        return last.replace(/[-_]/g, ' ').replace(/(^|\s)\w/g, (c) => c.toUpperCase());
-      } catch {
-        return 'Documentation';
-      }
-    }
-
-    const mcpSkills = [
-      {
-        id: 'deepgram-mcp',
-        name: 'Deepgram MCP',
-        description: 'Search Deepgram documentation for relevant information. Use this for any technical question about Deepgram APIs, SDKs, models, features, pricing, or supported languages. Returns relevant documentation excerpts with source links shown in the chat.',
-        category: 'navigation',
-        risk: 'safe',
-        parameters: [
-          { name: 'query', type: 'string', description: 'The search query', required: true },
-        ],
-        execute: async (params, ctx) => {
-          if (!ctx.dxApiToken) return { success: false, message: 'Not authenticated with DX API. Please try again.' };
-          try {
-            const res = await fetch(`${ctx.dxApiUrl}/kapa/retrieval`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${ctx.dxApiToken}`,
-                'X-DX-Auth-Mode': 'session',
-              },
-              body: JSON.stringify({ query: params.query }),
-            });
-            if (!res.ok) {
-              const text = await res.text();
-              return { success: false, message: `Search error (${res.status}): ${text}` };
-            }
-            const data = await res.json();
-            const results = Array.isArray(data) ? data : [];
-            if (results.length === 0) return { success: true, message: 'No results found for that query.' };
-
-            const textContent = results.slice(0, 5).map((r) => r.content?.slice(0, 600) ?? '').join('\n\n---\n\n');
-
-            const uniqueUrls = new Set();
-            const sources = results
-              .filter((r) => { if (!r.source_url || uniqueUrls.has(r.source_url)) return false; uniqueUrls.add(r.source_url); return true; })
-              .slice(0, 5)
-              .map((r) => ({ title: extractTitle(r.source_url, r.content), url: r.source_url }));
-
-            const topResult = results[0];
-            const cta = topResult?.source_url && isDocsUrl(topResult.source_url)
-              ? { title: `${extractTitle(topResult.source_url, topResult.content)} — Read the docs`, url: topResult.source_url }
-              : undefined;
-            const filteredSources = cta ? sources.filter((s) => s.url !== cta.url) : sources;
-
-            let linkHint = '';
-            if (sources.length > 0) linkHint += `\n\n[${sources.length} source link(s) are shown in the chat for the user to click.]`;
-            if (cta) linkHint += `\n[A docs link button is shown to the user. End your response with [CTA: <short label max 40 chars>] to set the button text.]`;
-
-            return { success: true, message: textContent + linkHint, data, sources: filteredSources, cta };
-          } catch (err) {
-            return { success: false, message: `Search failed: ${err instanceof Error ? err.message : String(err)}` };
-          }
-        },
-      },
-      {
-        id: 'deepgram-mcp-chat',
-        name: 'Deepgram MCP Chat',
-        description: 'Get a detailed, synthesized answer about Deepgram with source citations. Use this only for complex or open-ended questions that need a thorough explanation — it is slower than the default deepgram-mcp tool.',
-        category: 'navigation',
-        risk: 'safe',
-        parameters: [
-          { name: 'question', type: 'string', description: 'The technical question to answer', required: true },
-        ],
-        execute: async (params, ctx) => {
-          if (!ctx.dxApiToken) return { success: false, message: 'Not authenticated with DX API. Please try again.' };
-          try {
-            const res = await fetch(`${ctx.dxApiUrl}/kapa/chat`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${ctx.dxApiToken}`,
-                'X-DX-Auth-Mode': 'session',
-              },
-              body: JSON.stringify({ query: params.question }),
-            });
-            if (!res.ok) {
-              const text = await res.text();
-              return { success: false, message: `Deepgram MCP error (${res.status}): ${text}` };
-            }
-            const data = await res.json();
-            const answer = data?.answer ?? data?.text ?? JSON.stringify(data);
-            const spokenAnswer = answer.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1');
-
-            const sources = (data?.relevant_sources ?? [])
-              .slice(0, 5)
-              .map((s) => ({ title: s.title?.split('|')[0]?.trim() ?? 'Source', url: s.source_url ?? '' }))
-              .filter((s) => s.url);
-
-            const cta = sources.length > 0 && isDocsUrl(sources[0].url)
-              ? { title: `Read: ${sources[0].title}`, url: sources[0].url }
-              : undefined;
-            const filteredSources = cta ? sources.filter((s) => s.url !== cta.url) : sources;
-
-            let linkHint = '';
-            if (sources.length > 0) linkHint += `\n\n[${sources.length} source link(s) are shown in the chat for the user to click.]`;
-            if (cta) linkHint += `\n[A docs link button is shown to the user. End your response with [CTA: <short label max 40 chars>] to set the button text.]`;
-
-            return { success: true, message: spokenAnswer + linkHint, data, sources: filteredSources, cta };
-          } catch (err) {
-            return { success: false, message: `Failed to query Deepgram MCP: ${err instanceof Error ? err.message : String(err)}` };
-          }
-        },
-      },
-    ];
-
-    // ─── GitHub skills context ────────────────────────────────────────────────
-
-    async function fetchGitHubSkills() {
-      try {
-        const releaseRes = await fetch('https://api.github.com/repos/deepgram/skills/releases/latest', {
-          headers: { 'Accept': 'application/vnd.github+json' },
-        });
-        if (!releaseRes.ok) return [];
-
-        const release = await releaseRes.json();
-        const treeRes = await fetch(`https://api.github.com/repos/deepgram/skills/git/trees/${release.tag_name}?recursive=1`, {
-          headers: { 'Accept': 'application/vnd.github+json' },
-        });
-        if (!treeRes.ok) return [];
-
-        const tree = await treeRes.json();
-        const skillFiles = tree.tree.filter((f) => f.type === 'blob' && f.path.match(/^skills\/[^/]+\/SKILL\.md$/));
-
-        const results = await Promise.allSettled(skillFiles.map(async (f) => {
-          const blobRes = await fetch(f.url, { headers: { 'Accept': 'application/vnd.github.raw+json' } });
-          if (!blobRes.ok) return null;
-          const text = await blobRes.text();
-          const match = text.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
-          if (!match) return null;
-          const nameMatch = match[1].match(/^name:\s*(.+)$/m);
-          const descMatch = match[1].match(/^description:\s*(.+)$/m);
-          if (!nameMatch) return null;
-          return { name: nameMatch[1].trim(), description: descMatch ? descMatch[1].trim() : '', content: match[2].trim() };
-        }));
-
-        return results
-          .filter((r) => r.status === 'fulfilled' && r.value)
-          .map((r) => r.value);
-      } catch {
-        return [];
-      }
-    }
-
     // ─── System prompt ────────────────────────────────────────────────────────
     // NOTE: BASE_AGENT_GUIDELINES (TTS formatting, behavioral rules) are
     // automatically prepended by the widget. Only console-specific context here.
 
-    function buildSystemPrompt(projectId, extraContext = '') {
+    function buildSystemPrompt(projectId) {
       return `You are a helpful voice and chat assistant for the Deepgram Console — a developer dashboard for managing Deepgram API projects, keys, billing, usage, and team members.
 
 You have tools to help users with their projects, API keys, billing, team, usage, and settings.
@@ -1032,17 +853,12 @@ APIs and services: speech-to-text, text-to-speech, STT, TTS, voice agent, audio 
 Console features: API key, API keys, project, billing, usage, team, member, invite, dashboard, auto-recharge, auto-renew, credits, balance, self-hosted, on-premises, on-prem.
 SDKs and developer terms: SDK, JavaScript, Python, Go, Rust, .NET, Node.js, React, webhook, callback.
 Audio and transcription features: diarization, punctuation, smart format, redaction, PCI, PII, entity detection, sentiment, summarization, topic detection, keyterm, keyword boosting, utterance, endpointing, interim results.
-Auth and infrastructure: JWT, Bearer token, API token, OAuth, concurrency, rate limit.
-${extraContext}`;
+Auth and infrastructure: JWT, Bearer token, API token, OAuth, concurrency, rate limit.`;
     }
 
     // ─── Init ─────────────────────────────────────────────────────────────────
 
     const projectId = window.location.pathname.match(/\/projects?\/([^/]+)/)?.[1] ?? null;
-    const ghSkills = await fetchGitHubSkills();
-    const extraContext = ghSkills.length > 0
-      ? `\n\n## Deepgram Knowledge Base\nUse the following knowledge to answer technical questions about Deepgram.\n\n${ghSkills.map((s) => `### ${s.name}\n${s.description}\n\n${s.content}`).join('\n\n---\n\n')}`
-      : '';
 
     DeepgramAgent.init({
       buttonId: 'dg-ask-ai-btn',
@@ -1056,9 +872,8 @@ ${extraContext}`;
         ...usageSkills,
         ...settingsSkills,
         ...selfHostedSkills,
-        ...mcpSkills,
       ],
-      systemPrompt: buildSystemPrompt(projectId, extraContext),
+      systemPrompt: buildSystemPrompt(projectId),
     });
 
   </script>
