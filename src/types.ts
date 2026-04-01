@@ -12,6 +12,8 @@ export interface AgentModelConfig {
 
 /** Configuration for the console agent widget */
 export interface ConsoleAgentConfig {
+  /** Display name shown in the widget header (default: 'Assistant') */
+  name?: string;
   /** ID of the button element that toggles the agent panel */
   buttonId?: string;
   /** ID of the container element for inline embedding */

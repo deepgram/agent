@@ -133,9 +133,12 @@ export function useVoiceAgent(
             apiKey: credentials.token,
             authType: 'bearer',
             voice: config.agent?.ttsVoice ?? 'aura-2-helena-en',
+            options: {
+              tag: 'deepgram-agent',
+            }
           }),
           new BrowserAudioOutput({
-            minBufferDuration: 300,
+            minBufferDuration: 250,
             enableSmoothing: true,
           }),
         ],

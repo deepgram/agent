@@ -14,7 +14,7 @@ export function Sidebar({ config, onClose }: Props) {
       <div className="dg-agent-sidebar__header">
         <div className="dg-agent-sidebar__header-left">
           <AgentIcon />
-          <span>Deepgram Assistant</span>
+          <span>{config.name ?? 'Assistant'}</span>
         </div>
         <button className="dg-agent-sidebar__close" onClick={onClose} title="Close">
           <CloseIcon />
