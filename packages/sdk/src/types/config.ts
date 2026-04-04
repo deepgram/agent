@@ -12,7 +12,16 @@ import type { AgentSettingsObject, AudioEncoding, OutputEncoding } from "./messa
 export type TokenFactory = () => Promise<string>;
 
 export type AuthConfig =
+  /**
+   * Raw Deepgram API key — uses `Authorization: Token {key}`.
+   * Fine for server-side use. Never expose in browser bundles.
+   */
   | { apiKey: string }
+  /**
+   * Factory for short-lived bearer tokens from POST /v1/auth/grant.
+   * Uses `Authorization: Bearer {token}`. Call your backend on demand;
+   * the factory is called at connect-time and before every reconnect.
+   */
   | { tokenFactory: TokenFactory };
 
 // ---------------------------------------------------------------------------

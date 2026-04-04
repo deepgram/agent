@@ -146,17 +146,20 @@ export class AgentSession extends EventEmitter<AgentSessionEvents> {
       this.tokenFactory.invalidate();
       const token = await this.tokenFactory.get();
 
-      // DeepgramClient (= CustomDeepgramClient):
-      // - apiKey satisfies HeaderAuthProvider so it doesn't fall back to process.env
-      // - Internally uses getWebSocketOptions() to convert Authorization header to
-      //   Sec-WebSocket-Protocol for browser WebSocket compatibility
-      const client = new DeepgramClient({ apiKey: token });
+      // Build client with the right auth scheme:
+      // - tokenFactory → Bearer token (from /v1/auth/grant) → accessToken + Bearer
+      // - apiKey        → raw API key                        → apiKey    + Token
+      // CustomDeepgramClient converts these to Sec-WebSocket-Protocol in browsers.
+      const isBearer = "tokenFactory" in this.config.auth;
+      const client = isBearer
+        ? new DeepgramClient({ accessToken: token })
+        : new DeepgramClient({ apiKey: token });
+      const authorization = isBearer ? `Bearer ${token}` : `Token ${token}`;
 
       // Returns a WrappedAgentV1Socket with startClosed:true — NOT yet connected.
-      // reconnectAttempts:1 → SDK ReconnectingWebSocket makes exactly one attempt,
-      // then stops. We manage retries above the SDK with fresh tokens each time.
+      // reconnectAttempts:1 so the SDK makes one attempt; we manage retries above.
       const socket = await client.agent.v1.connect({
-        Authorization: `Token ${token}`,
+        Authorization: authorization,
         reconnectAttempts: 1,
       });
 
