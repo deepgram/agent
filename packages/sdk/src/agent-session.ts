@@ -1,5 +1,6 @@
 import EventEmitter from "eventemitter3";
-// DeepgramClient is CustomDeepgramClient (browser-compatible WebSocket with Sec-WebSocket-Protocol auth)
+// DeepgramClient is CustomDeepgramClient — browser-compatible, handles
+// Sec-WebSocket-Protocol auth and binary message handling via setupBinaryHandling().
 import { DeepgramClient } from "@deepgram/sdk";
 import type { AgentSessionConfig, ReconnectConfig } from "./types/config.js";
 import type { AgentSessionEvents } from "./types/events.js";
@@ -12,10 +13,12 @@ import type {
 import { CachingTokenFactory, resolveTokenFactory } from "./token/factory.js";
 import { KeepAliveTimer } from "./connection/keepalive.js";
 
-// Type alias for the V1Socket returned by client.agent.v1.connect()
+// Runtime type returned by client.agent.v1.connect() — actually WrappedAgentV1Socket
+// but TypeScript sees the base V1Socket interface which has all the methods we need.
 type V1Socket = Awaited<ReturnType<InstanceType<typeof DeepgramClient>["agent"]["v1"]["connect"]>>;
 
 const DEFAULT_KEEPALIVE_MS = 10_000;
+const OPEN_TIMEOUT_MS = 10_000;
 const DEFAULT_RECONNECT: Required<ReconnectConfig> = {
   enabled: true,
   maxAttempts: 8,
@@ -34,13 +37,17 @@ export type AgentState =
 /**
  * Core Deepgram Voice Agent session.
  *
- * Wraps `@deepgram/sdk`'s `client.agent.v1.connect()` (V1Socket) with:
- * - Token factory: `tokenFactory()` called before every (re)connect
- * - Binary audio dispatch: patches V1Socket's JSON-only message handler so
- *   ArrayBuffer frames are emitted as `audio` events
+ * Wraps `@deepgram/sdk`'s `client.agent.v1.connect()` with:
+ * - Token factory: called before every (re)connect for fresh credentials
  * - Typed EventEmitter surface (AgentSessionEvents)
  * - Exponential-backoff reconnect with jitter
  * - Automatic KeepAlive pings
+ * - Audio buffering until SettingsApplied
+ *
+ * Key SDK insight: `client.agent.v1.connect()` returns a WrappedAgentV1Socket
+ * with `startClosed: true` — `socket.connect()` must be called explicitly to
+ * start the WebSocket. The wrapper also calls setupBinaryHandling() so
+ * `socket.on("message", cb)` receives both parsed JSON and raw ArrayBuffers.
  *
  * Browser audio I/O (microphone, playback, VAD) is provided separately by
  * AgentMicrophone and AgentPlayer.
@@ -90,7 +97,7 @@ export class AgentSession extends EventEmitter<AgentSessionEvents> {
   }
 
   // ---------------------------------------------------------------------------
-  // Public send helpers (mirror the AsyncAPI spec operations)
+  // Public send helpers
   // ---------------------------------------------------------------------------
 
   sendAudio(data: ArrayBuffer): void {
@@ -129,7 +136,7 @@ export class AgentSession extends EventEmitter<AgentSessionEvents> {
   }
 
   // ---------------------------------------------------------------------------
-  // Internal: connection management
+  // Internal: connection
   // ---------------------------------------------------------------------------
 
   private async _openConnection(): Promise<void> {
@@ -141,45 +148,55 @@ export class AgentSession extends EventEmitter<AgentSessionEvents> {
       const token = await this.tokenFactory.get();
       console.log("[dg-agent] token obtained, length:", token.length);
 
-      // Pass apiKey so the SDK's HeaderAuthProvider is satisfied in browser
-      // environments where process.env is not available. The Authorization
-      // header on connect() still takes precedence for the WebSocket upgrade.
+      // DeepgramClient (= CustomDeepgramClient):
+      // - apiKey satisfies HeaderAuthProvider so it doesn't fall back to process.env
+      // - Internally uses getWebSocketOptions() to convert Authorization header to
+      //   Sec-WebSocket-Protocol for browser WebSocket compatibility
       const client = new DeepgramClient({ apiKey: token });
-      // reconnectAttempts: 1 = allow exactly one connection attempt in the SDK's
-      // ReconnectingWebSocket. Setting 0 means maxRetries=0 which causes
-      // _connect() to bail immediately (0 >= 0) before the WebSocket is created.
-      // We manage our own reconnect loop above the SDK so we don't want the SDK
-      // retrying — but we DO need it to make the first attempt.
+
+      // Returns a WrappedAgentV1Socket with startClosed:true — NOT yet connected.
+      // reconnectAttempts:1 → SDK ReconnectingWebSocket makes exactly one attempt,
+      // then stops. We manage retries above the SDK with fresh tokens each time.
       const socket = await client.agent.v1.connect({
         Authorization: `Token ${token}`,
         reconnectAttempts: 1,
       });
-      console.log("[dg-agent] socket created, waiting for open...");
 
-      // waitForOpen() only resolves on 'open' or rejects on 'error' — it hangs
-      // if the socket closes without an error event (e.g. server closes mid-
-      // handshake with a close frame). Race it against a close listener so we
-      // always get a rejection we can handle.
-      const OPEN_TIMEOUT_MS = 10_000;
-      await Promise.race([
-        socket.waitForOpen(),
-        new Promise<never>((_, reject) => {
-          // SDK's waitForOpen() only handles 'open' and 'error' — not 'close'.
-          // If the socket closes without an error (e.g. server rejects mid-
-          // handshake), the promise would hang. Register our own close handler
-          // AND a hard timeout so we always get a rejection.
-          socket.socket.addEventListener("close", (e: { code: number; reason?: string }) => {
-            reject(new Error(`socket closed before open: code ${e.code} ${e.reason ?? ""}`));
-          });
-          setTimeout(() => reject(new Error(`waitForOpen timed out after ${OPEN_TIMEOUT_MS}ms`)), OPEN_TIMEOUT_MS);
-        }),
-      ]);
-      console.log("[dg-agent] socket open, binding events");
+      console.log("[dg-agent] socket obtained — calling connect() to start WebSocket");
+
+      // Wait for open before binding our full event handlers.
+      // socket.connect() starts the WebSocket (required because startClosed:true).
+      // Race against close/error/timeout so we never hang indefinitely.
+      await new Promise<void>((resolve, reject) => {
+        const timer = setTimeout(
+          () => reject(new Error(`open timeout after ${OPEN_TIMEOUT_MS}ms`)),
+          OPEN_TIMEOUT_MS,
+        );
+        socket.on("open", () => {
+          clearTimeout(timer);
+          resolve();
+        });
+        socket.on("close", (e: { code: number; reason?: string }) => {
+          clearTimeout(timer);
+          reject(new Error(`socket closed before open: code ${e.code} ${e.reason ?? ""}`));
+        });
+        socket.on("error", (err) => {
+          clearTimeout(timer);
+          reject(err);
+        });
+        // Actually start the WebSocket connection
+        socket.connect();
+      });
+
+      console.log("[dg-agent] socket open");
 
       this.socket = socket;
+      this.reconnectAttempts = 0;
+      this._setState("connected");
       this._bindSocketEvents(socket);
+
     } catch (err) {
-      console.log("[dg-agent] _openConnection error:", String(err), err);
+      console.log("[dg-agent] _openConnection error:", String(err));
       this._onConnectionError(err instanceof Error ? err : new Error(String(err)));
     }
   }
@@ -214,34 +231,23 @@ export class AgentSession extends EventEmitter<AgentSessionEvents> {
   }
 
   private _bindSocketEvents(socket: V1Socket): void {
-    // V1Socket.handleMessage calls JSON.parse() on every message, which will
-    // throw SyntaxError for binary audio frames (ArrayBuffer). We remove the
-    // SDK's registered listener and replace it with our own that correctly
-    // handles both text (JSON) and binary (audio) messages.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    socket.socket.removeEventListener("message", (socket as any).handleMessage);
-
-    socket.socket.addEventListener("message", (event: { data: unknown }) => {
-      if (event.data instanceof ArrayBuffer) {
-        this.emit("audio", event.data);
-      } else if (typeof event.data === "string") {
-        try {
-          const msg = JSON.parse(event.data) as ServerMessage;
-          console.log("[dg-agent] ←", msg.type, msg);
-          this._dispatchMessage(msg, socket);
-        } catch {
-          // Malformed JSON — ignore
-        }
+    // WrappedAgentV1Socket.setupBinaryHandling() already replaces the base
+    // handleMessage with a binary-aware handler that passes ArrayBuffers
+    // through to eventHandlers.message. Using socket.on("message") therefore
+    // receives BOTH parsed JSON objects and raw ArrayBuffers — no raw socket
+    // manipulation needed.
+    socket.on("message", (msg) => {
+      if (msg instanceof ArrayBuffer) {
+        this.emit("audio", msg);
+      } else {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const serverMsg = msg as unknown as ServerMessage;
+        console.log("[dg-agent] ←", serverMsg.type);
+        this._dispatchMessage(serverMsg, socket);
       }
     });
 
-    // open / close / error — V1Socket handles these correctly
-    socket.on("open", () => {
-      this.reconnectAttempts = 0;
-      this._setState("connected");
-    });
-
-    socket.on("close", (event) => {
+    socket.on("close", (event: { code: number; reason?: string }) => {
       console.log("[dg-agent] socket closed", event.code, event.reason ?? "");
       this.keepAlive.stop();
       if (!this.intentionalClose) {
@@ -258,7 +264,7 @@ export class AgentSession extends EventEmitter<AgentSessionEvents> {
     switch (msg.type) {
       case "Welcome": {
         const settings = this._buildSettingsPayload();
-        console.log("[dg-agent] → Settings", JSON.stringify(settings, null, 2));
+        console.log("[dg-agent] → Settings");
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         socket.sendSettings(settings as any);
         this.emit("welcome", msg);
@@ -267,11 +273,11 @@ export class AgentSession extends EventEmitter<AgentSessionEvents> {
       case "SettingsApplied":
         this.settingsApplied = true;
         this.keepAlive.start();
-        // Flush any audio frames that arrived before the agent was ready
         for (const frame of this.audioQueue) {
           socket.sendMedia(frame);
         }
         this.audioQueue = [];
+        console.log("[dg-agent] SettingsApplied — agent ready");
         this.emit("settings-applied", msg);
         break;
       case "ConversationText":
