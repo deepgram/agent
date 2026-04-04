@@ -18,20 +18,32 @@ export class AgentPlayer {
   }
 
   /**
-   * Decode and queue a PCM chunk (Int16 linear16) received from the agent.
-   * Accepts both ArrayBuffer and Blob — the SDK's ReconnectingWebSocket uses
-   * binaryType:"blob" by default so audio arrives as Blob objects.
-   * Chunks are scheduled back-to-back without gaps.
+   * Decode and queue a raw PCM (Int16 linear16) ArrayBuffer from the agent.
+   * The SDK sets binaryType:'arraybuffer' on the WebSocket so no conversion
+   * is needed — the data arrives ready to use.
    */
-  queue(data: ArrayBuffer | Blob): void {
+  queue(data: ArrayBuffer): void {
     if (this._muted) return;
 
-    if (data instanceof Blob) {
-      data.arrayBuffer().then((ab) => this._decode(ab));
-      return;
+    const ctx = this._ensureContext();
+    const sampleRate = this.options.sampleRate ?? 24_000;
+
+    const int16 = new Int16Array(data);
+    const float32 = new Float32Array(int16.length);
+    for (let i = 0; i < int16.length; i++) {
+      float32[i] = int16[i] / (int16[i] < 0 ? 0x8000 : 0x7fff);
     }
 
-    this._decode(data);
+    const buffer = ctx.createBuffer(1, float32.length, sampleRate);
+    buffer.copyToChannel(float32, 0);
+
+    const source = ctx.createBufferSource();
+    source.buffer = buffer;
+    source.connect(ctx.destination);
+
+    const start = Math.max(ctx.currentTime, this.nextStartTime);
+    source.start(start);
+    this.nextStartTime = start + buffer.duration;
   }
 
   /**
@@ -59,34 +71,11 @@ export class AgentPlayer {
     this.ctx = null;
   }
 
-  private _decode(data: ArrayBuffer): void {
-    const ctx = this._ensureContext();
-    const sampleRate = this.options.sampleRate ?? 24_000;
-
-    const int16 = new Int16Array(data);
-    const float32 = new Float32Array(int16.length);
-    for (let i = 0; i < int16.length; i++) {
-      float32[i] = int16[i] / (int16[i] < 0 ? 0x8000 : 0x7fff);
-    }
-
-    const buffer = ctx.createBuffer(1, float32.length, sampleRate);
-    buffer.copyToChannel(float32, 0);
-
-    const source = ctx.createBufferSource();
-    source.buffer = buffer;
-    source.connect(ctx.destination);
-
-    const start = Math.max(ctx.currentTime, this.nextStartTime);
-    source.start(start);
-    this.nextStartTime = start + buffer.duration;
-  }
-
   private _ensureContext(): AudioContext {
     if (!this.ctx || this.ctx.state === "closed") {
       this.ctx = new AudioContext({ sampleRate: this.options.sampleRate ?? 24_000 });
       this.nextStartTime = 0;
     }
-    // AudioContext may be suspended if created outside a user gesture — resume it.
     if (this.ctx.state === "suspended") {
       this.ctx.resume().catch(() => null);
     }
