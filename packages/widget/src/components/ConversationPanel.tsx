@@ -61,7 +61,22 @@ export function ConversationPanel({
   const [textValue, setTextValue] = useState("");
   const [starting, setStarting] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const showTranscript = config.showTranscript !== false;
+
+  // Feature flags (all enabled by default)
+  const showTranscript  = config.showTranscript  !== false;
+  const showMicToggle   = config.showMicToggle   !== false;
+  const showSpeakerToggle = config.showSpeakerToggle !== false;
+  const showTextInput   = config.showTextInput   !== false;
+
+  // Text overrides
+  const t = config.text ?? {};
+  const agentName       = t.name           ?? config.text?.name ?? "Voice Agent";
+  const startLabel      = t.startLabel     ?? "Start";
+  const stopLabel       = t.stopLabel      ?? "Stop";
+  const connectingLabel = t.connectingLabel ?? "Starting…";
+  const inputPlaceholder = t.inputPlaceholder ?? "Type a message…";
+  const emptyHint       = t.emptyStateHint ?? "Press Start to begin the conversation";
+
   const isActive = state === "connected" || state === "connecting" || state === "reconnecting";
 
   useEffect(() => {
@@ -74,10 +89,6 @@ export function ConversationPanel({
     const next = !micMuted;
     setMicMuted(next);
     onMicMute(next);
-  }
-
-  function handleOutputToggle() {
-    onOutputMute(!outputMuted);
   }
 
   async function handleStartStop() {
@@ -108,7 +119,7 @@ export function ConversationPanel({
       {/* Header */}
       <div class="dg-va-header">
         <AgentIcon class="dg-va-header-icon" width={28} height={28} />
-        <span class="dg-va-header-name">{config.name ?? "Voice Agent"}</span>
+        <span class="dg-va-header-name">{agentName}</span>
         <div class="dg-va-status">
           <div class={`dg-va-status-dot ${STATUS_CLASS[state]}`} />
           <span>{STATUS_LABELS[state]}</span>
@@ -120,13 +131,14 @@ export function ConversationPanel({
         )}
       </div>
 
-      {/* Conversation */}
+      {/* Conversation transcript */}
       {showTranscript && (
         <div class="dg-va-conversation" ref={scrollRef}>
           {conversation.length === 0 ? (
             <div class="dg-va-empty-state">
               <AgentIcon width={40} height={40} />
-              <p>Press <strong>Start</strong> to begin the conversation</p>
+              {/* eslint-disable-next-line react/no-danger */}
+              <p dangerouslySetInnerHTML={{ __html: emptyHint }} />
             </div>
           ) : (
             conversation.map((entry) => (
@@ -145,46 +157,56 @@ export function ConversationPanel({
 
       {/* Controls */}
       <div class="dg-va-controls">
-        {isActive && (
+        {isActive && (showTextInput || showMicToggle || showSpeakerToggle) && (
           <div class="dg-va-control-row">
-            <textarea
-              class="dg-va-text-input"
-              placeholder="Type a message…"
-              rows={1}
-              value={textValue}
-              onInput={(e) => setTextValue((e.target as HTMLTextAreaElement).value)}
-              onKeyDown={handleKeyDown}
-            />
-            <button
-              class={`dg-va-icon-btn ${micMuted ? "dg-va-muted" : micActive ? "dg-va-active" : ""}`}
-              onClick={handleMicToggle}
-              aria-label={micMuted ? "Unmute microphone" : "Mute microphone"}
-            >
-              {micMuted ? (
-                <MicOffIcon width={18} height={18} />
-              ) : (
-                <MicIcon width={18} height={18} />
-              )}
-            </button>
-            <button
-              class={`dg-va-icon-btn ${outputMuted ? "dg-va-muted" : ""}`}
-              onClick={handleOutputToggle}
-              aria-label={outputMuted ? "Unmute speaker" : "Mute speaker"}
-            >
-              {outputMuted ? (
-                <SpeakerOffIcon width={18} height={18} />
-              ) : (
-                <SpeakerIcon width={18} height={18} />
-              )}
-            </button>
-            <button
-              class="dg-va-icon-btn"
-              onClick={handleSend}
-              disabled={!textValue.trim()}
-              aria-label="Send"
-            >
-              <SendIcon width={18} height={18} />
-            </button>
+            {showTextInput && (
+              <>
+                <textarea
+                  class="dg-va-text-input"
+                  placeholder={inputPlaceholder}
+                  rows={1}
+                  value={textValue}
+                  onInput={(e) => setTextValue((e.target as HTMLTextAreaElement).value)}
+                  onKeyDown={handleKeyDown}
+                />
+                <button
+                  class="dg-va-icon-btn"
+                  onClick={handleSend}
+                  disabled={!textValue.trim()}
+                  aria-label="Send"
+                >
+                  <SendIcon width={18} height={18} />
+                </button>
+              </>
+            )}
+
+            {showMicToggle && (
+              <button
+                class={`dg-va-icon-btn ${micMuted ? "dg-va-muted" : micActive ? "dg-va-active" : ""}`}
+                onClick={handleMicToggle}
+                aria-label={micMuted ? "Unmute microphone" : "Mute microphone"}
+              >
+                {micMuted ? (
+                  <MicOffIcon width={18} height={18} />
+                ) : (
+                  <MicIcon width={18} height={18} />
+                )}
+              </button>
+            )}
+
+            {showSpeakerToggle && (
+              <button
+                class={`dg-va-icon-btn ${outputMuted ? "dg-va-muted" : ""}`}
+                onClick={() => onOutputMute(!outputMuted)}
+                aria-label={outputMuted ? "Unmute speaker" : "Mute speaker"}
+              >
+                {outputMuted ? (
+                  <SpeakerOffIcon width={18} height={18} />
+                ) : (
+                  <SpeakerIcon width={18} height={18} />
+                )}
+              </button>
+            )}
           </div>
         )}
 
@@ -194,10 +216,10 @@ export function ConversationPanel({
           disabled={starting || state === "connecting"}
         >
           {starting
-            ? "Starting…"
+            ? connectingLabel
             : isActive
-            ? "Stop"
-            : "Start"}
+            ? stopLabel
+            : startLabel}
         </button>
       </div>
     </div>

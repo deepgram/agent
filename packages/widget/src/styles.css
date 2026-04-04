@@ -10,7 +10,9 @@
   --dg-va-border: rgba(255, 255, 255, 0.08);
   --dg-va-error: #ef4444;
   --dg-va-radius: 16px;
+  --dg-va-btn-radius: 10px;
   --dg-va-panel-w: min(440px, 100vw);
+  --dg-va-fab-size: 56px;
 }
 
 /* Panel */
@@ -232,8 +234,8 @@
   position: fixed;
   bottom: 24px;
   right: 24px;
-  width: 56px;
-  height: 56px;
+  width: var(--dg-va-fab-size);
+  height: var(--dg-va-fab-size);
   border-radius: 50%;
   background: var(--dg-va-primary);
   color: #000;
@@ -247,6 +249,14 @@
   transition: transform 0.15s, box-shadow 0.15s;
 }
 .dg-va-fab:hover { transform: scale(1.05); box-shadow: 0 6px 24px rgba(19, 239, 147, 0.5); }
+
+/* FAB placement variants */
+.dg-va-fab.dg-va-bottom-right, .dg-va-panel.dg-va-bottom-right  { bottom: 24px; right: 24px; top: auto; left: auto; }
+.dg-va-fab.dg-va-bottom-left,  .dg-va-panel.dg-va-bottom-left   { bottom: 24px; left: 24px; top: auto; right: auto; }
+.dg-va-fab.dg-va-bottom,       .dg-va-panel.dg-va-bottom        { bottom: 24px; left: 50%; transform: translateX(-50%); top: auto; right: auto; }
+.dg-va-fab.dg-va-top-right,    .dg-va-panel.dg-va-top-right     { top: 24px; right: 24px; bottom: auto; left: auto; }
+.dg-va-fab.dg-va-top-left,     .dg-va-panel.dg-va-top-left      { top: 24px; left: 24px; bottom: auto; right: auto; }
+.dg-va-fab.dg-va-top,          .dg-va-panel.dg-va-top           { top: 24px; left: 50%; transform: translateX(-50%); bottom: auto; right: auto; }
 
 /* Overlay for sidebar on mobile */
 .dg-va-overlay {

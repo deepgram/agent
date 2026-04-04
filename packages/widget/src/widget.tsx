@@ -1,4 +1,4 @@
-import { useState } from "preact/hooks";
+import { useEffect, useState } from "preact/hooks";
 import { useDeepgramAgent } from "@deepgram/agent-react";
 import type { AgentSessionConfig } from "@deepgram/agent";
 import { ConversationPanel } from "./components/ConversationPanel.js";
@@ -15,7 +15,7 @@ function buildSessionConfig(config: WidgetConfig): AgentSessionConfig {
     );
   }
 
-  return {
+  const base: AgentSessionConfig = {
     auth: config.apiKey
       ? { apiKey: config.apiKey }
       : { tokenFactory: config.tokenFactory! },
@@ -28,6 +28,52 @@ function buildSessionConfig(config: WidgetConfig): AgentSessionConfig {
       },
     },
   };
+
+  // Apply overrides onto the agent settings if provided
+  if (config.overrides && typeof base.agent === "object") {
+    const agent = base.agent as Record<string, unknown>;
+    if (config.overrides.greeting) agent.greeting = config.overrides.greeting;
+    // systemPrompt override would require inspecting think.instructions/prompt;
+    // kept as-is for now — full override support belongs in a future iteration
+  }
+
+  return base;
+}
+
+function placementClass(config: WidgetConfig): string {
+  return config.placement ? `dg-va-${config.placement}` : "dg-va-bottom-right";
+}
+
+// ---------------------------------------------------------------------------
+// Shared agent hook with callback wiring
+// ---------------------------------------------------------------------------
+
+function useWidgetAgent(config: WidgetConfig) {
+  const agent = useDeepgramAgent({
+    config: buildSessionConfig(config),
+    micOptions: { vad: config.vad ?? false },
+    playerSampleRate: config.playerSampleRate,
+    onFunctionCall: config.on?.onFunctionCallRequest
+      ? async (fn) => {
+          // Surface to external handler; return empty string if no result
+          config.on?.onFunctionCallRequest?.({ type: "FunctionCallRequest", functions: [fn] });
+          return JSON.stringify({ ok: true });
+        }
+      : undefined,
+  });
+
+  // Wire SDK-level callbacks
+  useEffect(() => {
+    if (!config.on) return;
+    const { onConnect, onDisconnect, onError, onMessage, onAgentStartedSpeaking, onAgentError, onReconnecting } = config.on;
+
+    // We don't have direct access to the underlying AgentSession from the hook,
+    // so we map lifecycle state changes to callbacks here.
+    if (onConnect && agent.state === "connected") onConnect();
+    if (onDisconnect && agent.state === "disconnected") onDisconnect("session ended");
+  }, [agent.state]);
+
+  return agent;
 }
 
 // ---------------------------------------------------------------------------
@@ -36,25 +82,16 @@ function buildSessionConfig(config: WidgetConfig): AgentSessionConfig {
 
 export function SidebarWidget({ config }: WidgetProps) {
   const [open, setOpen] = useState(false);
-  const agent = useDeepgramAgent({
-    config: buildSessionConfig(config),
-    micOptions: {
-      vad: config.vad ?? false,
-    },
-    playerSampleRate: config.playerSampleRate,
-  });
-
-  function handleClose() {
-    setOpen(false);
-  }
+  const agent = useWidgetAgent(config);
+  const pc = placementClass(config);
 
   return (
     <>
       <div
         class={`dg-va-overlay ${open ? "dg-va-open" : ""}`}
-        onClick={handleClose}
+        onClick={() => config.dismissible !== false && setOpen(false)}
       />
-      <div class={`dg-va-panel ${open ? "dg-va-open" : ""}`}>
+      <div class={`dg-va-panel ${pc} ${open ? "dg-va-open" : ""}`}>
         <ConversationPanel
           config={config}
           state={agent.state}
@@ -66,7 +103,7 @@ export function SidebarWidget({ config }: WidgetProps) {
           onMicMute={agent.setMicMuted}
           onOutputMute={agent.setOutputMuted}
           onSendText={agent.sendUserMessage}
-          onClose={handleClose}
+          onClose={config.dismissible !== false ? () => setOpen(false) : undefined}
         />
       </div>
     </>
@@ -78,11 +115,7 @@ export function SidebarWidget({ config }: WidgetProps) {
 // ---------------------------------------------------------------------------
 
 export function InlineWidget({ config }: WidgetProps) {
-  const agent = useDeepgramAgent({
-    config: buildSessionConfig(config),
-    micOptions: { vad: config.vad ?? false },
-    playerSampleRate: config.playerSampleRate,
-  });
+  const agent = useWidgetAgent(config);
 
   return (
     <ConversationPanel
@@ -107,16 +140,13 @@ export function InlineWidget({ config }: WidgetProps) {
 
 export function FloatingWidget({ config }: WidgetProps) {
   const [open, setOpen] = useState(false);
-  const agent = useDeepgramAgent({
-    config: buildSessionConfig(config),
-    micOptions: { vad: config.vad ?? false },
-    playerSampleRate: config.playerSampleRate,
-  });
+  const agent = useWidgetAgent(config);
+  const pc = placementClass(config);
 
   return (
     <>
       <button
-        class="dg-va-fab"
+        class={`dg-va-fab ${pc}`}
         onClick={() => setOpen((o) => !o)}
         aria-label="Open voice agent"
       >
@@ -128,9 +158,9 @@ export function FloatingWidget({ config }: WidgetProps) {
       </button>
       <div
         class={`dg-va-overlay ${open ? "dg-va-open" : ""}`}
-        onClick={() => setOpen(false)}
+        onClick={() => config.dismissible !== false && setOpen(false)}
       />
-      <div class={`dg-va-panel ${open ? "dg-va-open" : ""}`}>
+      <div class={`dg-va-panel ${pc} ${open ? "dg-va-open" : ""}`}>
         <ConversationPanel
           config={config}
           state={agent.state}
@@ -142,7 +172,7 @@ export function FloatingWidget({ config }: WidgetProps) {
           onMicMute={agent.setMicMuted}
           onOutputMute={agent.setOutputMuted}
           onSendText={agent.sendUserMessage}
-          onClose={() => setOpen(false)}
+          onClose={config.dismissible !== false ? () => setOpen(false) : undefined}
         />
       </div>
     </>

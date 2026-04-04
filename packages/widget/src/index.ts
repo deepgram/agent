@@ -3,18 +3,19 @@ import { SidebarWidget, InlineWidget, FloatingWidget } from "./widget.js";
 import type { WidgetConfig } from "./types.js";
 import "./styles.css";
 
-export type { WidgetConfig } from "./types.js";
+export type { WidgetConfig, WidgetTheme, WidgetTextContent, WidgetOverrides, WidgetCallbacks, WidgetLayout, WidgetPlacement } from "./types.js";
 
 /**
  * Initialise the Deepgram Voice Agent widget.
  *
- * @example CDN (sidebar, default):
+ * @example CDN sidebar (default):
  * ```html
  * <script src="https://cdn.deepgram.com/agent-widget/latest/widget.umd.js"></script>
  * <script>
  *   DeepgramAgent.init({
  *     tokenFactory: () => fetch('/api/deepgram-token').then(r => r.text()),
  *     agent: { think: { type: 'open_ai', model: 'gpt-4o-mini' } },
+ *     on: { onConnect: () => console.log('connected') },
  *   });
  * </script>
  * ```
@@ -31,6 +32,8 @@ export type { WidgetConfig } from "./types.js";
  *   });
  * </script>
  * ```
+ *
+ * @returns A teardown function that unmounts the widget
  */
 export function init(config: WidgetConfig): () => void {
   applyTheme(config.theme);
@@ -54,34 +57,37 @@ export function init(config: WidgetConfig): () => void {
     return () => render(null, container);
   }
 
-  // Sidebar and floating layouts mount into a fresh div on <body>
+  // Sidebar and floating layouts mount into a fresh root div on <body>
   const root = document.createElement("div");
   root.setAttribute("data-dg-agent", "");
   document.body.appendChild(root);
 
+  const toggle = () => {
+    root.querySelector<HTMLElement>(".dg-va-panel")?.classList.toggle("dg-va-open");
+    root.querySelector<HTMLElement>(".dg-va-overlay")?.classList.toggle("dg-va-open");
+  };
+
   if (layout === "floating") {
     render(h(FloatingWidget, { config }), root);
   } else {
-    // sidebar
     render(h(SidebarWidget, { config }), root);
-
-    // Wire up an optional external toggle button
-    if (config.buttonId) {
-      const btn = document.getElementById(config.buttonId);
-      btn?.addEventListener("click", () => {
-        root.querySelector<HTMLElement>(".dg-va-panel")?.classList.toggle("dg-va-open");
-        root.querySelector<HTMLElement>(".dg-va-overlay")?.classList.toggle("dg-va-open");
-      });
-    }
-
-    // Support custom event from page code
-    document.addEventListener("dg-agent-toggle", () => {
-      root.querySelector<HTMLElement>(".dg-va-panel")?.classList.toggle("dg-va-open");
-      root.querySelector<HTMLElement>(".dg-va-overlay")?.classList.toggle("dg-va-open");
-    });
   }
 
+  // Open by default if configured
+  if (config.defaultOpen) {
+    requestAnimationFrame(toggle);
+  }
+
+  // Wire up an optional external toggle button
+  if (config.buttonId) {
+    document.getElementById(config.buttonId)?.addEventListener("click", toggle);
+  }
+
+  // Support toggle via custom DOM event: document.dispatchEvent(new Event('dg-agent-toggle'))
+  document.addEventListener("dg-agent-toggle", toggle);
+
   return () => {
+    document.removeEventListener("dg-agent-toggle", toggle);
     render(null, root);
     root.remove();
   };
@@ -89,9 +95,13 @@ export function init(config: WidgetConfig): () => void {
 
 function applyTheme(theme: WidgetConfig["theme"]): void {
   if (!theme) return;
-  const style = document.documentElement.style;
-  if (theme.primary) style.setProperty("--dg-va-primary", theme.primary);
-  if (theme.background) style.setProperty("--dg-va-bg", theme.background);
-  if (theme.text) style.setProperty("--dg-va-text", theme.text);
-  if (theme.radius) style.setProperty("--dg-va-radius", theme.radius);
+  const s = document.documentElement.style;
+  if (theme.primary)         s.setProperty("--dg-va-primary", theme.primary);
+  if (theme.background)      s.setProperty("--dg-va-bg", theme.background);
+  if (theme.backgroundRaised) s.setProperty("--dg-va-bg-raised", theme.backgroundRaised);
+  if (theme.text)            s.setProperty("--dg-va-text", theme.text);
+  if (theme.textMuted)       s.setProperty("--dg-va-text-muted", theme.textMuted);
+  if (theme.buttonRadius)    s.setProperty("--dg-va-btn-radius", theme.buttonRadius);
+  if (theme.panelRadius)     s.setProperty("--dg-va-radius", theme.panelRadius);
+  if (theme.fabSize)         s.setProperty("--dg-va-fab-size", `${theme.fabSize}px`);
 }
