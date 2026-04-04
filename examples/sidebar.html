@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sidebar Layout — Deepgram Agent Widget</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #0d0d10;
+      color: #e5e7eb;
+      min-height: 100dvh;
+      padding: 40px 24px;
+    }
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 24px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      margin-bottom: 32px;
+    }
+    header h1 { font-size: 1.2rem; font-weight: 600; color: #13EF93; }
+    #open-btn {
+      padding: 10px 20px;
+      background: #13EF93;
+      color: #000;
+      font-weight: 600;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+    #open-btn:hover { opacity: 0.9; }
+    .page-content { color: #6b7280; font-size: 0.9rem; line-height: 1.7; max-width: 600px; }
+    .page-content h2 { color: #e5e7eb; margin-bottom: 8px; font-size: 1rem; }
+    .back { display: inline-block; margin-bottom: 24px; color: #6b7280; font-size: 0.85rem; text-decoration: none; }
+    .back:hover { color: #13EF93; }
+  </style>
+</head>
+<body>
+  <a class="back" href="/">← Back to examples</a>
+
+  <header>
+    <h1>Sidebar Layout</h1>
+    <button id="open-btn">Open Agent</button>
+  </header>
+
+  <div class="page-content">
+    <h2>How it works</h2>
+    <p>
+      The widget is connected to <code>id="open-btn"</code> via the
+      <code>buttonId</code> config option. Clicking the button slides the
+      panel in from the right. The overlay dismisses the panel.
+    </p>
+  </div>
+
+  <script type="module">
+    import { init } from "@deepgram/agent-widget";
+    import { baseConfig } from "./src/agent-config.ts";
+
+    init({
+      ...baseConfig,
+      layout: "sidebar",
+      placement: "bottom-right",
+      buttonId: "open-btn",
+      name: "Sidebar Demo",
+      colorScheme: "dark",
+    });
+  </script>
+</body>
+</html>

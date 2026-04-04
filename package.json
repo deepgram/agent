@@ -2,13 +2,15 @@
   "name": "@deepgram/voice-agent-monorepo",
   "private": true,
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "examples"
   ],
   "packageManager": "bun@1.3.10",
   "scripts": {
-    "build": "bun run --filter '*' build",
-    "dev": "bun run --filter '*' dev",
-    "typecheck": "bun run --filter '*' typecheck",
-    "lint": "bun run --filter '*' lint"
+    "build": "bun run --filter 'packages/*' build",
+    "dev": "bun run --filter 'packages/*' dev",
+    "dev:examples": "bun run --cwd examples dev",
+    "typecheck": "bun run --filter 'packages/*' typecheck",
+    "lint": "bun run --filter 'packages/*' lint"
   }
 }

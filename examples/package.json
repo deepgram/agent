@@ -1,0 +1,20 @@
+{
+  "name": "@deepgram/agent-examples",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@deepgram/agent": "workspace:*",
+    "@deepgram/agent-react": "workspace:*",
+    "@deepgram/agent-widget": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "5.9.3",
+    "vite": "8.0.3"
+  }
+}

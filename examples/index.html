@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Deepgram Agent Widget — Examples</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #0d0d10;
+      color: #e5e7eb;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 40px;
+      padding: 40px 20px;
+    }
+    h1 { font-size: clamp(1.5rem, 4vw, 2.5rem); color: #13EF93; letter-spacing: -0.03em; }
+    p  { color: #9ca3af; font-size: 1rem; max-width: 480px; text-align: center; line-height: 1.6; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      width: 100%;
+      max-width: 720px;
+    }
+    a {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding: 24px 20px;
+      background: #18181c;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 14px;
+      color: #e5e7eb;
+      text-decoration: none;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    a:hover { border-color: #13EF93; background: #1a1f1e; }
+    a .label { font-size: 1rem; font-weight: 600; }
+    a .desc  { font-size: 0.8rem; color: #6b7280; }
+    .note {
+      font-size: 0.8rem;
+      color: #6b7280;
+      background: #18181c;
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 8px;
+      padding: 12px 16px;
+      max-width: 480px;
+      text-align: center;
+      line-height: 1.5;
+    }
+    code { font-family: monospace; background: #101014; padding: 2px 5px; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <h1>Deepgram Agent Widget</h1>
+  <p>Pick a layout to preview. Make sure you've set <code>DEEPGRAM_API_KEY</code> in <code>examples/.env</code>.</p>
+
+  <div class="grid">
+    <a href="/sidebar.html">
+      <span class="label">↔ Sidebar</span>
+      <span class="desc">Panel slides in from the right edge</span>
+    </a>
+    <a href="/inline.html">
+      <span class="label">▦ Inline</span>
+      <span class="desc">Widget embedded in a host container</span>
+    </a>
+    <a href="/floating.html">
+      <span class="label">◉ Floating</span>
+      <span class="desc">FAB button reveals an overlay panel</span>
+    </a>
+  </div>
+
+  <p class="note">
+    The dev server proxies <code>POST /api/token</code> →
+    <code>api.deepgram.com/v1/auth/grant</code>, so your API key never
+    reaches the browser.
+  </p>
+</body>
+</html>
