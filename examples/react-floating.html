@@ -5,33 +5,25 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Floating FAB — React</title>
   <link rel="stylesheet" href="/src/shared-styles.css" />
-  <style>
-    body { padding: 32px 24px; }
-  </style>
+  <link rel="stylesheet" href="/src/react-example.css" />
+  <style>body { padding: 0; }</style>
 </head>
 <body>
-  <a class="back" href="/">← Examples</a>
-  <h1>Floating FAB <span class="badge badge-react">React</span></h1>
-  <p class="desc">FAB + overlay panel built on <code>useDeepgramAgent</code>. Click the mic button bottom-right.</p>
+  <div style="padding:20px 24px;border-bottom:1px solid rgba(255,255,255,.08)">
+    <a class="back" href="/" style="margin:0 12px 0 0">←</a>
+    <span style="font-weight:600;color:#7dd3fc">React</span>
+    <span style="color:#6b7280;font-size:.85rem;margin-left:8px">Floating FAB — click 🎙 to open</span>
+  </div>
 
-  <div class="code-wrap">
-    <h3>Code</h3>
-    <pre class="code"><span class="kw">import</span> { <span class="fn">useState</span> } <span class="kw">from</span> <span class="str">'react'</span>;
-<span class="kw">import</span> { <span class="fn">useDeepgramAgent</span> } <span class="kw">from</span> <span class="str">'@deepgram/agent-react'</span>;
-
-<span class="kw">function</span> <span class="fn">FloatingAgent</span>() {
-  <span class="kw">const</span> [open, setOpen] = <span class="fn">useState</span>(<span class="kw">false</span>);
-  <span class="kw">const</span> { state, start, stop, conversation } =
-    <span class="fn">useDeepgramAgent</span>({ <span class="at">config</span>: { <span class="cm">/* ... */</span> } });
-
-  <span class="kw">return</span> (
-    <span class="tag">&lt;&gt;</span>
-      <span class="tag">&lt;button</span> <span class="at">className</span>=<span class="str">"fab"</span> <span class="at">onClick</span>={() =&gt; <span class="fn">setOpen</span>(o =&gt; !o)}<span class="tag">&gt;</span>🎙<span class="tag">&lt;/button&gt;</span>
-      {open &amp;&amp; <span class="tag">&lt;Panel</span> <span class="at">state</span>={state} <span class="at">start</span>={start} <span class="at">stop</span>={stop}
-                      <span class="at">conversation</span>={conversation} <span class="tag">/&gt;</span>}
-    <span class="tag">&lt;/&gt;</span>
-  );
-}</pre>
+  <div class="code-wrap" style="padding:16px 24px 0">
+    <h3>No TTS variant</h3>
+    <pre class="code"><span class="tag">&lt;AgentProvider</span> <span class="at">config</span>={config} <span class="at">tts</span>={<span class="kw">false</span>}<span class="tag">&gt;</span>
+  <span class="tag">&lt;AgentConversation /&gt;</span>     <span class="cm">// text responses only</span>
+  <span class="tag">&lt;AgentTextInput /&gt;</span>
+  <span class="tag">&lt;AgentMicrophoneButton /&gt;</span>
+  <span class="cm">// No AgentSpeakerButton — nothing to mute</span>
+  <span class="tag">&lt;AgentStartButton /&gt;</span>
+<span class="tag">&lt;/AgentProvider&gt;</span></pre>
   </div>
 
   <div id="react-root"></div>
@@ -39,8 +31,8 @@
   <script type="module">
     import { createElement } from "react";
     import { render } from "react-dom";
-    import { ReactExample } from "./src/react-example.tsx";
-    render(createElement(ReactExample, { layout: "floating" }), document.getElementById("react-root"));
+    import { ReactFloatingExample } from "./src/react-example.tsx";
+    render(createElement(ReactFloatingExample), document.getElementById("react-root"));
   </script>
 </body>
 </html>

@@ -5,44 +5,37 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Sidebar — React</title>
   <link rel="stylesheet" href="/src/shared-styles.css" />
-  <style>
-    body { padding: 32px 24px; }
-    header { display: flex; align-items: center; justify-content: space-between; padding-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,.08); margin-bottom: 24px; }
-    #open-btn { padding: 10px 20px; background: #7dd3fc; color: #000; font-weight: 600; border: none; border-radius: 10px; cursor: pointer; }
-  </style>
+  <link rel="stylesheet" href="/src/react-example.css" />
+  <style>body { padding: 0; }</style>
 </head>
 <body>
-  <a class="back" href="/">← Examples</a>
-  <header>
-    <div>
-      <h1>Sidebar Layout <span class="badge badge-react">React</span></h1>
-      <p class="desc" style="margin:0">Custom UI built directly on the <code>useDeepgramAgent</code> hook.</p>
-    </div>
-    <button id="open-btn" onclick="document.dispatchEvent(new Event('open-react-sidebar'))">Open Agent</button>
-  </header>
+  <div style="padding:20px 24px;border-bottom:1px solid rgba(255,255,255,.08)">
+    <a class="back" href="/" style="margin:0 12px 0 0">←</a>
+    <span style="font-weight:600;color:#7dd3fc">React</span>
+    <span style="color:#6b7280;font-size:.85rem;margin-left:8px">Sidebar layout — switch variants to compare feature compositions</span>
+  </div>
 
-  <div class="code-wrap">
-    <h3>Code</h3>
-    <pre class="code"><span class="kw">import</span> { <span class="fn">useDeepgramAgent</span> } <span class="kw">from</span> <span class="str">'@deepgram/agent-react'</span>;
+  <div class="code-wrap" style="padding:20px 24px 0">
+    <h3>Code — full variant</h3>
+    <pre class="code"><span class="kw">import</span> { <span class="fn">AgentProvider</span>, <span class="fn">AgentStatus</span>, <span class="fn">AgentConversation</span>,
+         <span class="fn">AgentTextInput</span>, <span class="fn">AgentMicrophoneButton</span>, <span class="fn">AgentSpeakerButton</span>,
+         <span class="fn">AgentStartButton</span> } <span class="kw">from</span> <span class="str">'@deepgram/agent-react'</span>;
 
-<span class="kw">function</span> <span class="fn">MySidebar</span>() {
-  <span class="kw">const</span> { state, conversation, start, stop, sendUserMessage } =
-    <span class="fn">useDeepgramAgent</span>({
-      <span class="at">config</span>: {
-        <span class="at">auth</span>: { <span class="at">tokenFactory</span>: () =&gt; <span class="fn">fetch</span>(<span class="str">'/api/token'</span>)
-          .<span class="fn">then</span>(r =&gt; r.<span class="fn">json</span>()).<span class="fn">then</span>(d =&gt; d.token) },
-        <span class="at">agent</span>: { <span class="cm">/* ... */</span> },
-      },
-    });
+<span class="tag">&lt;AgentProvider</span> <span class="at">config</span>={config}<span class="tag">&gt;</span>
+  <span class="tag">&lt;AgentStatus /&gt;</span>
+  <span class="tag">&lt;AgentConversation /&gt;</span>      <span class="cm">// show transcript</span>
+  <span class="tag">&lt;AgentTextInput /&gt;</span>         <span class="cm">// enable text input</span>
+  <span class="tag">&lt;AgentMicrophoneButton /&gt;</span>  <span class="cm">// user controls mic</span>
+  <span class="tag">&lt;AgentSpeakerButton /&gt;</span>     <span class="cm">// user controls playback</span>
+  <span class="tag">&lt;AgentStartButton /&gt;</span>
+<span class="tag">&lt;/AgentProvider&gt;</span>
 
-  <span class="kw">return</span> (
-    <span class="tag">&lt;div&gt;</span>
-      <span class="tag">&lt;p&gt;</span>Status: {state}<span class="tag">&lt;/p&gt;</span>
-      <span class="tag">&lt;button</span> <span class="at">onClick</span>={start}<span class="tag">&gt;</span>Start<span class="tag">&lt;/button&gt;</span>
-      {conversation.<span class="fn">map</span>(m =&gt; <span class="tag">&lt;p</span> <span class="at">key</span>={m.id}<span class="tag">&gt;</span>{m.content}<span class="tag">&lt;/p&gt;</span>)}
-    <span class="tag">&lt;/div&gt;</span>
-  );
-}</pre>
+<span class="cm">// Text-only — disable mic at provider level:</span>
+<span class="tag">&lt;AgentProvider</span> <span class="at">config</span>={config} <span class="at">microphone</span>={<span class="kw">false</span>}<span class="tag">&gt;</span>
+  <span class="tag">&lt;AgentConversation /&gt;</span>
+  <span class="tag">&lt;AgentTextInput /&gt;</span>
+  <span class="tag">&lt;AgentStartButton /&gt;</span>
+<span class="tag">&lt;/AgentProvider&gt;</span></pre>
   </div>
 
   <div id="react-root"></div>
@@ -50,8 +43,8 @@
   <script type="module">
     import { createElement } from "react";
     import { render } from "react-dom";
-    import { ReactExample } from "./src/react-example.tsx";
-    render(createElement(ReactExample, { layout: "sidebar" }), document.getElementById("react-root"));
+    import { ReactSidebarExample } from "./src/react-example.tsx";
+    render(createElement(ReactSidebarExample), document.getElementById("react-root"));
   </script>
 </body>
 </html>

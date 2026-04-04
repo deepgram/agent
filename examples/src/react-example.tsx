@@ -1,123 +1,229 @@
 /**
- * Minimal React example using useDeepgramAgent directly.
- * Demonstrates building a custom UI on top of the hook — no pre-built widget.
+ * React examples — four composition variants showing how omitting components
+ * changes the feature set without touching the provider config.
+ *
+ * Styling is minimal inline CSS to keep focus on structure.
  */
 import { useState } from "react";
-import { useDeepgramAgent } from "@deepgram/agent-react";
+import {
+  AgentProvider,
+  AgentStatus,
+  AgentConversation,
+  AgentTextInput,
+  AgentMicrophoneButton,
+  AgentSpeakerButton,
+  AgentStartButton,
+  type ConversationEntry,
+} from "@deepgram/agent-react";
 import { baseConfig } from "./agent-config.js";
 
-interface Props {
-  layout: "sidebar" | "inline" | "floating";
-}
+// ---------------------------------------------------------------------------
+// Minimal shared styles
+// ---------------------------------------------------------------------------
+const css = {
+  panel:    "dg-ex-panel",
+  header:   "dg-ex-header",
+  msgs:     "dg-ex-msgs",
+  msg:      "dg-ex-msg",
+  controls: "dg-ex-controls",
+  row:      "dg-ex-row",
+};
 
-export function ReactExample({ layout }: Props) {
-  const [open, setOpen] = useState(layout !== "floating");
-
-  const {
-    state,
-    micActive,
-    conversation,
-    start,
-    stop,
-    setMicMuted,
-    sendUserMessage,
-    interrupt,
-  } = useDeepgramAgent({
-    config: baseConfig,
-    onFunctionCall: async () => JSON.stringify({ ok: true }),
-  });
-
-  const [text, setText] = useState("");
-  const [micMuted, setMicMutedLocal] = useState(false);
-  const isActive = state === "connected" || state === "connecting" || state === "reconnecting";
-
-  function handleMicToggle() {
-    const next = !micMuted;
-    setMicMutedLocal(next);
-    setMicMuted(next);
-  }
-
-  function handleSend() {
-    if (!text.trim() || !isActive) return;
-    sendUserMessage(text);
-    setText("");
-  }
-
-  const panel = (
-    <div style={styles.panel}>
-      <div style={styles.header}>
-        <span style={styles.title}>Voice Agent <span style={{ color: "#13EF93", fontSize: 12 }}>useDeepgramAgent</span></span>
-        <span style={{ ...styles.dot, background: state === "connected" ? "#13EF93" : state === "reconnecting" ? "#f59e0b" : "#6b7280" }} />
-        <span style={{ fontSize: 12, color: "#6b7280" }}>{state}</span>
-        {layout !== "inline" && <button onClick={() => setOpen(false)} style={styles.iconBtn}>✕</button>}
-      </div>
-
-      <div style={styles.messages}>
-        {conversation.length === 0
-          ? <div style={styles.empty}>Press Start to begin</div>
-          : conversation.map((m) => (
-            <div key={m.id} style={{ ...styles.msg, ...(m.role === "user" ? styles.msgUser : styles.msgAgent) }}>
-              {m.content}
-            </div>
-          ))}
-      </div>
-
-      <div style={styles.controls}>
-        {isActive && (
-          <div style={{ display: "flex", gap: 8 }}>
-            <input
-              value={text}
-              onChange={(e) => setText((e.target as HTMLInputElement).value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSend()}
-              placeholder="Type a message…"
-              style={styles.input}
-            />
-            <button onClick={handleMicToggle} style={{ ...styles.iconBtn, background: micMuted ? "#1e1e24" : micActive ? "#13EF93" : "#1e1e24", color: micMuted ? "#6b7280" : micActive ? "#000" : "#fff" }}>🎤</button>
-            <button onClick={interrupt} style={styles.iconBtn} title="Interrupt">⏹</button>
-          </div>
-        )}
-        <button
-          onClick={isActive ? stop : start}
-          style={{ ...styles.startBtn, ...(isActive ? styles.stopBtn : {}) }}
-        >
-          {isActive ? "Stop" : "Start"}
-        </button>
-      </div>
+function Msg({ entry }: { entry: ConversationEntry }) {
+  return (
+    <div className={`${css.msg} ${css.msg}--${entry.role}`} data-role={entry.role}>
+      <strong>{entry.role === "user" ? "You" : "Agent"}:</strong> {entry.content}
     </div>
   );
+}
 
-  if (layout === "inline") return panel;
+// ---------------------------------------------------------------------------
+// A — Full: voice + chat (all components)
+// ---------------------------------------------------------------------------
+export function FullVariant() {
+  return (
+    <AgentProvider config={baseConfig}>
+      <div className={css.panel}>
+        <div className={css.header}>
+          <span>Full — voice + chat</span>
+          <AgentStatus />
+        </div>
+        <AgentConversation
+          className={css.msgs}
+          emptyState={<p>Press Start to begin</p>}
+          renderMessage={(e) => <Msg key={e.id} entry={e} />}
+        />
+        <div className={css.controls}>
+          <div className={css.row}>
+            <AgentTextInput className="dg-ex-input" />
+            <AgentMicrophoneButton activeLabel="🎤" mutedLabel="🔇" />
+            <AgentSpeakerButton   activeLabel="🔊" mutedLabel="🔕" />
+          </div>
+          <AgentStartButton />
+        </div>
+      </div>
+    </AgentProvider>
+  );
+}
 
+// ---------------------------------------------------------------------------
+// B — Text-only: microphone={false} disables mic at provider level
+// ---------------------------------------------------------------------------
+export function TextOnlyVariant() {
+  return (
+    <AgentProvider config={baseConfig} microphone={false}>
+      <div className={css.panel}>
+        <div className={css.header}>
+          <span>Text-only <code>microphone=false</code></span>
+          <AgentStatus />
+        </div>
+        <AgentConversation
+          className={css.msgs}
+          emptyState={<p>Press Start to begin</p>}
+          renderMessage={(e) => <Msg key={e.id} entry={e} />}
+        />
+        <div className={css.controls}>
+          <AgentTextInput className="dg-ex-input" />
+          <AgentStartButton />
+        </div>
+      </div>
+    </AgentProvider>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// C — Voice-only: no AgentMicrophoneButton → mic auto-opens on connect
+//                  no AgentConversation    → no transcript rendered
+//                  no AgentTextInput       → no text input
+// ---------------------------------------------------------------------------
+export function VoiceOnlyVariant() {
+  return (
+    <AgentProvider config={baseConfig}>
+      <div className={css.panel}>
+        <div className={css.header}>
+          <span>Voice-only <small>mic auto-opens</small></span>
+          <AgentStatus />
+        </div>
+        {/* Intentionally no Conversation, TextInput, or MicrophoneButton */}
+        <div style={{ flex: 1 }} />
+        <div className={css.controls}>
+          <AgentSpeakerButton activeLabel="🔊 Speaker on" mutedLabel="🔕 Speaker off" />
+          <AgentStartButton />
+        </div>
+      </div>
+    </AgentProvider>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// D — No TTS: tts={false} suppresses audio playback, agent responds in text
+// ---------------------------------------------------------------------------
+export function NoTTSVariant() {
+  return (
+    <AgentProvider config={baseConfig} tts={false}>
+      <div className={css.panel}>
+        <div className={css.header}>
+          <span>No TTS <code>tts=false</code></span>
+          <AgentStatus />
+        </div>
+        <AgentConversation
+          className={css.msgs}
+          emptyState={<p>Text responses only — no audio playback</p>}
+          renderMessage={(e) => <Msg key={e.id} entry={e} />}
+        />
+        <div className={css.controls}>
+          <div className={css.row}>
+            <AgentTextInput className="dg-ex-input" />
+            <AgentMicrophoneButton activeLabel="🎤" mutedLabel="🔇" />
+            {/* No AgentSpeakerButton — tts=false so there's nothing to mute */}
+          </div>
+          <AgentStartButton />
+        </div>
+      </div>
+    </AgentProvider>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Layout wrappers used by the three HTML pages
+// ---------------------------------------------------------------------------
+
+type Variant = "full" | "text" | "voice" | "notts";
+const variants: Record<Variant, React.ComponentType> = {
+  full:  FullVariant,
+  text:  TextOnlyVariant,
+  voice: VoiceOnlyVariant,
+  notts: NoTTSVariant,
+};
+
+function VariantPicker({ current, onChange }: { current: Variant; onChange: (v: Variant) => void }) {
+  return (
+    <div className="dg-ex-picker">
+      {(Object.keys(variants) as Variant[]).map((v) => (
+        <button
+          key={v}
+          onClick={() => onChange(v)}
+          className={`dg-ex-pick-btn ${current === v ? "dg-ex-pick-btn--active" : ""}`}
+        >
+          {v}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+export function ReactSidebarExample() {
+  const [open, setOpen] = useState(false);
+  const [variant, setVariant] = useState<Variant>("full");
+  const V = variants[variant];
   return (
     <>
-      {layout === "floating" && (
-        <button onClick={() => setOpen((o) => !o)} style={styles.fab}>🎙</button>
-      )}
+      <div className="dg-ex-page-controls">
+        <button className="dg-ex-open-btn" onClick={() => setOpen((o) => !o)}>
+          {open ? "Close" : "Open Agent"}
+        </button>
+        <VariantPicker current={variant} onChange={setVariant} />
+      </div>
       {open && (
-        <div style={layout === "sidebar" ? styles.sidebar : styles.overlay}>
-          {panel}
+        <div className="dg-ex-sidebar">
+          <V />
         </div>
       )}
     </>
   );
 }
 
-const styles: Record<string, React.CSSProperties> = {
-  panel:    { display: "flex", flexDirection: "column", height: "100%", background: "#101014", color: "#fff", fontFamily: "system-ui, sans-serif" },
-  header:   { display: "flex", alignItems: "center", gap: 8, padding: "12px 16px", borderBottom: "1px solid rgba(255,255,255,0.08)" },
-  title:    { flex: 1, fontWeight: 600, fontSize: 14 },
-  dot:      { width: 7, height: 7, borderRadius: "50%" },
-  messages: { flex: 1, overflowY: "auto", padding: 16, display: "flex", flexDirection: "column", gap: 8 },
-  empty:    { margin: "auto", color: "#6b7280", fontSize: 14 },
-  msg:      { maxWidth: "85%", padding: "8px 12px", borderRadius: 10, fontSize: 14, lineHeight: 1.5 },
-  msgUser:  { alignSelf: "flex-end", background: "rgba(19,239,147,0.15)", border: "1px solid rgba(19,239,147,0.2)" },
-  msgAgent: { alignSelf: "flex-start", background: "#18181c", border: "1px solid rgba(255,255,255,0.08)" },
-  controls: { padding: "12px 16px", borderTop: "1px solid rgba(255,255,255,0.08)", display: "flex", flexDirection: "column", gap: 8 },
-  input:    { flex: 1, background: "#1e1e24", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, color: "#fff", padding: "8px 12px", fontSize: 14, outline: "none" },
-  iconBtn:  { width: 36, height: 36, borderRadius: 8, border: "1px solid rgba(255,255,255,0.1)", background: "#1e1e24", color: "#fff", cursor: "pointer", fontSize: 16 },
-  startBtn: { padding: "10px", borderRadius: 8, background: "#13EF93", color: "#000", fontWeight: 600, border: "none", cursor: "pointer" },
-  stopBtn:  { background: "#18181c", color: "#fff", border: "1px solid rgba(255,255,255,0.1)" },
-  fab:      { position: "fixed", bottom: 24, right: 24, width: 56, height: 56, borderRadius: "50%", background: "#13EF93", border: "none", fontSize: 24, cursor: "pointer", zIndex: 99998 },
-  sidebar:  { position: "fixed", top: 0, right: 0, bottom: 0, width: "min(440px,100vw)", zIndex: 99999, boxShadow: "-4px 0 32px rgba(0,0,0,0.5)" },
-  overlay:  { position: "fixed", bottom: 90, right: 24, width: "min(380px,90vw)", height: 500, borderRadius: 16, overflow: "hidden", zIndex: 99999, boxShadow: "0 8px 32px rgba(0,0,0,0.5)" },
-};
+export function ReactInlineExample() {
+  const [variant, setVariant] = useState<Variant>("full");
+  const V = variants[variant];
+  return (
+    <div className="dg-ex-inline-layout">
+      <div className="dg-ex-inline-left">
+        <VariantPicker current={variant} onChange={setVariant} />
+        <p className="dg-ex-hint">Switch variants to see how omitting components changes features without touching provider config.</p>
+      </div>
+      <div className="dg-ex-inline-right">
+        <V />
+      </div>
+    </div>
+  );
+}
+
+export function ReactFloatingExample() {
+  const [open, setOpen] = useState(false);
+  const [variant, setVariant] = useState<Variant>("full");
+  const V = variants[variant];
+  return (
+    <>
+      <div className="dg-ex-page-controls">
+        <VariantPicker current={variant} onChange={setVariant} />
+      </div>
+      <button className="dg-ex-fab" onClick={() => setOpen((o) => !o)}>🎙</button>
+      {open && (
+        <div className="dg-ex-floating">
+          <V />
+        </div>
+      )}
+    </>
+  );
+}

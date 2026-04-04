@@ -16,6 +16,7 @@
     }
   },
   "include": ["src"],
+  "exclude": [],
   "references": [
     { "path": "../sdk" },
     { "path": "../react" }

@@ -5,46 +5,37 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Inline — React</title>
   <link rel="stylesheet" href="/src/shared-styles.css" />
+  <link rel="stylesheet" href="/src/react-example.css" />
   <style>
-    body { display: grid; grid-template-columns: 1fr 400px; grid-template-rows: auto 1fr; min-height: 100dvh; }
-    .page-header { grid-column: 1/-1; padding: 20px 24px; border-bottom: 1px solid rgba(255,255,255,.08); display: flex; align-items: baseline; gap: 12px; }
-    main { padding: 24px; overflow-y: auto; }
-    aside { border-left: 1px solid rgba(255,255,255,.08); height: calc(100vh - 65px); position: sticky; top: 65px; }
-    #react-root { width: 100%; height: 100%; }
-    @media (max-width: 640px) { body { grid-template-columns: 1fr; } aside { height: 400px; position: relative; } }
+    body { padding: 0; }
+    .top-bar { padding:16px 24px; border-bottom:1px solid rgba(255,255,255,.08); display:flex; align-items:center; gap:12px; }
   </style>
 </head>
 <body>
-  <header class="page-header">
+  <div class="top-bar">
     <a class="back" href="/" style="margin:0">←</a>
-    <h1>Inline Layout <span class="badge badge-react">React</span></h1>
-  </header>
+    <span style="font-weight:600;color:#7dd3fc">React</span>
+    <span style="color:#6b7280;font-size:.85rem">Inline layout — four composition variants</span>
+  </div>
 
-  <main>
-    <p class="desc">Custom React component rendered into a host container using <code>useDeepgramAgent</code>.</p>
-    <div class="code-wrap">
-      <h3>Code</h3>
-      <pre class="code"><span class="kw">import</span> { <span class="fn">render</span> } <span class="kw">from</span> <span class="str">'react-dom'</span>;
-<span class="kw">import</span> { <span class="fn">useDeepgramAgent</span> } <span class="kw">from</span> <span class="str">'@deepgram/agent-react'</span>;
+  <div class="code-wrap" style="padding:16px 24px 0">
+    <h3>Voice-only variant — no text, no transcript</h3>
+    <pre class="code"><span class="tag">&lt;AgentProvider</span> <span class="at">config</span>={config}<span class="tag">&gt;</span>
+  <span class="cm">// No AgentConversation  → no transcript rendered</span>
+  <span class="cm">// No AgentTextInput     → no text input</span>
+  <span class="cm">// No AgentMicrophoneButton → mic auto-opens on connect</span>
+  <span class="tag">&lt;AgentSpeakerButton /&gt;</span>
+  <span class="tag">&lt;AgentStartButton /&gt;</span>
+<span class="tag">&lt;/AgentProvider&gt;</span></pre>
+  </div>
 
-<span class="kw">function</span> <span class="fn">MyAgent</span>() {
-  <span class="kw">const</span> agent = <span class="fn">useDeepgramAgent</span>({ <span class="at">config</span>: { <span class="cm">/* ... */</span> } });
-  <span class="kw">return</span> <span class="tag">&lt;YourCustomUI</span> <span class="at">agent</span>={agent} <span class="tag">/&gt;</span>;
-}
-
-<span class="fn">render</span>(<span class="tag">&lt;MyAgent /&gt;</span>, <span class="fn">document</span>.<span class="fn">getElementById</span>(<span class="str">'app'</span>));</pre>
-    </div>
-  </main>
-
-  <aside>
-    <div id="react-root"></div>
-  </aside>
+  <div id="react-root"></div>
 
   <script type="module">
     import { createElement } from "react";
     import { render } from "react-dom";
-    import { ReactExample } from "./src/react-example.tsx";
-    render(createElement(ReactExample, { layout: "inline" }), document.getElementById("react-root"));
+    import { ReactInlineExample } from "./src/react-example.tsx";
+    render(createElement(ReactInlineExample), document.getElementById("react-root"));
   </script>
 </body>
 </html>

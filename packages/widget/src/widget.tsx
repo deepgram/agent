@@ -1,5 +1,5 @@
-import { useEffect, useState } from "preact/hooks";
-import { useDeepgramAgent } from "@deepgram/agent-react";
+import { useState } from "preact/hooks";
+import { AgentProvider } from "@deepgram/agent-react";
 import type { AgentSessionConfig } from "@deepgram/agent";
 import { ConversationPanel } from "./components/ConversationPanel.js";
 import type { WidgetConfig } from "./types.js";
@@ -10,34 +10,18 @@ interface WidgetProps {
 
 function buildSessionConfig(config: WidgetConfig): AgentSessionConfig {
   if (!config.apiKey && !config.tokenFactory) {
-    throw new Error(
-      "[@deepgram/agent-widget] Either apiKey or tokenFactory is required",
-    );
+    throw new Error("[@deepgram/agent-widget] Either apiKey or tokenFactory is required");
   }
-
-  const base: AgentSessionConfig = {
+  return {
     auth: config.apiKey
       ? { apiKey: config.apiKey }
       : { tokenFactory: config.tokenFactory! },
     agent: config.agent,
     audio: {
-      input: { encoding: "linear16", sampleRate: 16_000 },
-      output: {
-        encoding: "linear16",
-        sampleRate: config.playerSampleRate ?? 24_000,
-      },
+      input:  { encoding: "linear16", sampleRate: 16_000 },
+      output: { encoding: "linear16", sampleRate: config.playerSampleRate ?? 24_000 },
     },
   };
-
-  // Apply overrides onto the agent settings if provided
-  if (config.overrides && typeof base.agent === "object") {
-    const agent = base.agent as Record<string, unknown>;
-    if (config.overrides.greeting) agent.greeting = config.overrides.greeting;
-    // systemPrompt override would require inspecting think.instructions/prompt;
-    // kept as-is for now — full override support belongs in a future iteration
-  }
-
-  return base;
 }
 
 function placementClass(config: WidgetConfig): string {
@@ -45,48 +29,24 @@ function placementClass(config: WidgetConfig): string {
 }
 
 // ---------------------------------------------------------------------------
-// Shared agent hook with callback wiring
-// ---------------------------------------------------------------------------
-
-function useWidgetAgent(config: WidgetConfig) {
-  const agent = useDeepgramAgent({
-    config: buildSessionConfig(config),
-    micOptions: { vad: config.vad ?? false },
-    playerSampleRate: config.playerSampleRate,
-    onFunctionCall: config.on?.onFunctionCallRequest
-      ? async (fn) => {
-          // Surface to external handler; return empty string if no result
-          config.on?.onFunctionCallRequest?.({ type: "FunctionCallRequest", functions: [fn] });
-          return JSON.stringify({ ok: true });
-        }
-      : undefined,
-  });
-
-  // Wire SDK-level callbacks
-  useEffect(() => {
-    if (!config.on) return;
-    const { onConnect, onDisconnect, onError, onMessage, onAgentStartedSpeaking, onAgentError, onReconnecting } = config.on;
-
-    // We don't have direct access to the underlying AgentSession from the hook,
-    // so we map lifecycle state changes to callbacks here.
-    if (onConnect && agent.state === "connected") onConnect();
-    if (onDisconnect && agent.state === "disconnected") onDisconnect("session ended");
-  }, [agent.state]);
-
-  return agent;
-}
-
-// ---------------------------------------------------------------------------
-// Sidebar layout
+// Sidebar
 // ---------------------------------------------------------------------------
 
 export function SidebarWidget({ config }: WidgetProps) {
   const [open, setOpen] = useState(false);
-  const agent = useWidgetAgent(config);
   const pc = placementClass(config);
 
   return (
-    <>
+    <AgentProvider
+      config={buildSessionConfig(config)}
+      microphone={config.vad !== undefined ? true : config.vad ?? true}
+      microphoneOptions={{ vad: config.vad ?? false }}
+      tts={config.playerSampleRate !== undefined ? true : true}
+      playerSampleRate={config.playerSampleRate}
+      onFunctionCall={config.on?.onFunctionCallRequest
+        ? async (fn) => { config.on!.onFunctionCallRequest!({ type: "FunctionCallRequest", functions: [fn] }); return JSON.stringify({ ok: true }); }
+        : undefined}
+    >
       <div
         class={`dg-va-overlay ${open ? "dg-va-open" : ""}`}
         onClick={() => config.dismissible !== false && setOpen(false)}
@@ -94,57 +54,43 @@ export function SidebarWidget({ config }: WidgetProps) {
       <div class={`dg-va-panel ${pc} ${open ? "dg-va-open" : ""}`}>
         <ConversationPanel
           config={config}
-          state={agent.state}
-          micActive={agent.micActive}
-          outputMuted={agent.outputMuted}
-          conversation={agent.conversation}
-          onStart={agent.start}
-          onStop={agent.stop}
-          onMicMute={agent.setMicMuted}
-          onOutputMute={agent.setOutputMuted}
-          onSendText={agent.sendUserMessage}
           onClose={config.dismissible !== false ? () => setOpen(false) : undefined}
         />
       </div>
-    </>
+    </AgentProvider>
   );
 }
 
 // ---------------------------------------------------------------------------
-// Inline layout
+// Inline
 // ---------------------------------------------------------------------------
 
 export function InlineWidget({ config }: WidgetProps) {
-  const agent = useWidgetAgent(config);
-
   return (
-    <ConversationPanel
-      config={config}
-      state={agent.state}
-      micActive={agent.micActive}
-      outputMuted={agent.outputMuted}
-      conversation={agent.conversation}
-      onStart={agent.start}
-      onStop={agent.stop}
-      onMicMute={agent.setMicMuted}
-      onOutputMute={agent.setOutputMuted}
-      onSendText={agent.sendUserMessage}
-      inline
-    />
+    <AgentProvider
+      config={buildSessionConfig(config)}
+      microphoneOptions={{ vad: config.vad ?? false }}
+      playerSampleRate={config.playerSampleRate}
+    >
+      <ConversationPanel config={config} inline />
+    </AgentProvider>
   );
 }
 
 // ---------------------------------------------------------------------------
-// Floating FAB layout
+// Floating FAB
 // ---------------------------------------------------------------------------
 
 export function FloatingWidget({ config }: WidgetProps) {
   const [open, setOpen] = useState(false);
-  const agent = useWidgetAgent(config);
   const pc = placementClass(config);
 
   return (
-    <>
+    <AgentProvider
+      config={buildSessionConfig(config)}
+      microphoneOptions={{ vad: config.vad ?? false }}
+      playerSampleRate={config.playerSampleRate}
+    >
       <button
         class={`dg-va-fab ${pc}`}
         onClick={() => setOpen((o) => !o)}
@@ -163,18 +109,9 @@ export function FloatingWidget({ config }: WidgetProps) {
       <div class={`dg-va-panel ${pc} ${open ? "dg-va-open" : ""}`}>
         <ConversationPanel
           config={config}
-          state={agent.state}
-          micActive={agent.micActive}
-          outputMuted={agent.outputMuted}
-          conversation={agent.conversation}
-          onStart={agent.start}
-          onStop={agent.stop}
-          onMicMute={agent.setMicMuted}
-          onOutputMute={agent.setOutputMuted}
-          onSendText={agent.sendUserMessage}
           onClose={config.dismissible !== false ? () => setOpen(false) : undefined}
         />
       </div>
-    </>
+    </AgentProvider>
   );
 }
