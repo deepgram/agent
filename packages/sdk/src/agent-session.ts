@@ -134,28 +134,22 @@ export class AgentSession extends EventEmitter<AgentSessionEvents> {
 
   private async _openConnection(): Promise<void> {
     this._setState("connecting");
+    console.log("[dg-agent] _openConnection attempt", this.reconnectAttempts + 1);
 
     try {
-      // Invalidate cached token to guarantee a fresh one on every (re)connect
       this.tokenFactory.invalidate();
       const token = await this.tokenFactory.get();
+      console.log("[dg-agent] token obtained, length:", token.length);
 
-      // DeepgramClient (= CustomDeepgramClient) resolves the agent endpoint
-      // (wss://agent.deepgram.com) from its built-in environments.
-      // Browser auth is handled transparently via Sec-WebSocket-Protocol trick.
       const client = new DeepgramClient();
-
-      // Pass reconnectAttempts: 0 — we manage reconnects above the SDK level
-      // so we can refresh the token on each attempt.
       const socket = await client.agent.v1.connect({
         Authorization: `Token ${token}`,
         reconnectAttempts: 0,
       });
+      console.log("[dg-agent] socket created, waiting for open...");
 
-      // Wait for the WebSocket handshake to complete before resolving connect().
-      // Without this, the caller starts the microphone against a not-yet-open
-      // socket and audio frames arrive before the connection is established.
       await socket.waitForOpen();
+      console.log("[dg-agent] socket open, binding events");
 
       this.socket = socket;
       this._bindSocketEvents(socket);

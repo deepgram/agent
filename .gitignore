@@ -29,3 +29,6 @@ Thumbs.db
 npm-debug.log*
 pnpm-debug.log*
 public/spacewalk.wav
+.playwright-mcp/
+test-results/
+playwright-report/
