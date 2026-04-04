@@ -141,12 +141,10 @@ export class AgentSession extends EventEmitter<AgentSessionEvents> {
 
   private async _openConnection(): Promise<void> {
     this._setState("connecting");
-    console.log("[dg-agent] _openConnection attempt", this.reconnectAttempts + 1);
 
     try {
       this.tokenFactory.invalidate();
       const token = await this.tokenFactory.get();
-      console.log("[dg-agent] token obtained, length:", token.length);
 
       // DeepgramClient (= CustomDeepgramClient):
       // - apiKey satisfies HeaderAuthProvider so it doesn't fall back to process.env
@@ -162,7 +160,6 @@ export class AgentSession extends EventEmitter<AgentSessionEvents> {
         reconnectAttempts: 1,
       });
 
-      console.log("[dg-agent] socket obtained — calling connect() to start WebSocket");
 
       // Wait for open before binding our full event handlers.
       // socket.connect() starts the WebSocket (required because startClosed:true).
@@ -188,7 +185,6 @@ export class AgentSession extends EventEmitter<AgentSessionEvents> {
         socket.connect();
       });
 
-      console.log("[dg-agent] socket open");
 
       this.socket = socket;
       this.reconnectAttempts = 0;
@@ -196,7 +192,6 @@ export class AgentSession extends EventEmitter<AgentSessionEvents> {
       this._bindSocketEvents(socket);
 
     } catch (err) {
-      console.log("[dg-agent] _openConnection error:", String(err));
       this._onConnectionError(err instanceof Error ? err : new Error(String(err)));
     }
   }
@@ -242,13 +237,11 @@ export class AgentSession extends EventEmitter<AgentSessionEvents> {
       } else {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const serverMsg = msg as unknown as ServerMessage;
-        console.log("[dg-agent] ←", serverMsg.type);
         this._dispatchMessage(serverMsg, socket);
       }
     });
 
     socket.on("close", (event: { code: number; reason?: string }) => {
-      console.log("[dg-agent] socket closed", event.code, event.reason ?? "");
       this.keepAlive.stop();
       if (!this.intentionalClose) {
         this._scheduleReconnect(`socket closed: ${event.code} ${event.reason ?? ""}`);
@@ -264,7 +257,6 @@ export class AgentSession extends EventEmitter<AgentSessionEvents> {
     switch (msg.type) {
       case "Welcome": {
         const settings = this._buildSettingsPayload();
-        console.log("[dg-agent] → Settings");
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         socket.sendSettings(settings as any);
         this.emit("welcome", msg);
@@ -277,7 +269,6 @@ export class AgentSession extends EventEmitter<AgentSessionEvents> {
           socket.sendMedia(frame);
         }
         this.audioQueue = [];
-        console.log("[dg-agent] SettingsApplied — agent ready");
         this.emit("settings-applied", msg);
         break;
       case "ConversationText":

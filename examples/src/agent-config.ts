@@ -1,10 +1,5 @@
 import type { WidgetConfig } from "@deepgram/agent-widget";
 
-/**
- * Fetches a short-lived Deepgram access token from the dev-server proxy.
- * NOTE: The /v1/auth/grant endpoint issues tokens scoped to "asr:write" only
- * which is insufficient for the agent API. Pass apiKey directly for dev use.
- */
 async function tokenFactory(): Promise<string> {
   const res = await fetch("/api/token");
   if (!res.ok) {
@@ -18,13 +13,9 @@ async function tokenFactory(): Promise<string> {
 
 export const baseConfig: Omit<WidgetConfig, "layout" | "containerId"> = {
   // Use the raw API key for development — the auth/grant endpoint only issues
-  // asr:write scoped tokens which are not sufficient for the agent API.
-  // In production, swap this for a backend that issues agent-scoped tokens.
-  apiKey: (() => {
-    const k = import.meta.env.VITE_DEEPGRAM_API_KEY;
-    console.log("[config] VITE_DEEPGRAM_API_KEY present:", !!k, "length:", k?.length ?? 0);
-    return k;
-  })(),
+  // asr:write scoped tokens which may not be sufficient for the agent API.
+  // In production, swap for a backend that issues agent-scoped tokens.
+  apiKey: import.meta.env.VITE_DEEPGRAM_API_KEY,
 
   agent: {
     listen: {
