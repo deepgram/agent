@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Inline — Bundled UMD</title>
+  <link rel="stylesheet" href="/src/shared-styles.css" />
+  <style>
+    body { display: grid; grid-template-columns: 1fr 400px; grid-template-rows: auto 1fr; min-height: 100dvh; }
+    .page-header { grid-column: 1/-1; padding: 20px 24px; border-bottom: 1px solid rgba(255,255,255,.08); display: flex; align-items: baseline; gap: 12px; }
+    main { padding: 24px; overflow-y: auto; }
+    aside { border-left: 1px solid rgba(255,255,255,.08); height: calc(100vh - 65px); position: sticky; top: 65px; }
+    #agent-container { width: 100%; height: 100%; }
+    @media (max-width: 640px) { body { grid-template-columns: 1fr; } aside { height: 400px; position: relative; } }
+  </style>
+</head>
+<body>
+  <header class="page-header">
+    <a class="back" href="/" style="margin:0">←</a>
+    <h1>Inline Layout <span class="badge badge-umd">Bundled UMD</span></h1>
+  </header>
+
+  <main>
+    <p class="desc">Widget mounted into a host container via plain <code>&lt;script&gt;</code> tag — no bundler, no npm.</p>
+    <div class="code-wrap">
+      <h3>Code</h3>
+      <pre class="code"><span class="tag">&lt;div</span> <span class="at">id</span>=<span class="str">"agent-container"</span> <span class="at">style</span>=<span class="str">"height:600px"</span><span class="tag">&gt;&lt;/div&gt;</span>
+
+<span class="tag">&lt;script</span> <span class="at">src</span>=<span class="str">"https://cdn.deepgram.com/agent-widget/latest/widget.umd.js"</span><span class="tag">&gt;&lt;/script&gt;</span>
+<span class="tag">&lt;script&gt;</span>
+  <span class="fn">DeepgramAgent</span>.<span class="fn">init</span>({
+    <span class="at">tokenFactory</span>: () =&gt; <span class="fn">fetch</span>(<span class="str">'/api/token'</span>)
+      .<span class="fn">then</span>(r =&gt; r.<span class="fn">json</span>()).<span class="fn">then</span>(d =&gt; d.token),
+    <span class="at">agent</span>: { <span class="cm">/* ... */</span> },
+    <span class="at">layout</span>: <span class="str">'inline'</span>,
+    <span class="at">containerId</span>: <span class="str">'agent-container'</span>,
+  });
+<span class="tag">&lt;/script&gt;</span></pre>
+    </div>
+  </main>
+
+  <aside>
+    <div id="agent-container"></div>
+  </aside>
+
+  <script src="/widget.umd.js"></script>
+  <script>
+    DeepgramAgent.init({
+      tokenFactory: () => fetch('/api/token').then(r => r.json()).then(d => d.token),
+      agent: {
+        listen: { provider: { type: 'deepgram', version: 'v1', model: 'nova-3' } },
+        think:  { provider: { type: 'open_ai',  model: 'gpt-4o-mini' }, prompt: 'You are a helpful Deepgram voice assistant. Be concise.' },
+        speak:  { provider: { type: 'deepgram', model: 'aura-2-thalia-en' } },
+        greeting: "Hi! I'm your Deepgram voice assistant. How can I help?",
+      },
+      layout: 'inline',
+      containerId: 'agent-container',
+      name: 'Inline · UMD',
+      colorScheme: 'dark',
+      showTranscript: true,
+    });
+  </script>
+</body>
+</html>

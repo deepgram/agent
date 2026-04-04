@@ -3,72 +3,49 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Floating FAB — Deepgram Agent Widget</title>
+  <title>Floating FAB — TS Source</title>
+  <link rel="stylesheet" href="/src/shared-styles.css" />
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: system-ui, -apple-system, sans-serif;
-      background: #0d0d10;
-      color: #e5e7eb;
-      min-height: 100dvh;
-      padding: 40px 24px;
-    }
-    .back { display: inline-block; color: #6b7280; font-size: 0.85rem; text-decoration: none; margin-bottom: 32px; }
-    .back:hover { color: #13EF93; }
-    h1 { font-size: 1.2rem; font-weight: 600; color: #13EF93; margin-bottom: 24px; }
-    .page-content { color: #6b7280; font-size: 0.9rem; line-height: 1.7; max-width: 600px; }
-    .page-content h2 { color: #e5e7eb; margin-bottom: 8px; font-size: 1rem; }
-    .controls {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin: 24px 0;
-    }
-    .controls label { font-size: 0.8rem; color: #9ca3af; }
-    .controls select {
-      background: #18181c;
-      border: 1px solid rgba(255,255,255,0.12);
-      color: #e5e7eb;
-      padding: 6px 12px;
-      border-radius: 8px;
-      font-size: 0.85rem;
-      cursor: pointer;
-    }
+    body { padding: 32px 24px; }
+    .controls { display: flex; gap: 10px; flex-wrap: wrap; margin: 20px 0; }
+    label { font-size: .8rem; color: #9ca3af; display: flex; flex-direction: column; gap: 4px; }
+    select { background: #18181c; border: 1px solid rgba(255,255,255,.12); color: #e5e7eb; padding: 6px 10px; border-radius: 8px; font-size: .85rem; cursor: pointer; }
   </style>
 </head>
 <body>
-  <a class="back" href="/">← Back to examples</a>
-  <h1>Floating FAB Layout</h1>
+  <a class="back" href="/">← Examples</a>
+  <h1>Floating FAB <span class="badge badge-source">TS Source</span></h1>
+  <p class="desc">Mic FAB opens an overlay panel. Change options to hot-reload.</p>
 
   <div class="controls">
-    <label>
-      Placement
-      <select id="placement-select">
-        <option value="bottom-right" selected>bottom-right</option>
-        <option value="bottom-left">bottom-left</option>
-        <option value="bottom">bottom</option>
-        <option value="top-right">top-right</option>
-        <option value="top-left">top-left</option>
-        <option value="top">top</option>
-      </select>
-    </label>
-    <label>
-      Color scheme
-      <select id="scheme-select">
-        <option value="auto">auto (system)</option>
-        <option value="dark" selected>dark</option>
-        <option value="light">light</option>
-      </select>
-    </label>
+    <label>Placement <select id="placement">
+      <option value="bottom-right" selected>bottom-right</option>
+      <option value="bottom-left">bottom-left</option>
+      <option value="bottom">bottom</option>
+      <option value="top-right">top-right</option>
+      <option value="top-left">top-left</option>
+      <option value="top">top</option>
+    </select></label>
+    <label>Color scheme <select id="scheme">
+      <option value="auto">auto (system)</option>
+      <option value="dark" selected>dark</option>
+      <option value="light">light</option>
+    </select></label>
   </div>
 
-  <div class="page-content">
-    <h2>How it works</h2>
-    <p>
-      A floating microphone button appears at the configured <code>placement</code>.
-      Clicking it opens the agent panel. Change placement or color scheme above
-      to hot-reload the widget with new settings.
-    </p>
+  <div class="code-wrap">
+    <h3>Code</h3>
+    <pre class="code"><span class="kw">import</span> { <span class="fn">init</span> } <span class="kw">from</span> <span class="str">'@deepgram/agent-widget'</span>;
+
+<span class="kw">const</span> teardown = <span class="fn">init</span>({
+  <span class="at">tokenFactory</span>: () =&gt; <span class="fn">fetch</span>(<span class="str">'/api/token'</span>).<span class="fn">then</span>(r =&gt; r.<span class="fn">json</span>()).<span class="fn">then</span>(d =&gt; d.token),
+  <span class="at">agent</span>: { <span class="cm">/* ... */</span> },
+  <span class="at">layout</span>: <span class="str">'floating'</span>,
+  <span class="at">placement</span>: <span class="str">'bottom-right'</span>,
+  <span class="at">colorScheme</span>: <span class="str">'dark'</span>,
+});
+
+<span class="cm">// Unmount: teardown();</span></pre>
   </div>
 
   <script type="module">
@@ -76,24 +53,18 @@
     import { baseConfig } from "./src/agent-config.ts";
 
     let teardown = null;
-
     function mount() {
       teardown?.();
-      const placement = document.getElementById("placement-select").value;
-      const colorScheme = document.getElementById("scheme-select").value;
       teardown = init({
         ...baseConfig,
         layout: "floating",
-        placement,
-        colorScheme,
-        name: "Floating Demo",
-        defaultOpen: false,
+        placement: document.getElementById("placement").value,
+        colorScheme: document.getElementById("scheme").value,
+        name: "Floating · TS Source",
       });
     }
-
-    document.getElementById("placement-select").addEventListener("change", mount);
-    document.getElementById("scheme-select").addEventListener("change", mount);
-
+    document.getElementById("placement").addEventListener("change", mount);
+    document.getElementById("scheme").addEventListener("change", mount);
     mount();
   </script>
 </body>

@@ -6,79 +6,71 @@
   <title>Deepgram Agent Widget — Examples</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: system-ui, -apple-system, sans-serif;
-      background: #0d0d10;
-      color: #e5e7eb;
-      min-height: 100dvh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 40px;
-      padding: 40px 20px;
-    }
-    h1 { font-size: clamp(1.5rem, 4vw, 2.5rem); color: #13EF93; letter-spacing: -0.03em; }
-    p  { color: #9ca3af; font-size: 1rem; max-width: 480px; text-align: center; line-height: 1.6; }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 16px;
-      width: 100%;
-      max-width: 720px;
-    }
-    a {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      padding: 24px 20px;
-      background: #18181c;
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 14px;
-      color: #e5e7eb;
-      text-decoration: none;
-      transition: border-color 0.15s, background 0.15s;
-    }
-    a:hover { border-color: #13EF93; background: #1a1f1e; }
-    a .label { font-size: 1rem; font-weight: 600; }
-    a .desc  { font-size: 0.8rem; color: #6b7280; }
-    .note {
-      font-size: 0.8rem;
-      color: #6b7280;
-      background: #18181c;
-      border: 1px solid rgba(255,255,255,0.06);
-      border-radius: 8px;
-      padding: 12px 16px;
-      max-width: 480px;
-      text-align: center;
-      line-height: 1.5;
-    }
-    code { font-family: monospace; background: #101014; padding: 2px 5px; border-radius: 4px; }
+    body { font-family: system-ui, -apple-system, sans-serif; background: #0d0d10; color: #e5e7eb; min-height: 100dvh; padding: 48px 24px; }
+    h1 { font-size: clamp(1.4rem, 4vw, 2rem); color: #13EF93; letter-spacing: -.02em; margin-bottom: 8px; }
+    .sub { color: #6b7280; font-size: .9rem; margin-bottom: 40px; }
+    h2 { font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: #4b5563; margin-bottom: 12px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; margin-bottom: 40px; }
+    a.card { display: flex; flex-direction: column; gap: 4px; padding: 18px; background: #18181c; border: 1px solid rgba(255,255,255,0.07); border-radius: 12px; text-decoration: none; color: #e5e7eb; transition: border-color .15s, background .15s; }
+    a.card:hover { border-color: #13EF93; background: #1a201e; }
+    a.card .label { font-size: .95rem; font-weight: 600; }
+    a.card .meta  { font-size: .75rem; color: #6b7280; }
+    .badge { display: inline-block; font-size: .65rem; font-weight: 700; padding: 2px 6px; border-radius: 4px; margin-left: 6px; }
+    .ts  { background: rgba(99,102,241,.2);  color: #a5b4fc; }
+    .rx  { background: rgba(56,189,248,.2);  color: #7dd3fc; }
+    .umd { background: rgba(245,158,11,.2);  color: #fcd34d; }
   </style>
 </head>
 <body>
   <h1>Deepgram Agent Widget</h1>
-  <p>Pick a layout to preview. Make sure you've set <code>DEEPGRAM_API_KEY</code> in <code>examples/.env</code>.</p>
+  <p class="sub">Three layouts × three integration methods. Pick a page to preview.</p>
 
+  <h2>TS Source <span class="badge ts">@deepgram/agent-widget</span></h2>
   <div class="grid">
-    <a href="/sidebar.html">
+    <a class="card" href="/sidebar.html">
       <span class="label">↔ Sidebar</span>
-      <span class="desc">Panel slides in from the right edge</span>
+      <span class="meta">Panel slides in from the right</span>
     </a>
-    <a href="/inline.html">
+    <a class="card" href="/inline.html">
       <span class="label">▦ Inline</span>
-      <span class="desc">Widget embedded in a host container</span>
+      <span class="meta">Mounted into a host container</span>
     </a>
-    <a href="/floating.html">
-      <span class="label">◉ Floating</span>
-      <span class="desc">FAB button reveals an overlay panel</span>
+    <a class="card" href="/floating.html">
+      <span class="label">◉ Floating FAB</span>
+      <span class="meta">Button reveals an overlay panel</span>
     </a>
   </div>
 
-  <p class="note">
-    The dev server proxies <code>POST /api/token</code> →
-    <code>api.deepgram.com/v1/auth/grant</code>, so your API key never
-    reaches the browser.
-  </p>
+  <h2>React <span class="badge rx">@deepgram/agent-react</span></h2>
+  <div class="grid">
+    <a class="card" href="/react-sidebar.html">
+      <span class="label">↔ Sidebar</span>
+      <span class="meta">useDeepgramAgent hook, custom UI</span>
+    </a>
+    <a class="card" href="/react-inline.html">
+      <span class="label">▦ Inline</span>
+      <span class="meta">useDeepgramAgent hook, custom UI</span>
+    </a>
+    <a class="card" href="/react-floating.html">
+      <span class="label">◉ Floating FAB</span>
+      <span class="meta">useDeepgramAgent hook, custom UI</span>
+    </a>
+  </div>
+
+  <h2>Bundled UMD <span class="badge umd">CDN script tag</span></h2>
+  <div class="grid">
+    <a class="card" href="/umd-sidebar.html">
+      <span class="label">↔ Sidebar</span>
+      <span class="meta">DeepgramAgent.init() via script tag</span>
+    </a>
+    <a class="card" href="/umd-inline.html">
+      <span class="label">▦ Inline</span>
+      <span class="meta">DeepgramAgent.init() via script tag</span>
+    </a>
+    <a class="card" href="/umd-floating.html">
+      <span class="label">◉ Floating FAB</span>
+      <span class="meta">DeepgramAgent.init() via script tag</span>
+    </a>
+  </div>
 </body>
 </html>

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Inline — React</title>
+  <link rel="stylesheet" href="/src/shared-styles.css" />
+  <style>
+    body { display: grid; grid-template-columns: 1fr 400px; grid-template-rows: auto 1fr; min-height: 100dvh; }
+    .page-header { grid-column: 1/-1; padding: 20px 24px; border-bottom: 1px solid rgba(255,255,255,.08); display: flex; align-items: baseline; gap: 12px; }
+    main { padding: 24px; overflow-y: auto; }
+    aside { border-left: 1px solid rgba(255,255,255,.08); height: calc(100vh - 65px); position: sticky; top: 65px; }
+    #react-root { width: 100%; height: 100%; }
+    @media (max-width: 640px) { body { grid-template-columns: 1fr; } aside { height: 400px; position: relative; } }
+  </style>
+</head>
+<body>
+  <header class="page-header">
+    <a class="back" href="/" style="margin:0">←</a>
+    <h1>Inline Layout <span class="badge badge-react">React</span></h1>
+  </header>
+
+  <main>
+    <p class="desc">Custom React component rendered into a host container using <code>useDeepgramAgent</code>.</p>
+    <div class="code-wrap">
+      <h3>Code</h3>
+      <pre class="code"><span class="kw">import</span> { <span class="fn">render</span> } <span class="kw">from</span> <span class="str">'react-dom'</span>;
+<span class="kw">import</span> { <span class="fn">useDeepgramAgent</span> } <span class="kw">from</span> <span class="str">'@deepgram/agent-react'</span>;
+
+<span class="kw">function</span> <span class="fn">MyAgent</span>() {
+  <span class="kw">const</span> agent = <span class="fn">useDeepgramAgent</span>({ <span class="at">config</span>: { <span class="cm">/* ... */</span> } });
+  <span class="kw">return</span> <span class="tag">&lt;YourCustomUI</span> <span class="at">agent</span>={agent} <span class="tag">/&gt;</span>;
+}
+
+<span class="fn">render</span>(<span class="tag">&lt;MyAgent /&gt;</span>, <span class="fn">document</span>.<span class="fn">getElementById</span>(<span class="str">'app'</span>));</pre>
+    </div>
+  </main>
+
+  <aside>
+    <div id="react-root"></div>
+  </aside>
+
+  <script type="module">
+    import { createElement } from "react";
+    import { render } from "react-dom";
+    import { ReactExample } from "./src/react-example.tsx";
+    render(createElement(ReactExample, { layout: "inline" }), document.getElementById("react-root"));
+  </script>
+</body>
+</html>

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sidebar — Bundled UMD</title>
+  <link rel="stylesheet" href="/src/shared-styles.css" />
+  <style>
+    body { padding: 32px 24px; }
+    header { display: flex; align-items: center; justify-content: space-between; padding-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,.08); margin-bottom: 24px; }
+    #open-btn { padding: 10px 20px; background: #fcd34d; color: #000; font-weight: 600; border: none; border-radius: 10px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <a class="back" href="/">← Examples</a>
+  <header>
+    <div>
+      <h1>Sidebar Layout <span class="badge badge-umd">Bundled UMD</span></h1>
+      <p class="desc" style="margin:0">CDN script tag, no build step, no npm install.</p>
+    </div>
+    <button id="open-btn">Open Agent</button>
+  </header>
+
+  <div class="code-wrap">
+    <h3>Code</h3>
+    <pre class="code"><span class="cm">&lt;!-- In production, replace with the CDN URL --&gt;</span>
+<span class="tag">&lt;script</span> <span class="at">src</span>=<span class="str">"https://cdn.deepgram.com/agent-widget/latest/widget.umd.js"</span><span class="tag">&gt;&lt;/script&gt;</span>
+<span class="tag">&lt;script&gt;</span>
+  <span class="fn">DeepgramAgent</span>.<span class="fn">init</span>({
+    <span class="at">tokenFactory</span>: () =&gt; <span class="fn">fetch</span>(<span class="str">'/api/token'</span>)
+      .<span class="fn">then</span>(r =&gt; r.<span class="fn">json</span>()).<span class="fn">then</span>(d =&gt; d.token),
+    <span class="at">agent</span>: {
+      <span class="at">listen</span>: { <span class="at">provider</span>: { <span class="at">type</span>: <span class="str">'deepgram'</span>, <span class="at">version</span>: <span class="str">'v1'</span>, <span class="at">model</span>: <span class="str">'nova-3'</span> } },
+      <span class="at">think</span>:  { <span class="at">provider</span>: { <span class="at">type</span>: <span class="str">'open_ai'</span>, <span class="at">model</span>: <span class="str">'gpt-4o-mini'</span> } },
+      <span class="at">speak</span>:  { <span class="at">provider</span>: { <span class="at">type</span>: <span class="str">'deepgram'</span>, <span class="at">model</span>: <span class="str">'aura-2-thalia-en'</span> } },
+    },
+    <span class="at">layout</span>: <span class="str">'sidebar'</span>,
+    <span class="at">buttonId</span>: <span class="str">'open-btn'</span>,
+    <span class="at">colorScheme</span>: <span class="str">'dark'</span>,
+  });
+<span class="tag">&lt;/script&gt;</span></pre>
+  </div>
+
+  <!-- In dev, the Vite middleware serves the local build at /widget.umd.js -->
+  <script src="/widget.umd.js"></script>
+  <script>
+    DeepgramAgent.init({
+      tokenFactory: () => fetch('/api/token').then(r => r.json()).then(d => d.token),
+      agent: {
+        listen: { provider: { type: 'deepgram', version: 'v1', model: 'nova-3' } },
+        think:  { provider: { type: 'open_ai',  model: 'gpt-4o-mini' }, prompt: 'You are a helpful Deepgram voice assistant. Be concise.' },
+        speak:  { provider: { type: 'deepgram', model: 'aura-2-thalia-en' } },
+        greeting: "Hi! I'm your Deepgram voice assistant. How can I help?",
+      },
+      layout: 'sidebar',
+      buttonId: 'open-btn',
+      name: 'Sidebar · UMD',
+      colorScheme: 'dark',
+      showTranscript: true,
+    });
+  </script>
+</body>
+</html>

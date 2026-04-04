@@ -1,4 +1,5 @@
 import { defineConfig, loadEnv } from "vite";
+import fs from "node:fs";
 import path from "node:path";
 
 export default defineConfig(({ mode }) => {
@@ -102,6 +103,27 @@ export default defineConfig(({ mode }) => {
           });
         },
       },
+
+      // ── UMD bundle server ─────────────────────────────────────────────
+      // Serves packages/widget/dist/widget.umd.js at /widget.umd.js so the
+      // bundled UMD examples can load it without a symlink or copy step.
+      {
+        name: "widget-umd",
+        configureServer(server) {
+          server.middlewares.use("/widget.umd.js", (_req, res) => {
+            const dist = path.resolve("../packages/widget/dist/widget.umd.js");
+            if (!fs.existsSync(dist)) {
+              res.statusCode = 404;
+              res.setHeader("Content-Type", "application/json");
+              res.end(JSON.stringify({ error: "Widget not built — run: bun run build in packages/widget" }));
+              return;
+            }
+            res.setHeader("Content-Type", "application/javascript");
+            res.setHeader("Cache-Control", "no-store");
+            res.end(fs.readFileSync(dist));
+          });
+        },
+      },
     ],
 
     server: {
@@ -119,10 +141,14 @@ export default defineConfig(({ mode }) => {
     build: {
       rollupOptions: {
         input: {
-          main:     path.resolve("index.html"),
-          sidebar:  path.resolve("sidebar.html"),
-          inline:   path.resolve("inline.html"),
-          floating: path.resolve("floating.html"),
+          main:           path.resolve("index.html"),
+          sidebar:        path.resolve("sidebar.html"),
+          inline:         path.resolve("inline.html"),
+          floating:       path.resolve("floating.html"),
+          reactSidebar:   path.resolve("react-sidebar.html"),
+          reactInline:    path.resolve("react-inline.html"),
+          reactFloating:  path.resolve("react-floating.html"),
+          // UMD pages are static HTML — no bundling needed, excluded from build
         },
       },
     },

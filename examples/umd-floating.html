@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Floating FAB — Bundled UMD</title>
+  <link rel="stylesheet" href="/src/shared-styles.css" />
+  <style>
+    body { padding: 32px 24px; }
+    .controls { display: flex; gap: 10px; flex-wrap: wrap; margin: 20px 0; }
+    label { font-size: .8rem; color: #9ca3af; display: flex; flex-direction: column; gap: 4px; }
+    select { background: #18181c; border: 1px solid rgba(255,255,255,.12); color: #e5e7eb; padding: 6px 10px; border-radius: 8px; font-size: .85rem; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <a class="back" href="/">← Examples</a>
+  <h1>Floating FAB <span class="badge badge-umd">Bundled UMD</span></h1>
+  <p class="desc">Complete self-contained embed — one script tag, zero dependencies.</p>
+
+  <div class="controls">
+    <label>Placement <select id="placement">
+      <option value="bottom-right" selected>bottom-right</option>
+      <option value="bottom-left">bottom-left</option>
+      <option value="bottom">bottom</option>
+      <option value="top-right">top-right</option>
+    </select></label>
+    <label>Color scheme <select id="scheme">
+      <option value="auto">auto (system)</option>
+      <option value="dark" selected>dark</option>
+      <option value="light">light</option>
+    </select></label>
+  </div>
+
+  <div class="code-wrap">
+    <h3>Code</h3>
+    <pre class="code"><span class="tag">&lt;script</span> <span class="at">src</span>=<span class="str">"https://cdn.deepgram.com/agent-widget/latest/widget.umd.js"</span><span class="tag">&gt;&lt;/script&gt;</span>
+<span class="tag">&lt;script&gt;</span>
+  <span class="kw">const</span> teardown = <span class="fn">DeepgramAgent</span>.<span class="fn">init</span>({
+    <span class="at">tokenFactory</span>: () =&gt; <span class="fn">fetch</span>(<span class="str">'/api/token'</span>)
+      .<span class="fn">then</span>(r =&gt; r.<span class="fn">json</span>()).<span class="fn">then</span>(d =&gt; d.token),
+    <span class="at">agent</span>: { <span class="cm">/* ... */</span> },
+    <span class="at">layout</span>: <span class="str">'floating'</span>,
+    <span class="at">placement</span>: <span class="str">'bottom-right'</span>,
+    <span class="at">colorScheme</span>: <span class="str">'dark'</span>,
+  });
+<span class="tag">&lt;/script&gt;</span></pre>
+  </div>
+
+  <script src="/widget.umd.js"></script>
+  <script>
+    let teardown = null;
+    function mount() {
+      teardown?.();
+      teardown = DeepgramAgent.init({
+        tokenFactory: () => fetch('/api/token').then(r => r.json()).then(d => d.token),
+        agent: {
+          listen: { provider: { type: 'deepgram', version: 'v1', model: 'nova-3' } },
+          think:  { provider: { type: 'open_ai',  model: 'gpt-4o-mini' }, prompt: 'You are a helpful Deepgram voice assistant. Be concise.' },
+          speak:  { provider: { type: 'deepgram', model: 'aura-2-thalia-en' } },
+          greeting: "Hi! I'm your Deepgram voice assistant. How can I help?",
+        },
+        layout: 'floating',
+        placement: document.getElementById('placement').value,
+        colorScheme: document.getElementById('scheme').value,
+        name: 'Floating · UMD',
+        showTranscript: true,
+      });
+    }
+    document.getElementById('placement').addEventListener('change', mount);
+    document.getElementById('scheme').addEventListener('change', mount);
+    mount();
+  </script>
+</body>
+</html>

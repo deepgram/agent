@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Floating FAB — React</title>
+  <link rel="stylesheet" href="/src/shared-styles.css" />
+  <style>
+    body { padding: 32px 24px; }
+  </style>
+</head>
+<body>
+  <a class="back" href="/">← Examples</a>
+  <h1>Floating FAB <span class="badge badge-react">React</span></h1>
+  <p class="desc">FAB + overlay panel built on <code>useDeepgramAgent</code>. Click the mic button bottom-right.</p>
+
+  <div class="code-wrap">
+    <h3>Code</h3>
+    <pre class="code"><span class="kw">import</span> { <span class="fn">useState</span> } <span class="kw">from</span> <span class="str">'react'</span>;
+<span class="kw">import</span> { <span class="fn">useDeepgramAgent</span> } <span class="kw">from</span> <span class="str">'@deepgram/agent-react'</span>;
+
+<span class="kw">function</span> <span class="fn">FloatingAgent</span>() {
+  <span class="kw">const</span> [open, setOpen] = <span class="fn">useState</span>(<span class="kw">false</span>);
+  <span class="kw">const</span> { state, start, stop, conversation } =
+    <span class="fn">useDeepgramAgent</span>({ <span class="at">config</span>: { <span class="cm">/* ... */</span> } });
+
+  <span class="kw">return</span> (
+    <span class="tag">&lt;&gt;</span>
+      <span class="tag">&lt;button</span> <span class="at">className</span>=<span class="str">"fab"</span> <span class="at">onClick</span>={() =&gt; <span class="fn">setOpen</span>(o =&gt; !o)}<span class="tag">&gt;</span>🎙<span class="tag">&lt;/button&gt;</span>
+      {open &amp;&amp; <span class="tag">&lt;Panel</span> <span class="at">state</span>={state} <span class="at">start</span>={start} <span class="at">stop</span>={stop}
+                      <span class="at">conversation</span>={conversation} <span class="tag">/&gt;</span>}
+    <span class="tag">&lt;/&gt;</span>
+  );
+}</pre>
+  </div>
+
+  <div id="react-root"></div>
+
+  <script type="module">
+    import { createElement } from "react";
+    import { render } from "react-dom";
+    import { ReactExample } from "./src/react-example.tsx";
+    render(createElement(ReactExample, { layout: "floating" }), document.getElementById("react-root"));
+  </script>
+</body>
+</html>
