@@ -145,9 +145,14 @@ export class AgentSession extends EventEmitter<AgentSessionEvents> {
       // environments where process.env is not available. The Authorization
       // header on connect() still takes precedence for the WebSocket upgrade.
       const client = new DeepgramClient({ apiKey: token });
+      // reconnectAttempts: 1 = allow exactly one connection attempt in the SDK's
+      // ReconnectingWebSocket. Setting 0 means maxRetries=0 which causes
+      // _connect() to bail immediately (0 >= 0) before the WebSocket is created.
+      // We manage our own reconnect loop above the SDK so we don't want the SDK
+      // retrying — but we DO need it to make the first attempt.
       const socket = await client.agent.v1.connect({
         Authorization: `Token ${token}`,
-        reconnectAttempts: 0,
+        reconnectAttempts: 1,
       });
       console.log("[dg-agent] socket created, waiting for open...");
 

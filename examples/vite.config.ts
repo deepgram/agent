@@ -40,12 +40,6 @@ export default defineConfig(({ mode }) => {
       },
     },
 
-    // @deepgram/sdk references process.env at runtime (Node SDK used in browser).
-    // Vite doesn't shim process by default — define it so the SDK doesn't crash.
-    define: {
-      "process.env": "{}",
-    },
-
     // Let esbuild use the automatic JSX transform with `react` as the source.
     // Since `react` is aliased to preact/compat, and react/jsx-runtime is aliased
     // to preact/jsx-runtime, all TSX files (both react and widget packages) end up

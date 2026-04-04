@@ -18,7 +18,18 @@ test("agent connects, receives SettingsApplied, stays stable for 10s", async ({ 
   });
 
   await page.goto("/sidebar.html");
-  await page.screenshot({ path: "test-results/01-loaded.png" });
+
+  // Sanity check: can the browser reach wss://agent.deepgram.com at all?
+  const wsCheck = await page.evaluate(async () => {
+    return new Promise<string>((resolve) => {
+      const ws = new WebSocket("wss://agent.deepgram.com/v1/agent/converse", ["token", "test"]);
+      const timer = setTimeout(() => { ws.close(); resolve("timeout: no event in 5s"); }, 5000);
+      ws.onopen  = () => { clearTimeout(timer); ws.close(); resolve("open"); };
+      ws.onerror = (e) => { clearTimeout(timer); resolve(`error: ${(e as Event).type}`); };
+      ws.onclose = (e: CloseEvent) => { clearTimeout(timer); resolve(`close: code=${e.code} reason=${e.reason}`); };
+    });
+  });
+  console.log("  WS connectivity check:", wsCheck);
 
   await page.getByRole("button", { name: "Open Agent" }).click();
   await page.screenshot({ path: "test-results/02-panel-open.png" });
