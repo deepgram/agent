@@ -26,9 +26,9 @@ export default defineConfig({
     reuseExistingServer: true,
     timeout: 30_000,
     env: {
-      // Inherited from outer process (set by op run or direct env)
-      DEEPGRAM_API_KEY:       process.env.DEEPGRAM_API_KEY ?? "",
-      VITE_DEEPGRAM_API_KEY:  process.env.VITE_DEEPGRAM_API_KEY ?? process.env.DEEPGRAM_API_KEY ?? "",
+      // DEEPGRAM_API_KEY is used server-side by the /api/token proxy only.
+      // It is never injected into the browser bundle.
+      DEEPGRAM_API_KEY: process.env.DEEPGRAM_API_KEY ?? "",
     },
   },
 });
