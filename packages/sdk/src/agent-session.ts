@@ -207,6 +207,7 @@ export class AgentSession extends EventEmitter<AgentSessionEvents> {
       } else if (typeof event.data === "string") {
         try {
           const msg = JSON.parse(event.data) as ServerMessage;
+          console.debug("[dg-agent] ←", msg.type, msg);
           this._dispatchMessage(msg, socket);
         } catch {
           // Malformed JSON — ignore
@@ -221,6 +222,7 @@ export class AgentSession extends EventEmitter<AgentSessionEvents> {
     });
 
     socket.on("close", (event) => {
+      console.debug("[dg-agent] socket closed", event.code, event.reason ?? "");
       this.keepAlive.stop();
       if (!this.intentionalClose) {
         this._scheduleReconnect(`socket closed: ${event.code} ${event.reason ?? ""}`);
@@ -234,12 +236,14 @@ export class AgentSession extends EventEmitter<AgentSessionEvents> {
 
   private _dispatchMessage(msg: ServerMessage, socket: V1Socket): void {
     switch (msg.type) {
-      case "Welcome":
-        // On Welcome, configure the agent immediately
+      case "Welcome": {
+        const settings = this._buildSettingsPayload();
+        console.debug("[dg-agent] → Settings", JSON.stringify(settings, null, 2));
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        socket.sendSettings(this._buildSettingsPayload() as any);
+        socket.sendSettings(settings as any);
         this.emit("welcome", msg);
         break;
+      }
       case "SettingsApplied":
         this.settingsApplied = true;
         this.keepAlive.start();
