@@ -155,12 +155,18 @@ export class AgentSession extends EventEmitter<AgentSessionEvents> {
       // if the socket closes without an error event (e.g. server closes mid-
       // handshake with a close frame). Race it against a close listener so we
       // always get a rejection we can handle.
+      const OPEN_TIMEOUT_MS = 10_000;
       await Promise.race([
         socket.waitForOpen(),
         new Promise<never>((_, reject) => {
+          // SDK's waitForOpen() only handles 'open' and 'error' — not 'close'.
+          // If the socket closes without an error (e.g. server rejects mid-
+          // handshake), the promise would hang. Register our own close handler
+          // AND a hard timeout so we always get a rejection.
           socket.socket.addEventListener("close", (e: { code: number; reason?: string }) => {
             reject(new Error(`socket closed before open: code ${e.code} ${e.reason ?? ""}`));
-          }, { once: true } as AddEventListenerOptions);
+          });
+          setTimeout(() => reject(new Error(`waitForOpen timed out after ${OPEN_TIMEOUT_MS}ms`)), OPEN_TIMEOUT_MS);
         }),
       ]);
       console.log("[dg-agent] socket open, binding events");
