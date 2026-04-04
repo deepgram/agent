@@ -9,7 +9,7 @@ import {
   AgentPlayer,
   type AgentSessionConfig,
   type MicrophoneOptions,
-} from "@deepgram/voice-agent";
+} from "@deepgram/agent";
 
 export interface AgentContextValue {
   session: AgentSession;

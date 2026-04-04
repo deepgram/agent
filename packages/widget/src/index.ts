@@ -10,7 +10,7 @@ export type { WidgetConfig } from "./types.js";
  *
  * @example CDN (sidebar, default):
  * ```html
- * <script src="https://cdn.deepgram.com/voice-agent-widget/latest/widget.umd.js"></script>
+ * <script src="https://cdn.deepgram.com/agent-widget/latest/widget.umd.js"></script>
  * <script>
  *   DeepgramAgent.init({
  *     tokenFactory: () => fetch('/api/deepgram-token').then(r => r.text()),
@@ -41,13 +41,13 @@ export function init(config: WidgetConfig): () => void {
     const containerId = config.containerId;
     if (!containerId) {
       throw new Error(
-        '[@deepgram/voice-agent-widget] layout "inline" requires containerId',
+        '[@deepgram/agent-widget] layout "inline" requires containerId',
       );
     }
     const container = document.getElementById(containerId);
     if (!container) {
       throw new Error(
-        `[@deepgram/voice-agent-widget] Container #${containerId} not found`,
+        `[@deepgram/agent-widget] Container #${containerId} not found`,
       );
     }
     render(h(InlineWidget, { config }), container);

@@ -14,7 +14,7 @@ export default defineConfig({
         "react",
         "react/jsx-runtime",
         "react-dom",
-        "@deepgram/voice-agent",
+        "@deepgram/agent",
       ],
     },
     minify: "terser",

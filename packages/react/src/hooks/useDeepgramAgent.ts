@@ -8,7 +8,7 @@ import {
   type AgentState,
   type ConversationTextMessage,
   type FunctionCallRequestMessage,
-} from "@deepgram/voice-agent";
+} from "@deepgram/agent";
 
 export interface ConversationEntry {
   id: string;

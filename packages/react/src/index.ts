@@ -18,4 +18,4 @@ export type {
   SpeakSettings,
   MicrophoneOptions,
   VadOptions,
-} from "@deepgram/voice-agent";
+} from "@deepgram/agent";

@@ -1,7 +1,7 @@
 {
-  "name": "@deepgram/voice-agent-react",
+  "name": "@deepgram/agent-react",
   "version": "0.0.1",
-  "description": "React hooks and components for @deepgram/voice-agent",
+  "description": "React hooks and components for @deepgram/agent",
   "type": "module",
   "main": "dist/index.cjs",
   "module": "dist/index.js",
@@ -20,7 +20,7 @@
     "dev": "vite build --watch"
   },
   "dependencies": {
-    "@deepgram/voice-agent": "workspace:*"
+    "@deepgram/agent": "workspace:*"
   },
   "peerDependencies": {
     "react": ">=18.0.0",

@@ -1,7 +1,7 @@
 import type {
   AgentSettingsObject,
   MicrophoneOptions,
-} from "@deepgram/voice-agent";
+} from "@deepgram/agent";
 
 export type TokenFactory = () => Promise<string>;
 

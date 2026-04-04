@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "preact/hooks";
-import type { ConversationEntry } from "@deepgram/voice-agent-react";
-import type { AgentState } from "@deepgram/voice-agent";
+import type { ConversationEntry } from "@deepgram/agent-react";
+import type { AgentState } from "@deepgram/agent";
 import {
   MicIcon,
   MicOffIcon,

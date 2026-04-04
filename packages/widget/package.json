@@ -1,5 +1,5 @@
 {
-  "name": "@deepgram/voice-agent-widget",
+  "name": "@deepgram/agent-widget",
   "version": "0.0.1",
   "description": "Self-contained CDN widget for Deepgram Voice Agent — no framework required",
   "type": "module",
@@ -20,8 +20,8 @@
     "dev": "vite"
   },
   "dependencies": {
-    "@deepgram/voice-agent": "workspace:*",
-    "@deepgram/voice-agent-react": "workspace:*",
+    "@deepgram/agent": "workspace:*",
+    "@deepgram/agent-react": "workspace:*",
     "preact": "10.29.1",
     "sugar-high": "1.0.0"
   },

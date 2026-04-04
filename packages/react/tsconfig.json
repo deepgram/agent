@@ -5,7 +5,10 @@
     "jsx": "react-jsx",
     "outDir": "dist",
     "rootDir": "src",
-    "declarationDir": "dist"
+    "declarationDir": "dist",
+    "paths": {
+      "@deepgram/agent": ["../sdk/dist/index"]
+    }
   },
   "include": ["src"],
   "references": [

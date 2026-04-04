@@ -1,6 +1,6 @@
 import { useState } from "preact/hooks";
-import { useDeepgramAgent } from "@deepgram/voice-agent-react";
-import type { AgentSessionConfig } from "@deepgram/voice-agent";
+import { useDeepgramAgent } from "@deepgram/agent-react";
+import type { AgentSessionConfig } from "@deepgram/agent";
 import { ConversationPanel } from "./components/ConversationPanel.js";
 import type { WidgetConfig } from "./types.js";
 
@@ -11,7 +11,7 @@ interface WidgetProps {
 function buildSessionConfig(config: WidgetConfig): AgentSessionConfig {
   if (!config.apiKey && !config.tokenFactory) {
     throw new Error(
-      "[@deepgram/voice-agent-widget] Either apiKey or tokenFactory is required",
+      "[@deepgram/agent-widget] Either apiKey or tokenFactory is required",
     );
   }
 

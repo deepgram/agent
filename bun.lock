@@ -6,10 +6,10 @@
       "name": "@deepgram/voice-agent-monorepo",
     },
     "packages/react": {
-      "name": "@deepgram/voice-agent-react",
+      "name": "@deepgram/agent-react",
       "version": "0.0.1",
       "dependencies": {
-        "@deepgram/voice-agent": "workspace:*",
+        "@deepgram/agent": "workspace:*",
       },
       "devDependencies": {
         "@types/react": "19.2.14",
@@ -28,7 +28,7 @@
       },
     },
     "packages/sdk": {
-      "name": "@deepgram/voice-agent",
+      "name": "@deepgram/agent",
       "version": "0.0.1",
       "dependencies": {
         "@deepgram/sdk": "5.0.0",
@@ -53,11 +53,11 @@
       ],
     },
     "packages/widget": {
-      "name": "@deepgram/voice-agent-widget",
+      "name": "@deepgram/agent-widget",
       "version": "0.0.1",
       "dependencies": {
-        "@deepgram/voice-agent": "workspace:*",
-        "@deepgram/voice-agent-react": "workspace:*",
+        "@deepgram/agent": "workspace:*",
+        "@deepgram/agent-react": "workspace:*",
         "preact": "10.29.1",
         "sugar-high": "1.0.0",
       },
@@ -81,13 +81,13 @@
 
     "@babel/types": ["@babel/types@7.29.0", "", { "dependencies": { "@babel/helper-string-parser": "^7.27.1", "@babel/helper-validator-identifier": "^7.28.5" } }, "sha512-LwdZHpScM4Qz8Xw2iKSzS+cfglZzJGvofQICy7W7v4caru4EaAmyUuO6BGrbyQ2mYV11W0U8j5mBhd14dd3B0A=="],
 
+    "@deepgram/agent": ["@deepgram/agent@workspace:packages/sdk"],
+
+    "@deepgram/agent-react": ["@deepgram/agent-react@workspace:packages/react"],
+
+    "@deepgram/agent-widget": ["@deepgram/agent-widget@workspace:packages/widget"],
+
     "@deepgram/sdk": ["@deepgram/sdk@5.0.0", "", { "dependencies": { "ws": "^8.16.0" } }, "sha512-x1wMiOgDGqcLEaQpQBQLTtk5mLbXbYgcBEpp7cfJIyEtqdIGgijCZH+a/esiVp+xIcTYYroTxG47RVppZOHbWw=="],
-
-    "@deepgram/voice-agent": ["@deepgram/voice-agent@workspace:packages/sdk"],
-
-    "@deepgram/voice-agent-react": ["@deepgram/voice-agent-react@workspace:packages/react"],
-
-    "@deepgram/voice-agent-widget": ["@deepgram/voice-agent-widget@workspace:packages/widget"],
 
     "@emnapi/core": ["@emnapi/core@1.9.2", "", { "dependencies": { "@emnapi/wasi-threads": "1.2.1", "tslib": "^2.4.0" } }, "sha512-UC+ZhH3XtczQYfOlu3lNEkdW/p4dsJ1r/bP7H8+rhao3TTTMO1ATq/4DdIi23XuGoFY+Cz0JmCbdVl0hz9jZcA=="],
 
