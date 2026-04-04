@@ -235,8 +235,10 @@ export class AgentSession extends EventEmitter<AgentSessionEvents> {
     // receives BOTH parsed JSON objects and raw ArrayBuffers — no raw socket
     // manipulation needed.
     socket.on("message", (msg) => {
-      if (msg instanceof ArrayBuffer) {
-        this.emit("audio", msg);
+      // The SDK's ReconnectingWebSocket uses binaryType:"blob" by default,
+      // so audio frames arrive as Blob objects, not ArrayBuffers.
+      if (msg instanceof ArrayBuffer || msg instanceof Blob) {
+        this.emit("audio", msg as ArrayBuffer);
       } else {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const serverMsg = msg as unknown as ServerMessage;
