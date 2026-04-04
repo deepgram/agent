@@ -178,7 +178,9 @@ export class AgentSession extends EventEmitter<AgentSessionEvents> {
           sample_rate: inputCfg?.sampleRate ?? 16_000,
         },
       },
-      agent: this.config.agent,
+      // SDK types only cover the object form, but the API also accepts a UUID string.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      agent: this.config.agent as any,
     };
 
     if (outputCfg) {
