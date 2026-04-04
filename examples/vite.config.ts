@@ -6,6 +6,12 @@ export default defineConfig(({ mode }) => {
   // For the token proxy we use process.env instead, which has the real secret
   // injected by `op run --env-file examples/.env` before the process starts.
   void loadEnv(mode, process.cwd(), ""); // keep for any non-secret Vite vars
+
+  // Expose the API key as VITE_DEEPGRAM_API_KEY for direct use in examples.
+  // This is dev-only: in production use a backend token endpoint instead.
+  if (process.env.DEEPGRAM_API_KEY) {
+    process.env.VITE_DEEPGRAM_API_KEY = process.env.DEEPGRAM_API_KEY;
+  }
   const preact = (sub: string) =>
     path.resolve(`../packages/widget/node_modules/preact/${sub}`);
 

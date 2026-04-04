@@ -1,0 +1,34 @@
+- generic [active] [ref=e1]:
+  - link "← Back to examples" [ref=e2] [cursor=pointer]:
+    - /url: /
+  - banner [ref=e3]:
+    - heading "Sidebar Layout" [level=1] [ref=e4]
+    - button "Open Agent" [ref=e5] [cursor=pointer]
+  - generic [ref=e6]:
+    - heading "How it works" [level=2] [ref=e7]
+    - paragraph [ref=e8]:
+      - text: The widget is connected to
+      - code [ref=e9]: id="open-btn"
+      - text: via the
+      - code [ref=e10]: buttonId
+      - text: config option. Clicking the button slides the panel in from the right. The overlay dismisses the panel.
+  - generic [ref=e12]:
+    - generic [ref=e13]:
+      - img [ref=e14]
+      - generic [ref=e18]: Voice Agent
+      - generic [ref=e21]: reconnecting…
+      - button "Close" [ref=e22] [cursor=pointer]:
+        - img [ref=e23]
+    - generic [ref=e27]:
+      - img [ref=e28]
+      - paragraph [ref=e32]: Press Start to begin the conversation
+    - generic [ref=e33]:
+      - generic [ref=e36]:
+        - textbox "Type a message…" [ref=e37]
+        - button "Send" [disabled] [ref=e38]:
+          - img [ref=e39]
+        - button "Mute microphone" [ref=e42] [cursor=pointer]:
+          - img [ref=e43]
+        - button "Mute speaker" [ref=e46] [cursor=pointer]:
+          - img [ref=e47]
+      - button "Starting…" [disabled] [ref=e51]
