@@ -164,6 +164,11 @@ export class AgentSession extends EventEmitter<AgentSessionEvents> {
       });
 
 
+      // Ensure binary audio frames arrive as ArrayBuffer, not Blob.
+      // ReconnectingWebSocket defaults to binaryType:"blob"; setting arraybuffer
+      // here before connect() means _ws.binaryType is set correctly on open.
+      socket.socket.binaryType = "arraybuffer";
+
       // Wait for open before binding our full event handlers.
       // socket.connect() starts the WebSocket (required because startClosed:true).
       // Race against close/error/timeout so we never hang indefinitely.
@@ -235,10 +240,8 @@ export class AgentSession extends EventEmitter<AgentSessionEvents> {
     // receives BOTH parsed JSON objects and raw ArrayBuffers — no raw socket
     // manipulation needed.
     socket.on("message", (msg) => {
-      // The SDK's ReconnectingWebSocket uses binaryType:"blob" by default,
-      // so audio frames arrive as Blob objects, not ArrayBuffers.
-      if (msg instanceof ArrayBuffer || msg instanceof Blob) {
-        this.emit("audio", msg as ArrayBuffer);
+      if (msg instanceof ArrayBuffer) {
+        this.emit("audio", msg);
       } else {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const serverMsg = msg as unknown as ServerMessage;

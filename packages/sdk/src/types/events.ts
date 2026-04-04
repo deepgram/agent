@@ -38,8 +38,7 @@ export interface AgentSessionEvents {
   warning: [msg: AgentWarningMessage];
   "function-call-response": [msg: FunctionCallResponseMessage];
 
-  // Server → client (binary) — may be ArrayBuffer or Blob depending on WebSocket binaryType
-  audio: [chunk: ArrayBuffer | Blob];
+  audio: [chunk: ArrayBuffer];
 
   // SDK lifecycle events
   connecting: [];

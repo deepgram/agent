@@ -109,7 +109,7 @@ export function useDeepgramAgent({
       ]);
     });
 
-    session.on("audio", (chunk) => {
+    session.on("audio", (chunk: ArrayBuffer) => {
       player.queue(chunk);
     });
 
