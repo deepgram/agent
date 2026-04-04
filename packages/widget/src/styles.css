@@ -1,36 +1,91 @@
-/* Deepgram Voice Agent Widget — scoped under .dg-va-* */
+/*
+ * Deepgram Voice Agent Widget — design token architecture
+ *
+ * THEMING MODEL
+ * ─────────────
+ * Every colour/surface value follows this two-level pattern:
+ *
+ *   property: var(--dg-va-TOKEN, light-dark(LIGHT, DARK));
+ *
+ * Layer 1 — developer override:
+ *   Set --dg-va-TOKEN on [data-dg-agent] (or any ancestor) in your own CSS.
+ *   This wins over everything.
+ *
+ * Layer 2 — built-in adaptive default:
+ *   light-dark() responds to color-scheme on [data-dg-agent].
+ *   By default color-scheme is "light dark" (follows OS preference).
+ *   Pass colorScheme: 'dark' | 'light' in WidgetConfig to force a mode.
+ *   Pass colorScheme: { mode: 'class', darkSelector: '.dark' } to mirror
+ *   the host app's class-based theme.
+ *
+ * NON-COLOUR TOKENS (structural, no light-dark needed)
+ * ─────────────────────────────────────────────────────
+ * Override these by setting the CSS variable anywhere above [data-dg-agent]:
+ *
+ *   --dg-va-primary     accent / brand colour    (default: #13EF93)
+ *   --dg-va-radius      panel border-radius      (default: 16px)
+ *   --dg-va-btn-radius  button border-radius     (default: 10px)
+ *   --dg-va-panel-w     sidebar/panel width      (default: min(440px, 100vw))
+ *   --dg-va-fab-size    floating button size     (default: 56px)
+ */
 
-:root {
-  --dg-va-primary: #13EF93;
-  --dg-va-bg: #101014;
-  --dg-va-bg-raised: #18181c;
-  --dg-va-bg-input: #1e1e24;
-  --dg-va-text: #ffffff;
-  --dg-va-text-muted: #8b8b9a;
-  --dg-va-border: rgba(255, 255, 255, 0.08);
-  --dg-va-error: #ef4444;
-  --dg-va-radius: 16px;
-  --dg-va-btn-radius: 10px;
-  --dg-va-panel-w: min(440px, 100vw);
-  --dg-va-fab-size: 56px;
+/* ── Color scheme root ─────────────────────────────────────────────────── */
+
+[data-dg-agent] {
+  /* auto: follows prefers-color-scheme */
+  color-scheme: light dark;
 }
 
-/* Panel */
+/* Forced modes (set via data-dg-scheme attribute by JS) */
+[data-dg-agent][data-dg-scheme="light"] { color-scheme: light; }
+[data-dg-agent][data-dg-scheme="dark"]  { color-scheme: dark; }
+
+/*
+ * Class-based overrides are injected as a <style> tag when
+ * colorScheme: { mode: 'class' } is configured. Example injected rule:
+ *
+ *   .dark [data-dg-agent] { color-scheme: dark; }
+ *   .light [data-dg-agent] { color-scheme: light; }
+ */
+
+/* ── Structural tokens ─────────────────────────────────────────────────── */
+
+[data-dg-agent] {
+  --dg-va-primary:   #13EF93;
+  --dg-va-radius:    16px;
+  --dg-va-btn-radius: 10px;
+  --dg-va-panel-w:   min(440px, 100vw);
+  --dg-va-fab-size:  56px;
+}
+
+/* ── Panel ─────────────────────────────────────────────────────────────── */
+
 .dg-va-panel {
   position: fixed;
   top: 0;
   right: 0;
   bottom: 0;
   width: var(--dg-va-panel-w);
-  background: var(--dg-va-bg);
-  border-left: 1px solid var(--dg-va-border);
+  background: var(--dg-va-bg, light-dark(#ffffff, #101014));
+  color: var(--dg-va-text, light-dark(#111827, #ffffff));
+  border-left: 1px solid var(--dg-va-border, light-dark(rgba(0,0,0,0.1), rgba(255,255,255,0.08)));
   display: flex;
   flex-direction: column;
   z-index: 99999;
   transform: translateX(100%);
   transition: transform 0.25s ease;
   font-family: system-ui, -apple-system, sans-serif;
-  color: var(--dg-va-text);
+  border-radius: 0;
+}
+
+/* Left-side panel variant */
+.dg-va-panel.dg-va-bottom-left,
+.dg-va-panel.dg-va-top-left {
+  right: auto;
+  left: 0;
+  border-left: none;
+  border-right: 1px solid var(--dg-va-border, light-dark(rgba(0,0,0,0.1), rgba(255,255,255,0.08)));
+  transform: translateX(-100%);
 }
 
 .dg-va-panel.dg-va-open {
@@ -41,23 +96,25 @@
   position: relative;
   width: 100%;
   height: 100%;
-  background: var(--dg-va-bg);
+  background: var(--dg-va-bg, light-dark(#ffffff, #101014));
+  color: var(--dg-va-text, light-dark(#111827, #ffffff));
   display: flex;
   flex-direction: column;
   border-radius: var(--dg-va-radius);
   overflow: hidden;
   font-family: system-ui, -apple-system, sans-serif;
-  color: var(--dg-va-text);
 }
 
-/* Header */
+/* ── Header ────────────────────────────────────────────────────────────── */
+
 .dg-va-header {
   display: flex;
   align-items: center;
   padding: 14px 16px;
-  border-bottom: 1px solid var(--dg-va-border);
+  border-bottom: 1px solid var(--dg-va-border, light-dark(rgba(0,0,0,0.1), rgba(255,255,255,0.08)));
   gap: 10px;
   flex-shrink: 0;
+  background: var(--dg-va-bg, light-dark(#ffffff, #101014));
 }
 
 .dg-va-header-icon {
@@ -78,39 +135,44 @@
   align-items: center;
   gap: 6px;
   font-size: 12px;
-  color: var(--dg-va-text-muted);
+  color: var(--dg-va-text-muted, light-dark(#6b7280, #8b8b9a));
 }
 
 .dg-va-status-dot {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: var(--dg-va-text-muted);
+  background: var(--dg-va-text-muted, light-dark(#6b7280, #8b8b9a));
 }
 
-.dg-va-status-dot.dg-va-connected { background: var(--dg-va-primary); }
+.dg-va-status-dot.dg-va-connected  { background: var(--dg-va-primary); }
 .dg-va-status-dot.dg-va-connecting { background: #f59e0b; animation: dg-va-pulse 1s infinite; }
-.dg-va-status-dot.dg-va-error { background: var(--dg-va-error); }
+.dg-va-status-dot.dg-va-error      { background: var(--dg-va-error, light-dark(#dc2626, #ef4444)); }
 
 @keyframes dg-va-pulse {
   0%, 100% { opacity: 1; }
-  50% { opacity: 0.3; }
+  50%       { opacity: 0.3; }
 }
 
 .dg-va-close-btn {
   background: none;
   border: none;
-  color: var(--dg-va-text-muted);
+  color: var(--dg-va-text-muted, light-dark(#6b7280, #8b8b9a));
   cursor: pointer;
   padding: 4px;
   border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
+  line-height: 0;
 }
-.dg-va-close-btn:hover { color: var(--dg-va-text); background: var(--dg-va-border); }
+.dg-va-close-btn:hover {
+  color: var(--dg-va-text, light-dark(#111827, #ffffff));
+  background: var(--dg-va-border, light-dark(rgba(0,0,0,0.08), rgba(255,255,255,0.08)));
+}
 
-/* Conversation */
+/* ── Conversation ──────────────────────────────────────────────────────── */
+
 .dg-va-conversation {
   flex: 1;
   overflow-y: auto;
@@ -122,9 +184,13 @@
 
 .dg-va-conversation::-webkit-scrollbar { width: 4px; }
 .dg-va-conversation::-webkit-scrollbar-track { background: transparent; }
-.dg-va-conversation::-webkit-scrollbar-thumb { background: var(--dg-va-border); border-radius: 2px; }
+.dg-va-conversation::-webkit-scrollbar-thumb {
+  background: var(--dg-va-border, light-dark(rgba(0,0,0,0.15), rgba(255,255,255,0.1)));
+  border-radius: 2px;
+}
 
-/* Messages */
+/* ── Messages ──────────────────────────────────────────────────────────── */
+
 .dg-va-message {
   max-width: 85%;
   padding: 10px 14px;
@@ -136,16 +202,22 @@
 
 .dg-va-message-user {
   align-self: flex-end;
-  background: rgba(19, 239, 147, 0.15);
-  border: 1px solid rgba(19, 239, 147, 0.2);
-  color: var(--dg-va-text);
+  background: var(
+    --dg-va-msg-user-bg,
+    light-dark(rgba(19,239,147,0.12), rgba(19,239,147,0.15))
+  );
+  border: 1px solid var(
+    --dg-va-msg-user-border,
+    light-dark(rgba(19,239,147,0.3), rgba(19,239,147,0.2))
+  );
+  color: var(--dg-va-text, light-dark(#111827, #ffffff));
 }
 
 .dg-va-message-assistant {
   align-self: flex-start;
-  background: var(--dg-va-bg-raised);
-  border: 1px solid var(--dg-va-border);
-  color: var(--dg-va-text);
+  background: var(--dg-va-bg-raised, light-dark(#f3f4f6, #18181c));
+  border: 1px solid var(--dg-va-border, light-dark(rgba(0,0,0,0.08), rgba(255,255,255,0.08)));
+  color: var(--dg-va-text, light-dark(#111827, #ffffff));
 }
 
 .dg-va-empty-state {
@@ -154,21 +226,23 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: var(--dg-va-text-muted);
+  color: var(--dg-va-text-muted, light-dark(#6b7280, #8b8b9a));
   gap: 10px;
   padding: 32px;
   text-align: center;
   font-size: 14px;
 }
 
-/* Controls */
+/* ── Controls ──────────────────────────────────────────────────────────── */
+
 .dg-va-controls {
   padding: 12px 16px;
-  border-top: 1px solid var(--dg-va-border);
+  border-top: 1px solid var(--dg-va-border, light-dark(rgba(0,0,0,0.08), rgba(255,255,255,0.08)));
   display: flex;
   flex-direction: column;
   gap: 10px;
   flex-shrink: 0;
+  background: var(--dg-va-bg, light-dark(#ffffff, #101014));
 }
 
 .dg-va-control-row {
@@ -179,10 +253,10 @@
 
 .dg-va-text-input {
   flex: 1;
-  background: var(--dg-va-bg-input);
-  border: 1px solid var(--dg-va-border);
-  border-radius: 10px;
-  color: var(--dg-va-text);
+  background: var(--dg-va-bg-input, light-dark(#f3f4f6, #1e1e24));
+  border: 1px solid var(--dg-va-border, light-dark(rgba(0,0,0,0.1), rgba(255,255,255,0.08)));
+  border-radius: var(--dg-va-btn-radius);
+  color: var(--dg-va-text, light-dark(#111827, #ffffff));
   font-size: 14px;
   padding: 10px 14px;
   outline: none;
@@ -191,32 +265,50 @@
   max-height: 120px;
   font-family: inherit;
 }
-.dg-va-text-input:focus { border-color: var(--dg-va-primary); }
-.dg-va-text-input::placeholder { color: var(--dg-va-text-muted); }
+.dg-va-text-input:focus {
+  border-color: var(--dg-va-primary);
+}
+.dg-va-text-input::placeholder {
+  color: var(--dg-va-text-muted, light-dark(#9ca3af, #8b8b9a));
+}
 
 .dg-va-icon-btn {
   width: 40px;
   height: 40px;
-  border-radius: 10px;
-  border: 1px solid var(--dg-va-border);
-  background: var(--dg-va-bg-raised);
-  color: var(--dg-va-text);
+  border-radius: var(--dg-va-btn-radius);
+  border: 1px solid var(--dg-va-border, light-dark(rgba(0,0,0,0.1), rgba(255,255,255,0.08)));
+  background: var(--dg-va-bg-raised, light-dark(#f3f4f6, #18181c));
+  color: var(--dg-va-text, light-dark(#111827, #ffffff));
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
   transition: background 0.15s, color 0.15s;
+  line-height: 0;
 }
-.dg-va-icon-btn:hover { background: var(--dg-va-border); }
-.dg-va-icon-btn.dg-va-active { background: var(--dg-va-primary); color: #000; border-color: var(--dg-va-primary); }
-.dg-va-icon-btn.dg-va-muted { color: var(--dg-va-text-muted); }
+.dg-va-icon-btn:hover {
+  background: var(--dg-va-border, light-dark(rgba(0,0,0,0.08), rgba(255,255,255,0.1)));
+}
+.dg-va-icon-btn.dg-va-active {
+  background: var(--dg-va-primary);
+  color: #000;
+  border-color: var(--dg-va-primary);
+}
+.dg-va-icon-btn.dg-va-muted {
+  color: var(--dg-va-text-muted, light-dark(#9ca3af, #8b8b9a));
+}
+.dg-va-icon-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
 
-/* Start / stop button */
+/* ── Start / stop button ───────────────────────────────────────────────── */
+
 .dg-va-start-btn {
   width: 100%;
   padding: 12px;
-  border-radius: 10px;
+  border-radius: var(--dg-va-btn-radius);
   background: var(--dg-va-primary);
   color: #000;
   font-size: 14px;
@@ -225,11 +317,16 @@
   cursor: pointer;
   transition: opacity 0.15s;
 }
-.dg-va-start-btn:hover { opacity: 0.9; }
-.dg-va-start-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-.dg-va-start-btn.dg-va-stop { background: var(--dg-va-bg-raised); color: var(--dg-va-text); border: 1px solid var(--dg-va-border); }
+.dg-va-start-btn:hover     { opacity: 0.9; }
+.dg-va-start-btn:disabled  { opacity: 0.4; cursor: not-allowed; }
+.dg-va-start-btn.dg-va-stop {
+  background: var(--dg-va-bg-raised, light-dark(#f3f4f6, #18181c));
+  color: var(--dg-va-text, light-dark(#111827, #ffffff));
+  border: 1px solid var(--dg-va-border, light-dark(rgba(0,0,0,0.1), rgba(255,255,255,0.08)));
+}
 
-/* FAB */
+/* ── FAB ───────────────────────────────────────────────────────────────── */
+
 .dg-va-fab {
   position: fixed;
   bottom: 24px;
@@ -245,24 +342,34 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 16px rgba(19, 239, 147, 0.35);
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--dg-va-primary) 40%, transparent);
   transition: transform 0.15s, box-shadow 0.15s;
+  line-height: 0;
 }
-.dg-va-fab:hover { transform: scale(1.05); box-shadow: 0 6px 24px rgba(19, 239, 147, 0.5); }
+.dg-va-fab:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 24px color-mix(in srgb, var(--dg-va-primary) 55%, transparent);
+}
 
 /* FAB placement variants */
-.dg-va-fab.dg-va-bottom-right, .dg-va-panel.dg-va-bottom-right  { bottom: 24px; right: 24px; top: auto; left: auto; }
-.dg-va-fab.dg-va-bottom-left,  .dg-va-panel.dg-va-bottom-left   { bottom: 24px; left: 24px; top: auto; right: auto; }
-.dg-va-fab.dg-va-bottom,       .dg-va-panel.dg-va-bottom        { bottom: 24px; left: 50%; transform: translateX(-50%); top: auto; right: auto; }
-.dg-va-fab.dg-va-top-right,    .dg-va-panel.dg-va-top-right     { top: 24px; right: 24px; bottom: auto; left: auto; }
-.dg-va-fab.dg-va-top-left,     .dg-va-panel.dg-va-top-left      { top: 24px; left: 24px; bottom: auto; right: auto; }
-.dg-va-fab.dg-va-top,          .dg-va-panel.dg-va-top           { top: 24px; left: 50%; transform: translateX(-50%); bottom: auto; right: auto; }
+.dg-va-fab.dg-va-bottom-right { bottom: 24px; right: 24px; top: auto; left: auto; }
+.dg-va-fab.dg-va-bottom-left  { bottom: 24px; left: 24px;  top: auto; right: auto; }
+.dg-va-fab.dg-va-bottom       { bottom: 24px; left: 50%;   transform: translateX(-50%); top: auto; right: auto; }
+.dg-va-fab.dg-va-top-right    { top: 24px;    right: 24px; bottom: auto; left: auto; }
+.dg-va-fab.dg-va-top-left     { top: 24px;    left: 24px;  bottom: auto; right: auto; }
+.dg-va-fab.dg-va-top          { top: 24px;    left: 50%;   transform: translateX(-50%); bottom: auto; right: auto; }
+.dg-va-fab.dg-va-bottom:hover,
+.dg-va-fab.dg-va-top:hover    { transform: translateX(-50%) scale(1.05); }
 
-/* Overlay for sidebar on mobile */
+/* ── Overlay ───────────────────────────────────────────────────────────── */
+
 .dg-va-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.5);
+  background: var(
+    --dg-va-overlay,
+    light-dark(rgba(0,0,0,0.25), rgba(0,0,0,0.5))
+  );
   z-index: 99998;
   opacity: 0;
   pointer-events: none;

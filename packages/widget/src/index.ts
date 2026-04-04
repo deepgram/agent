@@ -1,9 +1,18 @@
 import { render, h } from "preact";
 import { SidebarWidget, InlineWidget, FloatingWidget } from "./widget.js";
-import type { WidgetConfig } from "./types.js";
+import type { WidgetConfig, WidgetColorScheme, WidgetTheme } from "./types.js";
 import "./styles.css";
 
-export type { WidgetConfig, WidgetTheme, WidgetTextContent, WidgetOverrides, WidgetCallbacks, WidgetLayout, WidgetPlacement } from "./types.js";
+export type {
+  WidgetConfig,
+  WidgetTheme,
+  WidgetTextContent,
+  WidgetOverrides,
+  WidgetCallbacks,
+  WidgetLayout,
+  WidgetPlacement,
+  WidgetColorScheme,
+} from "./types.js";
 
 /**
  * Initialise the Deepgram Voice Agent widget.
@@ -15,30 +24,24 @@ export type { WidgetConfig, WidgetTheme, WidgetTextContent, WidgetOverrides, Wid
  *   DeepgramAgent.init({
  *     tokenFactory: () => fetch('/api/deepgram-token').then(r => r.text()),
  *     agent: { think: { type: 'open_ai', model: 'gpt-4o-mini' } },
- *     on: { onConnect: () => console.log('connected') },
  *   });
  * </script>
  * ```
  *
- * @example Inline embed:
- * ```html
- * <div id="agent-container" style="height:600px"></div>
- * <script>
- *   DeepgramAgent.init({
- *     tokenFactory: () => fetch('/api/token').then(r => r.text()),
- *     agent: 'your-agent-uuid',
- *     layout: 'inline',
- *     containerId: 'agent-container',
- *   });
- * </script>
+ * @example Class-based dark mode (Tailwind / next-themes):
+ * ```js
+ * DeepgramAgent.init({
+ *   tokenFactory: ...,
+ *   agent: ...,
+ *   colorScheme: { mode: 'class', darkSelector: '.dark' },
+ * });
  * ```
  *
- * @returns A teardown function that unmounts the widget
+ * @returns A teardown function that unmounts the widget and cleans up injected styles
  */
 export function init(config: WidgetConfig): () => void {
-  applyTheme(config.theme);
-
   const layout = config.layout ?? "sidebar";
+  const cleanups: Array<() => void> = [];
 
   if (layout === "inline") {
     const containerId = config.containerId;
@@ -53,14 +56,32 @@ export function init(config: WidgetConfig): () => void {
         `[@deepgram/agent-widget] Container #${containerId} not found`,
       );
     }
+
+    container.setAttribute("data-dg-agent", "");
+    applyColorScheme(container, config.colorScheme);
+    applyTheme(container, config.theme);
+
     render(h(InlineWidget, { config }), container);
-    return () => render(null, container);
+    return () => {
+      render(null, container);
+      container.removeAttribute("data-dg-agent");
+      container.removeAttribute("data-dg-scheme");
+    };
   }
 
-  // Sidebar and floating layouts mount into a fresh root div on <body>
+  // Sidebar and floating layouts mount into a root div on <body>
   const root = document.createElement("div");
   root.setAttribute("data-dg-agent", "");
   document.body.appendChild(root);
+
+  applyColorScheme(root, config.colorScheme);
+  applyTheme(root, config.theme);
+
+  // Class-based color scheme injects a scoped <style> tag
+  if (config.colorScheme && typeof config.colorScheme === "object" && config.colorScheme.mode === "class") {
+    const styleCleanup = injectClassSchemeStyle(config.colorScheme);
+    cleanups.push(styleCleanup);
+  }
 
   const toggle = () => {
     root.querySelector<HTMLElement>(".dg-va-panel")?.classList.toggle("dg-va-open");
@@ -73,35 +94,85 @@ export function init(config: WidgetConfig): () => void {
     render(h(SidebarWidget, { config }), root);
   }
 
-  // Open by default if configured
   if (config.defaultOpen) {
     requestAnimationFrame(toggle);
   }
 
-  // Wire up an optional external toggle button
   if (config.buttonId) {
     document.getElementById(config.buttonId)?.addEventListener("click", toggle);
   }
 
-  // Support toggle via custom DOM event: document.dispatchEvent(new Event('dg-agent-toggle'))
   document.addEventListener("dg-agent-toggle", toggle);
 
   return () => {
     document.removeEventListener("dg-agent-toggle", toggle);
+    cleanups.forEach((fn) => fn());
     render(null, root);
     root.remove();
   };
 }
 
-function applyTheme(theme: WidgetConfig["theme"]): void {
+// ---------------------------------------------------------------------------
+// Color scheme
+// ---------------------------------------------------------------------------
+
+function applyColorScheme(root: HTMLElement, scheme: WidgetColorScheme | undefined): void {
+  if (!scheme || scheme === "auto") return;
+
+  if (scheme === "light" || scheme === "dark") {
+    root.setAttribute("data-dg-scheme", scheme);
+    return;
+  }
+
+  // Class-based: handled separately via injected <style> — nothing on the element itself
+}
+
+/**
+ * Injects a scoped `<style>` tag that maps ancestor CSS selectors to
+ * `color-scheme: dark | light` on `[data-dg-agent]`. This is the safest
+ * approach for class-based theming since we don't know the DOM structure.
+ */
+function injectClassSchemeStyle(scheme: Extract<WidgetColorScheme, { mode: "class" }>): () => void {
+  const darkSel  = scheme.darkSelector  ?? ".dark";
+  const lightSel = scheme.lightSelector ?? ".light";
+
+  const style = document.createElement("style");
+  style.setAttribute("data-dg-scheme-style", "");
+  style.textContent = [
+    `${darkSel} [data-dg-agent] { color-scheme: dark; }`,
+    `${lightSel} [data-dg-agent] { color-scheme: light; }`,
+  ].join("\n");
+  document.head.appendChild(style);
+
+  return () => style.remove();
+}
+
+// ---------------------------------------------------------------------------
+// Theme tokens → CSS custom properties on the widget root element
+// ---------------------------------------------------------------------------
+
+const TOKEN_MAP: Array<[keyof WidgetTheme, string]> = [
+  ["primary",          "--dg-va-primary"],
+  ["background",       "--dg-va-bg"],
+  ["backgroundRaised", "--dg-va-bg-raised"],
+  ["backgroundInput",  "--dg-va-bg-input"],
+  ["text",             "--dg-va-text"],
+  ["textMuted",        "--dg-va-text-muted"],
+  ["border",           "--dg-va-border"],
+  ["error",            "--dg-va-error"],
+  ["buttonRadius",     "--dg-va-btn-radius"],
+  ["panelRadius",      "--dg-va-radius"],
+];
+
+function applyTheme(root: HTMLElement, theme: WidgetTheme | undefined): void {
   if (!theme) return;
-  const s = document.documentElement.style;
-  if (theme.primary)         s.setProperty("--dg-va-primary", theme.primary);
-  if (theme.background)      s.setProperty("--dg-va-bg", theme.background);
-  if (theme.backgroundRaised) s.setProperty("--dg-va-bg-raised", theme.backgroundRaised);
-  if (theme.text)            s.setProperty("--dg-va-text", theme.text);
-  if (theme.textMuted)       s.setProperty("--dg-va-text-muted", theme.textMuted);
-  if (theme.buttonRadius)    s.setProperty("--dg-va-btn-radius", theme.buttonRadius);
-  if (theme.panelRadius)     s.setProperty("--dg-va-radius", theme.panelRadius);
-  if (theme.fabSize)         s.setProperty("--dg-va-fab-size", `${theme.fabSize}px`);
+  for (const [key, prop] of TOKEN_MAP) {
+    const val = theme[key];
+    if (val != null) {
+      root.style.setProperty(prop, typeof val === "number" ? `${val}px` : val);
+    }
+  }
+  if (theme.fabSize != null) {
+    root.style.setProperty("--dg-va-fab-size", `${theme.fabSize}px`);
+  }
 }

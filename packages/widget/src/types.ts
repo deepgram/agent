@@ -33,20 +33,81 @@ export type WidgetPlacement =
   | "top";
 
 // ---------------------------------------------------------------------------
+// Color scheme
+// ---------------------------------------------------------------------------
+
+/**
+ * Controls how the widget responds to light/dark mode.
+ *
+ * - `'auto'`  (default): follows `prefers-color-scheme` via CSS `light-dark()`
+ * - `'light'` / `'dark'`: forces a specific scheme regardless of OS preference
+ * - `{ mode: 'class', darkSelector, lightSelector }`: class-based — the widget
+ *   watches for a CSS selector on any ancestor element, e.g. `.dark` or
+ *   `[data-theme="dark"]`. Useful when the host app controls theme via a class
+ *   on `<html>` or a layout element rather than OS preference.
+ *
+ * @example Class-based (Tailwind / next-themes style):
+ * ```js
+ * colorScheme: { mode: 'class', darkSelector: '.dark' }
+ * ```
+ *
+ * @example Fixed dark:
+ * ```js
+ * colorScheme: 'dark'
+ * ```
+ */
+export type WidgetColorScheme =
+  | "auto"
+  | "light"
+  | "dark"
+  | {
+      mode: "class";
+      /**
+       * CSS selector that, when matched by any ancestor of the widget root,
+       * activates dark mode. Default: `'.dark'`
+       */
+      darkSelector?: string;
+      /**
+       * CSS selector that, when matched by any ancestor, activates light mode.
+       * Default: `'.light'`
+       */
+      lightSelector?: string;
+    };
+
+// ---------------------------------------------------------------------------
 // Theme
 // ---------------------------------------------------------------------------
 
+/**
+ * Override specific design tokens. Each property maps to a CSS custom property
+ * on the widget root element (`[data-dg-agent]`).
+ *
+ * Because the built-in values use `var(--dg-va-TOKEN, light-dark(…, …))`, any
+ * property you set here wins over the built-in adaptive defaults in both modes.
+ * To override only one mode, omit this and write CSS instead:
+ * ```css
+ * @media (prefers-color-scheme: dark) {
+ *   [data-dg-agent] { --dg-va-bg: #0d1117; }
+ * }
+ * ```
+ */
 export interface WidgetTheme {
-  /** Brand/accent colour. Default: #13EF93 */
+  /** Brand/accent colour. Default adapts: same green (#13EF93) on both modes */
   primary?: string;
-  /** Panel background. Default: #101014 */
+  /** Panel background */
   background?: string;
-  /** Raised element background (message bubbles, etc.). Default: #18181c */
+  /** Raised element background (message bubbles, input) */
   backgroundRaised?: string;
-  /** Primary text colour. Default: #FFFFFF */
+  /** Input field background */
+  backgroundInput?: string;
+  /** Primary text colour */
   text?: string;
-  /** Muted/secondary text colour. Default: #8b8b9a */
+  /** Muted/secondary text colour */
   textMuted?: string;
+  /** Widget border colour */
+  border?: string;
+  /** Error/destructive colour */
+  error?: string;
   /** Button border radius. Default: 10px */
   buttonRadius?: string;
   /** Panel border radius. Default: 16px */
@@ -192,9 +253,23 @@ export interface WidgetConfig {
   /** Override any of the built-in UI labels */
   text?: WidgetTextContent;
 
+  // ---- Colour scheme ----
+
+  /**
+   * How the widget responds to light/dark mode.
+   * Default: `'auto'` — follows `prefers-color-scheme` via CSS `light-dark()`.
+   *
+   * Set to `'dark'` or `'light'` to force a mode, or pass `{ mode: 'class' }`
+   * to mirror the host app's class-based theme (e.g. Tailwind, next-themes).
+   */
+  colorScheme?: WidgetColorScheme;
+
   // ---- Styling ----
 
-  /** CSS custom property overrides */
+  /**
+   * Override individual design tokens. Each key maps to a CSS custom property
+   * set on the widget root, overriding the built-in `light-dark()` defaults.
+   */
   theme?: WidgetTheme;
 
   // ---- Callbacks ----
