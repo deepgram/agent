@@ -2,7 +2,10 @@ import { defineConfig, loadEnv } from "vite";
 import path from "node:path";
 
 export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, process.cwd(), "");
+  // loadEnv reads the .env file directly (returns literal op:// strings).
+  // For the token proxy we use process.env instead, which has the real secret
+  // injected by `op run --env-file examples/.env` before the process starts.
+  void loadEnv(mode, process.cwd(), ""); // keep for any non-secret Vite vars
   const preact = (sub: string) =>
     path.resolve(`../packages/widget/node_modules/preact/${sub}`);
 
@@ -48,7 +51,7 @@ export default defineConfig(({ mode }) => {
         name: "deepgram-token-proxy",
         configureServer(server) {
           server.middlewares.use("/api/token", async (_req, res) => {
-            const apiKey = env.DEEPGRAM_API_KEY;
+            const apiKey = process.env.DEEPGRAM_API_KEY;
 
             if (!apiKey) {
               res.statusCode = 500;
@@ -58,6 +61,8 @@ export default defineConfig(({ mode }) => {
               }));
               return;
             }
+
+            console.log(`[token-proxy] key: ${apiKey.slice(0, 8)}… (${apiKey.length} chars)`);
 
             try {
               const upstream = await fetch(
@@ -72,12 +77,14 @@ export default defineConfig(({ mode }) => {
                 },
               );
 
-              const data = await upstream.json() as { access_token?: string; error?: string };
+              const data = await upstream.json() as Record<string, unknown>;
+
+              console.log(`[token-proxy] ${upstream.status}`, JSON.stringify(data));
 
               if (!upstream.ok || !data.access_token) {
                 res.statusCode = upstream.status;
                 res.setHeader("Content-Type", "application/json");
-                res.end(JSON.stringify({ error: data.error ?? "token grant failed" }));
+                res.end(JSON.stringify({ status: upstream.status, upstream: data }));
                 return;
               }
 

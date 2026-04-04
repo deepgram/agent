@@ -9,7 +9,7 @@
   "scripts": {
     "build": "bun run --filter 'packages/*' build",
     "dev": "bun run --filter 'packages/*' dev",
-    "dev:examples": "bun run --cwd examples dev",
+    "dev:examples": "op run --env-file examples/.env -- bun run --cwd examples dev",
     "typecheck": "bun run --filter 'packages/*' typecheck",
     "lint": "bun run --filter 'packages/*' lint"
   }
