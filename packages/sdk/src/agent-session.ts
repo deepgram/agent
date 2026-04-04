@@ -141,19 +141,34 @@ export class AgentSession extends EventEmitter<AgentSessionEvents> {
       const token = await this.tokenFactory.get();
       console.log("[dg-agent] token obtained, length:", token.length);
 
-      const client = new DeepgramClient();
+      // Pass apiKey so the SDK's HeaderAuthProvider is satisfied in browser
+      // environments where process.env is not available. The Authorization
+      // header on connect() still takes precedence for the WebSocket upgrade.
+      const client = new DeepgramClient({ apiKey: token });
       const socket = await client.agent.v1.connect({
         Authorization: `Token ${token}`,
         reconnectAttempts: 0,
       });
       console.log("[dg-agent] socket created, waiting for open...");
 
-      await socket.waitForOpen();
+      // waitForOpen() only resolves on 'open' or rejects on 'error' — it hangs
+      // if the socket closes without an error event (e.g. server closes mid-
+      // handshake with a close frame). Race it against a close listener so we
+      // always get a rejection we can handle.
+      await Promise.race([
+        socket.waitForOpen(),
+        new Promise<never>((_, reject) => {
+          socket.socket.addEventListener("close", (e: { code: number; reason?: string }) => {
+            reject(new Error(`socket closed before open: code ${e.code} ${e.reason ?? ""}`));
+          }, { once: true } as AddEventListenerOptions);
+        }),
+      ]);
       console.log("[dg-agent] socket open, binding events");
 
       this.socket = socket;
       this._bindSocketEvents(socket);
     } catch (err) {
+      console.log("[dg-agent] _openConnection error:", String(err), err);
       this._onConnectionError(err instanceof Error ? err : new Error(String(err)));
     }
   }
