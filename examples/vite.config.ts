@@ -14,11 +14,19 @@ export default defineConfig(({ mode }) => {
         "@deepgram/agent-widget": path.resolve("../packages/widget/src/index.ts"),
         "@deepgram/agent-react":  path.resolve("../packages/react/src/index.ts"),
         "@deepgram/agent":        path.resolve("../packages/sdk/src/index.ts"),
-        // Preact aliases — widget uses Preact; point to the widget's node_modules
-        // so we share one instance across the widget source and examples.
-        "react":             path.resolve("../packages/widget/node_modules/preact/compat"),
-        "react-dom":         path.resolve("../packages/widget/node_modules/preact/compat"),
-        "react/jsx-runtime": path.resolve("../packages/widget/node_modules/preact/jsx-runtime"),
+        // Preact aliases — all packages in the monorepo share the single preact
+        // copy installed in packages/widget/node_modules. esbuild's JSX transform
+        // (jsxImportSource: "preact") injects preact/jsx-dev-runtime at dev time
+        // and preact/jsx-runtime at build time; both must be aliased explicitly.
+        "react":                    path.resolve("../packages/widget/node_modules/preact/compat"),
+        "react-dom":                path.resolve("../packages/widget/node_modules/preact/compat"),
+        "react/jsx-runtime":        path.resolve("../packages/widget/node_modules/preact/jsx-runtime"),
+        "preact/jsx-runtime":       path.resolve("../packages/widget/node_modules/preact/jsx-runtime"),
+        // Preact has no jsx-dev-runtime; redirect to jsx-runtime for both modes
+        "preact/jsx-dev-runtime":   path.resolve("../packages/widget/node_modules/preact/jsx-runtime"),
+        "preact/hooks":             path.resolve("../packages/widget/node_modules/preact/hooks"),
+        "preact/compat":            path.resolve("../packages/widget/node_modules/preact/compat"),
+        "preact":                   path.resolve("../packages/widget/node_modules/preact"),
       },
     },
 
