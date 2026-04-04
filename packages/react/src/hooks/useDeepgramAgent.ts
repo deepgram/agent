@@ -105,7 +105,7 @@ export function useDeepgramAgent({
     session.on("conversation-text", (msg: ConversationTextMessage) => {
       setConversation((prev) => [
         ...prev,
-        { id: nextId(), role: msg.role, content: msg.content },
+        { id: nextId(), role: msg.role as "user" | "assistant", content: msg.content },
       ]);
     });
 

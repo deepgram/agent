@@ -286,7 +286,7 @@ export class AgentSession extends EventEmitter<AgentSessionEvents> {
       case "Warning":
         this.emit("warning", msg);
         break;
-      case "ReceiveFunctionCallResponse":
+      case "FunctionCallResponse":
         this.emit("function-call-response", msg);
         break;
     }

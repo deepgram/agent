@@ -13,7 +13,7 @@ import type {
   InjectionRefusedMessage,
   AgentErrorMessage,
   AgentWarningMessage,
-  ReceiveFunctionCallResponseMessage,
+  FunctionCallResponseMessage,
 } from "./messages.js";
 
 /**
@@ -36,7 +36,7 @@ export interface AgentSessionEvents {
   "injection-refused": [msg: InjectionRefusedMessage];
   error: [msg: AgentErrorMessage];
   warning: [msg: AgentWarningMessage];
-  "function-call-response": [msg: ReceiveFunctionCallResponseMessage];
+  "function-call-response": [msg: FunctionCallResponseMessage];
 
   // Server → client (binary)
   audio: [chunk: ArrayBuffer];
