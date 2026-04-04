@@ -52,6 +52,9 @@ export class AgentSession extends EventEmitter<AgentSessionEvents> {
   private reconnectAttempts = 0;
   private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
   private intentionalClose = false;
+  /** Audio frames queued before SettingsApplied; flushed once the agent is ready */
+  private audioQueue: ArrayBuffer[] = [];
+  private settingsApplied = false;
 
   private _state: AgentState = "idle";
 
@@ -91,6 +94,10 @@ export class AgentSession extends EventEmitter<AgentSessionEvents> {
   // ---------------------------------------------------------------------------
 
   sendAudio(data: ArrayBuffer): void {
+    if (!this.settingsApplied) {
+      this.audioQueue.push(data);
+      return;
+    }
     this.socket?.sendMedia(data);
   }
 
@@ -145,9 +152,13 @@ export class AgentSession extends EventEmitter<AgentSessionEvents> {
         reconnectAttempts: 0,
       });
 
+      // Wait for the WebSocket handshake to complete before resolving connect().
+      // Without this, the caller starts the microphone against a not-yet-open
+      // socket and audio frames arrive before the connection is established.
+      await socket.waitForOpen();
+
       this.socket = socket;
       this._bindSocketEvents(socket);
-      this.keepAlive.start();
     } catch (err) {
       this._onConnectionError(err instanceof Error ? err : new Error(String(err)));
     }
@@ -228,6 +239,13 @@ export class AgentSession extends EventEmitter<AgentSessionEvents> {
         this.emit("welcome", msg);
         break;
       case "SettingsApplied":
+        this.settingsApplied = true;
+        this.keepAlive.start();
+        // Flush any audio frames that arrived before the agent was ready
+        for (const frame of this.audioQueue) {
+          socket.sendMedia(frame);
+        }
+        this.audioQueue = [];
         this.emit("settings-applied", msg);
         break;
       case "ConversationText":
@@ -303,6 +321,8 @@ export class AgentSession extends EventEmitter<AgentSessionEvents> {
 
   private _cleanup(reason: string): void {
     void reason;
+    this.settingsApplied = false;
+    this.audioQueue = [];
     this.keepAlive.stop();
     if (this.reconnectTimer !== null) {
       clearTimeout(this.reconnectTimer);
