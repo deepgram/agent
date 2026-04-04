@@ -1,0 +1,38 @@
+{
+  "name": "@deepgram/voice-agent-widget",
+  "version": "0.0.1",
+  "description": "Self-contained CDN widget for Deepgram Voice Agent — no framework required",
+  "type": "module",
+  "main": "dist/widget.umd.js",
+  "module": "dist/widget.es.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/widget.es.js",
+      "require": "./dist/widget.umd.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc --noEmit && vite build",
+    "typecheck": "tsc --noEmit",
+    "dev": "vite"
+  },
+  "dependencies": {
+    "@deepgram/voice-agent": "workspace:*",
+    "@deepgram/voice-agent-react": "workspace:*",
+    "preact": "10.29.1",
+    "sugar-high": "1.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "22.15.3",
+    "@vitejs/plugin-react": "6.0.1",
+    "terser": "5.46.1",
+    "typescript": "5.9.3",
+    "vite": "8.0.3",
+    "vite-plugin-css-injected-by-js": "4.0.1",
+    "vite-plugin-dts": "4.5.4"
+  },
+  "license": "MIT"
+}

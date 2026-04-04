@@ -1,0 +1,41 @@
+{
+  "name": "@deepgram/voice-agent-react",
+  "version": "0.0.1",
+  "description": "React hooks and components for @deepgram/voice-agent",
+  "type": "module",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc --noEmit && vite build",
+    "typecheck": "tsc --noEmit",
+    "dev": "vite build --watch"
+  },
+  "dependencies": {
+    "@deepgram/voice-agent": "workspace:*"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
+    "@vitejs/plugin-react": "6.0.1",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "terser": "5.46.1",
+    "typescript": "5.9.3",
+    "vite": "8.0.3",
+    "vite-plugin-dts": "4.5.4"
+  },
+  "license": "MIT"
+}
