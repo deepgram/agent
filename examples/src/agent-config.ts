@@ -1,12 +1,5 @@
-/**
- * Shared agent configuration for all example pages.
- *
- * Swap `agent` for a pre-built agent UUID from the Deepgram console:
- *   agent: "your-agent-uuid-here"
- */
 import type { WidgetConfig } from "@deepgram/agent-widget";
 
-/** Fetches a short-lived Deepgram access token from the dev-server proxy. */
 async function tokenFactory(): Promise<string> {
   const res = await fetch("/api/token");
   if (!res.ok) {
@@ -23,15 +16,14 @@ export const baseConfig: Omit<WidgetConfig, "layout" | "containerId"> = {
 
   agent: {
     listen: {
-      provider: { type: "deepgram", model: "nova-3" },
+      provider: { type: "deepgram", version: "v1", model: "nova-3" },
     },
     think: {
-      type: "open_ai",
-      model: "gpt-4o-mini",
+      provider: { type: "open_ai", model: "gpt-4o-mini" },
+      prompt: "You are a helpful Deepgram voice assistant. Be concise.",
     },
     speak: {
-      type: "deepgram",
-      model: "aura-2-thalia-en",
+      provider: { type: "deepgram", model: "aura-2-thalia-en" },
     },
     greeting: "Hi! I'm your Deepgram voice assistant. How can I help?",
   },

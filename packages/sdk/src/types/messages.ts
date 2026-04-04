@@ -1,5 +1,5 @@
-// All AgentV1 message types derived from the Deepgram AsyncAPI spec
-// https://dpgr.am/asyncapi.yml
+// All AgentV1 message types, verified against the installed @deepgram/sdk v5 type definitions.
+// Key correction: think and speak use { provider: { type, model, ... } } — NOT the flat { type, model } shape.
 
 // ---------------------------------------------------------------------------
 // Shared
@@ -21,72 +21,73 @@ export type AudioEncoding =
 export type OutputEncoding = "linear16" | "mulaw" | "alaw";
 
 // ---------------------------------------------------------------------------
-// Settings — CLIENT → SERVER
+// Function definitions (used in think settings)
 // ---------------------------------------------------------------------------
 
 export interface FunctionDefinition {
-  name: string;
-  description: string;
-  parameters: Record<string, unknown>; // JSON Schema object
+  name?: string;
+  description?: string;
+  parameters?: Record<string, unknown>;
+  /** If omitted, the function is executed client-side via FunctionCallRequest */
+  endpoint?: { url: string; headers?: Record<string, string> };
 }
 
-export interface ThinkSettingsOpenAI {
+// ---------------------------------------------------------------------------
+// Listen provider
+// ---------------------------------------------------------------------------
+
+export interface ListenProviderDeepgramV1 {
+  type: "deepgram";
+  version: "v1";
+  model?: string;
+  language?: string;
+  keyterms?: string[];
+  smart_format?: boolean;
+}
+
+export interface ListenProviderDeepgramV2 {
+  type: "deepgram";
+  version: "v2";
+  model?: string;
+  keyterms?: string[];
+  eot_threshold?: number;
+  eager_eot_threshold?: number;
+  eot_timeout_ms?: number;
+}
+
+export type ListenProvider = ListenProviderDeepgramV1 | ListenProviderDeepgramV2;
+
+// ---------------------------------------------------------------------------
+// Think provider (goes inside ThinkSettings.provider)
+// ---------------------------------------------------------------------------
+
+export interface ThinkProviderOpenAI {
   type: "open_ai";
   version?: "v1";
-  model:
-    | "gpt-5"
-    | "gpt-5-mini"
-    | "gpt-4.5-preview"
-    | "gpt-4o"
-    | "gpt-4o-mini"
-    | "gpt-4-turbo"
-    | "gpt-3.5-turbo"
-    | (string & {});
+  model: string;
   temperature?: number;
-  instructions?: string;
-  functions?: FunctionDefinition[];
 }
 
-export interface ThinkSettingsAnthropic {
+export interface ThinkProviderAnthropic {
   type: "anthropic";
   version?: "v1";
-  model:
-    | "claude-opus-4-6"
-    | "claude-sonnet-4-6"
-    | "claude-haiku-4-5-20251001"
-    | "claude-3-5-haiku-latest"
-    | "claude-sonnet-4-20250514"
-    | (string & {});
+  model: string;
   temperature?: number;
-  functions?: FunctionDefinition[];
 }
 
-export interface ThinkSettingsGoogle {
+export interface ThinkProviderGoogle {
   type: "google";
-  model:
-    | "gemini-2.0-flash"
-    | "gemini-2.0-flash-lite"
-    | "gemini-1.5-pro"
-    | "gemini-1.5-flash"
-    | (string & {});
+  model: string;
   temperature?: number;
-  functions?: FunctionDefinition[];
 }
 
-export interface ThinkSettingsGroq {
+export interface ThinkProviderGroq {
   type: "groq";
-  model:
-    | "llama-3.3-70b-versatile"
-    | "llama-3.1-8b-instant"
-    | "llama3-70b-8192"
-    | "llama3-8b-8192"
-    | "mixtral-8x7b-32768"
-    | (string & {});
+  model: string;
   temperature?: number;
-  functions?: FunctionDefinition[];
 }
 
-export interface ThinkSettingsAWSBedrock {
+export interface ThinkProviderAWSBedrock {
   type: "aws_bedrock";
   model: string;
   temperature?: number;
@@ -97,31 +98,73 @@ export interface ThinkSettingsAWSBedrock {
     secret_access_key: string;
     session_token?: string;
   };
-  functions?: FunctionDefinition[];
 }
 
-export type ThinkSettings =
-  | ThinkSettingsOpenAI
-  | ThinkSettingsAnthropic
-  | ThinkSettingsGoogle
-  | ThinkSettingsGroq
-  | ThinkSettingsAWSBedrock;
+export type ThinkProvider =
+  | ThinkProviderOpenAI
+  | ThinkProviderAnthropic
+  | ThinkProviderGoogle
+  | ThinkProviderGroq
+  | ThinkProviderAWSBedrock;
+
+// ---------------------------------------------------------------------------
+// Think settings (agent.think)
+// ---------------------------------------------------------------------------
+
+export interface ThinkSettings {
+  provider: ThinkProvider;
+  /** System prompt */
+  prompt?: string;
+  functions?: FunctionDefinition[];
+  context_length?: number;
+}
+
+// ---------------------------------------------------------------------------
+// Speak provider (goes inside SpeakSettings.provider)
+// ---------------------------------------------------------------------------
+
+export interface SpeakProviderDeepgram {
+  type: "deepgram";
+  version?: "v1";
+  model: string;
+}
+
+export interface SpeakProviderElevenLabs {
+  type: "eleven_labs";
+  model_id?: string;
+  voice_id?: string;
+}
+
+export interface SpeakProviderCartesia {
+  type: "cartesia";
+  model_id?: string;
+  voice?: Record<string, unknown>;
+}
+
+export interface SpeakProviderOpenAI {
+  type: "open_ai";
+  version?: "v1";
+  model?: string;
+  voice?: string;
+}
+
+export type SpeakProvider =
+  | SpeakProviderDeepgram
+  | SpeakProviderElevenLabs
+  | SpeakProviderCartesia
+  | SpeakProviderOpenAI;
+
+// ---------------------------------------------------------------------------
+// Speak settings (agent.speak)
+// ---------------------------------------------------------------------------
 
 export interface SpeakSettings {
-  type: "deepgram";
-  model: string; // e.g. "aura-2-thalia-en"
-  encoding?: OutputEncoding;
-  sample_rate?: number;
+  provider: SpeakProvider;
 }
 
-export interface ListenProviderDeepgram {
-  type: "deepgram";
-  version?: "v1" | "v2";
-  model: string; // v1: nova-3 | v2: flux-general-en
-  language?: string;
-  keyterms?: string[];
-  smart_format?: boolean;
-}
+// ---------------------------------------------------------------------------
+// Agent settings object
+// ---------------------------------------------------------------------------
 
 export interface HistoryMessage {
   type: "History";
@@ -135,34 +178,35 @@ export interface HistoryFunctionCall {
     id: string;
     name: string;
     client_side: boolean;
-    arguments: string; // JSON string
-    response: string; // JSON string
+    arguments: string;
+    response: string;
   }>;
 }
 
 export interface AgentSettingsObject {
-  language?: string; // deprecated, use listen.provider.language
   greeting?: string;
   context?: {
     messages: Array<HistoryMessage | HistoryFunctionCall>;
   };
   listen?: {
-    provider: ListenProviderDeepgram;
+    provider?: ListenProvider;
   };
   think?: ThinkSettings | ThinkSettings[];
   speak?: SpeakSettings | SpeakSettings[];
 }
 
+// ---------------------------------------------------------------------------
+// Full Settings payload (CLIENT → SERVER)
+// ---------------------------------------------------------------------------
+
 export interface AgentV1SettingsPayload {
   type: "Settings";
   tags?: string[];
   experimental?: boolean;
-  flags?: {
-    history?: boolean;
-  };
+  flags?: { history?: boolean };
   mip_opt_out?: boolean;
   audio: {
-    input: {
+    input?: {
       encoding: AudioEncoding;
       sample_rate: number;
     };
@@ -173,11 +217,11 @@ export interface AgentV1SettingsPayload {
       container?: string;
     };
   };
-  agent: AgentSettingsObject | string; // object or agent UUID
+  agent: AgentSettingsObject | string;
 }
 
 // ---------------------------------------------------------------------------
-// Other client → server messages
+// Other CLIENT → SERVER messages
 // ---------------------------------------------------------------------------
 
 export interface UpdateSpeakMessage {
@@ -209,7 +253,7 @@ export interface FunctionCallResponseMessage {
   type: "FunctionCallResponse";
   id?: string;
   name: string;
-  content: string; // JSON string
+  content: string;
 }
 
 export interface KeepAliveMessage {
@@ -247,7 +291,7 @@ export interface AgentThinkingMessage {
 export interface FunctionCallItem {
   id: string;
   name: string;
-  arguments: string; // JSON string
+  arguments: string;
   client_side: boolean;
 }
 

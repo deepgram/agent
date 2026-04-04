@@ -10,18 +10,23 @@ export type { PlayerOptions } from "./audio/player.js";
 export type { AgentSessionConfig, AuthConfig, TokenFactory, ReconnectConfig } from "./types/config.js";
 export type { AgentSessionEvents } from "./types/events.js";
 export type {
-  // Settings types (for constructing config)
+  // Settings types
   AgentSettingsObject,
   ThinkSettings,
-  ThinkSettingsOpenAI,
-  ThinkSettingsAnthropic,
-  ThinkSettingsGoogle,
-  ThinkSettingsGroq,
-  ThinkSettingsAWSBedrock,
+  ThinkProvider,
+  ThinkProviderOpenAI,
+  ThinkProviderAnthropic,
+  ThinkProviderGoogle,
+  ThinkProviderGroq,
+  ThinkProviderAWSBedrock,
   SpeakSettings,
-  ListenProviderDeepgram,
+  SpeakProvider,
+  SpeakProviderDeepgram,
+  ListenProvider,
+  ListenProviderDeepgramV1,
+  ListenProviderDeepgramV2,
   FunctionDefinition,
-  // Server message types (for handling events)
+  // Server message types
   WelcomeMessage,
   SettingsAppliedMessage,
   ConversationTextMessage,
