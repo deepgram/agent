@@ -1,0 +1,353 @@
+/*
+ * @deepgram/agent-react — built-in component styles
+ *
+ * Import this stylesheet to get a polished UI out of the box:
+ *   import "@deepgram/agent-react/styles.css";
+ *
+ * Every visual value is a CSS variable with a light-dark() fallback.
+ * Override any token on [data-dg-agent] or any ancestor:
+ *
+ *   [data-dg-agent] { --dg-va-primary: #6366f1; }
+ *
+ * SURFACE TOKENS
+ *   --dg-va-bg               panel background          light-dark(#fff, #101014)
+ *   --dg-va-bg-raised        cards, bubbles            light-dark(#f3f4f6, #18181c)
+ *   --dg-va-bg-input         input field bg            light-dark(#f3f4f6, #1e1e24)
+ *   --dg-va-bg-hover         surface hover             light-dark(#f9fafb, #1a1a1f)
+ *   --dg-va-bg-active        surface pressed           light-dark(#f3f4f6, #222228)
+ *
+ * ACCENT TOKENS
+ *   --dg-va-primary          brand colour              #13EF93
+ *   --dg-va-primary-hover    accent hover              color-mix(85% primary, #000)
+ *   --dg-va-primary-active   accent pressed            color-mix(70% primary, #000)
+ *   --dg-va-on-primary       text on primary bg        light-dark(#000, #000)
+ *
+ * TEXT TOKENS
+ *   --dg-va-text             primary text              light-dark(#111827, #fff)
+ *   --dg-va-text-muted       secondary text            light-dark(#6b7280, #8b8b9a)
+ *
+ * CHROME TOKENS
+ *   --dg-va-border           borders                   light-dark(rgba(0,0,0,.1), rgba(255,255,255,.08))
+ *   --dg-va-error            error colour              light-dark(#dc2626, #ef4444)
+ *   --dg-va-warning          connecting colour          #f59e0b
+ *
+ * MESSAGE TOKENS
+ *   --dg-va-msg-user-bg      user bubble bg
+ *   --dg-va-msg-user-border  user bubble border
+ *
+ * STRUCTURAL TOKENS
+ *   --dg-va-radius           panel radius              16px
+ *   --dg-va-btn-radius       button radius             10px
+ *   --dg-va-input-radius     input radius              8px
+ *   --dg-va-msg-radius       message radius            12px
+ *   --dg-va-padding          content padding           16px
+ *   --dg-va-font             font family               system-ui, ...
+ */
+
+/* ── Color scheme root ─────────────────────────────────────────────────── */
+
+[data-dg-agent] {
+  color-scheme: light dark;
+}
+[data-dg-agent][data-dg-scheme="light"] { color-scheme: light; }
+[data-dg-agent][data-dg-scheme="dark"]  { color-scheme: dark; }
+
+/* ── Token defaults ────────────────────────────────────────────────────── */
+
+[data-dg-agent] {
+  --dg-va-primary:        #13EF93;
+  --dg-va-primary-hover:  color-mix(in srgb, var(--dg-va-primary) 85%, #000);
+  --dg-va-primary-active: color-mix(in srgb, var(--dg-va-primary) 70%, #000);
+  --dg-va-radius:         16px;
+  --dg-va-btn-radius:     10px;
+  --dg-va-input-radius:   8px;
+  --dg-va-msg-radius:     12px;
+  --dg-va-padding:        16px;
+  --dg-va-font:           system-ui, -apple-system, sans-serif;
+}
+
+/* ── Header ────────────────────────────────────────────────────────────── */
+
+.dg-va-header {
+  display: flex;
+  align-items: center;
+  padding: 14px var(--dg-va-padding);
+  border-bottom: 1px solid var(--dg-va-border, light-dark(rgba(0,0,0,0.1), rgba(255,255,255,0.08)));
+  gap: 10px;
+  flex-shrink: 0;
+  background: var(--dg-va-bg, light-dark(#ffffff, #101014));
+}
+
+.dg-va-header-icon {
+  width: 28px;
+  height: 28px;
+  color: var(--dg-va-primary);
+  flex-shrink: 0;
+}
+
+.dg-va-header-name {
+  font-size: 15px;
+  font-weight: 600;
+  flex: 1;
+}
+
+/* ── Status ────────────────────────────────────────────────────────────── */
+
+[data-agent-status] {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--dg-va-text-muted, light-dark(#6b7280, #8b8b9a));
+}
+
+/* ── Close button ──────────────────────────────────────────────────────── */
+
+.dg-va-close-btn {
+  background: none;
+  border: none;
+  color: var(--dg-va-text-muted, light-dark(#6b7280, #8b8b9a));
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+  transition: background 0.15s, color 0.15s;
+}
+.dg-va-close-btn:hover {
+  color: var(--dg-va-text, light-dark(#111827, #ffffff));
+  background: var(--dg-va-bg-hover, light-dark(#f9fafb, #1a1a1f));
+}
+.dg-va-close-btn:active {
+  background: var(--dg-va-bg-active, light-dark(#f3f4f6, #222228));
+}
+
+/* ── Conversation ──────────────────────────────────────────────────────── */
+
+[data-agent-conversation] {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--dg-va-padding);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+[data-agent-conversation]::-webkit-scrollbar { width: 4px; }
+[data-agent-conversation]::-webkit-scrollbar-track { background: transparent; }
+[data-agent-conversation]::-webkit-scrollbar-thumb {
+  background: var(--dg-va-border, light-dark(rgba(0,0,0,0.15), rgba(255,255,255,0.1)));
+  border-radius: 2px;
+}
+
+/* ── Messages ──────────────────────────────────────────────────────────── */
+
+[data-agent-conversation] [data-role] {
+  max-width: 85%;
+  padding: 10px 14px;
+  border-radius: var(--dg-va-msg-radius);
+  font-size: 14px;
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+[data-agent-conversation] [data-role="user"] {
+  align-self: flex-end;
+  background: var(
+    --dg-va-msg-user-bg,
+    light-dark(rgba(19,239,147,0.12), rgba(19,239,147,0.15))
+  );
+  border: 1px solid var(
+    --dg-va-msg-user-border,
+    light-dark(rgba(19,239,147,0.3), rgba(19,239,147,0.2))
+  );
+  color: var(--dg-va-text, light-dark(#111827, #ffffff));
+}
+
+[data-agent-conversation] [data-role="assistant"] {
+  align-self: flex-start;
+  background: var(--dg-va-bg-raised, light-dark(#f3f4f6, #18181c));
+  border: 1px solid var(--dg-va-border, light-dark(rgba(0,0,0,0.08), rgba(255,255,255,0.08)));
+  color: var(--dg-va-text, light-dark(#111827, #ffffff));
+}
+
+/* ── Empty state ──────────────────────────────────────────────────────── */
+
+.dg-va-empty-state {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--dg-va-text-muted, light-dark(#6b7280, #8b8b9a));
+  gap: 10px;
+  padding: 32px;
+  text-align: center;
+  font-size: 14px;
+}
+
+/* ── Controls ──────────────────────────────────────────────────────────── */
+
+.dg-va-controls {
+  padding: 12px var(--dg-va-padding);
+  border-top: 1px solid var(--dg-va-border, light-dark(rgba(0,0,0,0.08), rgba(255,255,255,0.08)));
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex-shrink: 0;
+  background: var(--dg-va-bg, light-dark(#ffffff, #101014));
+}
+
+/* ── Text input ───────────────────────────────────────────────────────── */
+
+[data-agent-text-input] {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+[data-agent-text-input] textarea {
+  flex: 1;
+  background: var(--dg-va-bg-input, light-dark(#f3f4f6, #1e1e24));
+  border: 1px solid var(--dg-va-border, light-dark(rgba(0,0,0,0.1), rgba(255,255,255,0.08)));
+  border-radius: var(--dg-va-input-radius);
+  color: var(--dg-va-text, light-dark(#111827, #ffffff));
+  font-size: 14px;
+  padding: 10px 14px;
+  outline: none;
+  resize: none;
+  min-height: 42px;
+  max-height: 120px;
+  font-family: inherit;
+  transition: border-color 0.15s;
+}
+[data-agent-text-input] textarea:focus {
+  border-color: var(--dg-va-primary);
+}
+[data-agent-text-input] textarea::placeholder {
+  color: var(--dg-va-text-muted, light-dark(#9ca3af, #8b8b9a));
+}
+[data-agent-text-input] button {
+  background: none;
+  border: none;
+  color: var(--dg-va-text-muted, light-dark(#6b7280, #8b8b9a));
+  cursor: pointer;
+  padding: 8px;
+  border-radius: var(--dg-va-btn-radius);
+  display: flex;
+  align-items: center;
+  line-height: 0;
+  transition: color 0.15s;
+}
+[data-agent-text-input] button:hover:not(:disabled) {
+  color: var(--dg-va-primary);
+}
+[data-agent-text-input] button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ── Mic / speaker toggle buttons ─────────────────────────────────────── */
+
+[data-agent-mic-button],
+[data-agent-speaker-button] {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--dg-va-btn-radius);
+  border: 1px solid var(--dg-va-border, light-dark(rgba(0,0,0,0.1), rgba(255,255,255,0.08)));
+  background: var(--dg-va-bg-raised, light-dark(#f3f4f6, #18181c));
+  color: var(--dg-va-text, light-dark(#111827, #ffffff));
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.15s, color 0.15s;
+  line-height: 0;
+}
+[data-agent-mic-button]:hover,
+[data-agent-speaker-button]:hover {
+  background: var(--dg-va-bg-hover, light-dark(#f9fafb, #1a1a1f));
+}
+[data-agent-mic-button]:active,
+[data-agent-speaker-button]:active {
+  background: var(--dg-va-bg-active, light-dark(#f3f4f6, #222228));
+}
+[data-agent-mic-button][data-state="muted"],
+[data-agent-speaker-button][data-state="muted"] {
+  color: var(--dg-va-text-muted, light-dark(#9ca3af, #8b8b9a));
+}
+[data-agent-mic-button][data-state="active"],
+[data-agent-speaker-button][data-state="active"] {
+  background: var(--dg-va-primary);
+  color: var(--dg-va-on-primary, light-dark(#000, #000));
+  border-color: var(--dg-va-primary);
+}
+[data-agent-mic-button][data-state="active"]:hover,
+[data-agent-speaker-button][data-state="active"]:hover {
+  background: var(--dg-va-primary-hover);
+}
+[data-agent-mic-button]:disabled,
+[data-agent-speaker-button]:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ── Start / stop button ───────────────────────────────────────────────── */
+
+[data-agent-start-button] {
+  width: 100%;
+  padding: 12px;
+  border-radius: var(--dg-va-btn-radius);
+  background: var(--dg-va-primary);
+  color: var(--dg-va-on-primary, light-dark(#000, #000));
+  font-size: 14px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+[data-agent-start-button]:hover:not(:disabled) {
+  background: var(--dg-va-primary-hover);
+}
+[data-agent-start-button]:active:not(:disabled) {
+  background: var(--dg-va-primary-active);
+}
+[data-agent-start-button]:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+[data-agent-start-button][data-state="connected"],
+[data-agent-start-button][data-state="reconnecting"] {
+  background: var(--dg-va-bg-raised, light-dark(#f3f4f6, #18181c));
+  color: var(--dg-va-text, light-dark(#111827, #ffffff));
+  border: 1px solid var(--dg-va-border, light-dark(rgba(0,0,0,0.1), rgba(255,255,255,0.08)));
+}
+[data-agent-start-button][data-state="connected"]:hover:not(:disabled),
+[data-agent-start-button][data-state="reconnecting"]:hover:not(:disabled) {
+  background: var(--dg-va-bg-hover, light-dark(#f9fafb, #1a1a1f));
+}
+[data-agent-start-button][data-state="connected"]:active:not(:disabled),
+[data-agent-start-button][data-state="reconnecting"]:active:not(:disabled) {
+  background: var(--dg-va-bg-active, light-dark(#f3f4f6, #222228));
+}
+
+/* ── Focus ring ───────────────────────────────────────────────────────── */
+
+[data-agent-start-button]:focus-visible,
+[data-agent-mic-button]:focus-visible,
+[data-agent-speaker-button]:focus-visible,
+.dg-va-close-btn:focus-visible {
+  outline: 2px solid var(--dg-va-primary);
+  outline-offset: 2px;
+}
+
+/* ── Pulse animation ──────────────────────────────────────────────────── */
+
+@keyframes dg-va-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.3; }
+}
