@@ -55,6 +55,19 @@ export function createMockAudioContext(sampleRate = 24_000) {
       connect: jest.fn(),
       disconnect: jest.fn(),
     })),
+    createGain: jest.fn(() => ({
+      gain: { value: 1 },
+      connect: jest.fn(),
+      disconnect: jest.fn(),
+    })),
+    createAnalyser: jest.fn(() => ({
+      fftSize: 256,
+      frequencyBinCount: 128,
+      getByteTimeDomainData: jest.fn((arr: Uint8Array) => arr.fill(128)),
+      getByteFrequencyData: jest.fn((arr: Uint8Array) => arr.fill(0)),
+      connect: jest.fn(),
+      disconnect: jest.fn(),
+    })),
     resume: jest.fn(() => {
       state = "running";
       return Promise.resolve();

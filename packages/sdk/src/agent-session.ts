@@ -62,6 +62,7 @@ export class AgentSession extends EventEmitter<AgentSessionEvents> {
   /** Audio frames queued before SettingsApplied; flushed once the agent is ready */
   private audioQueue: ArrayBuffer[] = [];
   private settingsApplied = false;
+  private sessionId: string | null = null;
 
   private _state: AgentState = "idle";
 
@@ -134,6 +135,14 @@ export class AgentSession extends EventEmitter<AgentSessionEvents> {
   sendFunctionCallResponse(id: string | undefined, name: string, content: string): void {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     this.socket?.sendFunctionCallResponse({ type: "FunctionCallResponse", id, name, content } as any);
+  }
+
+  /**
+   * Returns the session ID assigned by the server (available after Welcome).
+   * Returns null if not yet connected.
+   */
+  getId(): string | null {
+    return this.sessionId;
   }
 
   // ---------------------------------------------------------------------------
@@ -265,6 +274,8 @@ export class AgentSession extends EventEmitter<AgentSessionEvents> {
   private _dispatchMessage(msg: ServerMessage, socket: V1Socket): void {
     switch (msg.type) {
       case "Welcome": {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        this.sessionId = (msg as any).session_id ?? null;
         const settings = this._buildSettingsPayload();
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         socket.sendSettings(settings as any);

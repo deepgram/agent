@@ -1,38 +1,19 @@
 import { createWorkletBlobUrl } from "./worklet-source.js";
 
 export interface MicrophoneOptions {
-  /**
-   * Enable Silero VAD via @ricky0123/vad-web (optional peer dependency).
-   * When enabled, audio is gated — only frames during detected speech are
-   * forwarded to the agent, and `onSpeechStart`/`onSpeechEnd` fire locally
-   * before the server confirms endpointing.
-   */
   vad?: boolean | VadOptions;
-
   /** Target sample rate for PCM capture. Default: 16_000 */
   sampleRate?: number;
-
   /** Passed to getUserMedia. Default: true */
   echoCancellation?: boolean;
-
   /** Passed to getUserMedia. Default: true */
   noiseSuppression?: boolean;
-
   /** Passed to getUserMedia. Default: true */
   autoGainControl?: boolean;
 }
 
 export interface VadOptions {
-  /**
-   * Probability threshold (0–1) for considering a frame as speech.
-   * Frames below this threshold are dropped. Default: 0.5
-   */
   speechThreshold?: number;
-
-  /**
-   * Probability threshold (0–1) at which speech is considered ended.
-   * Should be <= speechThreshold. Default: 0.35
-   */
   silenceThreshold?: number;
 }
 
@@ -45,23 +26,13 @@ export type MicrophoneEventMap = {
 
 type Listener<T extends unknown[]> = (...args: T) => void;
 
-/**
- * Browser microphone abstraction for AgentSession.
- *
- * Usage:
- * ```ts
- * const mic = new AgentMicrophone(session, { vad: true });
- * await mic.start();
- * // audio is forwarded to session.sendAudio() automatically
- * mic.stop();
- * ```
- */
 export class AgentMicrophone {
   private ctx: AudioContext | null = null;
   private stream: MediaStream | null = null;
   private workletNode: AudioWorkletNode | null = null;
   private workletBlobUrl: string | null = null;
   private vadInstance: unknown = null;
+  private analyser: AnalyserNode | null = null;
   private listeners = new Map<string, Set<Listener<unknown[]>>>();
   private _muted = false;
 
@@ -72,6 +43,33 @@ export class AgentMicrophone {
 
   get muted(): boolean {
     return this._muted;
+  }
+
+  /**
+   * Get current input volume level (0–1) based on audio analysis.
+   * Returns 0 when microphone is not active.
+   */
+  getInputVolume(): number {
+    if (!this.analyser) return 0;
+    const data = new Uint8Array(this.analyser.frequencyBinCount);
+    this.analyser.getByteTimeDomainData(data);
+    let sum = 0;
+    for (let i = 0; i < data.length; i++) {
+      const v = (data[i] - 128) / 128;
+      sum += v * v;
+    }
+    return Math.min(1, Math.sqrt(sum / data.length) * 4);
+  }
+
+  /**
+   * Get frequency domain data for input audio visualization.
+   * Returns a Uint8Array of frequency bin magnitudes (0–255).
+   */
+  getInputByteFrequencyData(): Uint8Array {
+    if (!this.analyser) return new Uint8Array(0);
+    const data = new Uint8Array(this.analyser.frequencyBinCount);
+    this.analyser.getByteFrequencyData(data);
+    return data;
   }
 
   async start(): Promise<void> {
@@ -140,6 +138,10 @@ export class AgentMicrophone {
     this.ctx = new AudioContext({ sampleRate });
     await this.ctx.resume();
 
+    // Create analyser for input volume/frequency data
+    this.analyser = this.ctx.createAnalyser();
+    this.analyser.fftSize = 256;
+
     this.workletBlobUrl = createWorkletBlobUrl();
     await this.ctx.audioWorklet.addModule(this.workletBlobUrl);
 
@@ -153,6 +155,8 @@ export class AgentMicrophone {
       }
     };
 
+    // source → analyser (for volume data) and source → worklet (for PCM capture)
+    source.connect(this.analyser);
     source.connect(this.workletNode);
     // Do NOT connect workletNode to destination — we don't want echo
   }
@@ -190,11 +194,7 @@ export class AgentMicrophone {
       },
 
       onFrameProcessed: (probabilities: { isSpeech: number }) => {
-        // Frame gating: only forward audio when speech is active
-        // The underlying frame is already captured by VAD; we use raw PCM
-        // from the AudioWorklet we attach separately.
         if (!inSpeech && probabilities.isSpeech < speechThreshold) return;
-        // Audio forwarding is handled in the raw worklet path below
       },
     });
 
@@ -223,6 +223,7 @@ export class AgentMicrophone {
       (this.vadInstance as { destroy: () => Promise<void> }).destroy().catch(() => null);
       this.vadInstance = null;
     }
+    this.analyser = null;
     if (this.ctx) {
       this.ctx.close().catch(() => null);
       this.ctx = null;
