@@ -89,6 +89,14 @@ export class AgentPlayer {
   }
 
   /**
+   * Seconds of audio still queued for playback (0 when idle).
+   */
+  getRemainingPlaybackTime(): number {
+    if (!this.ctx) return 0;
+    return Math.max(0, this.nextStartTime - this.ctx.currentTime);
+  }
+
+  /**
    * Interrupt playback immediately — flush all queued audio.
    * Call this when UserStartedSpeaking fires to enable barge-in.
    */

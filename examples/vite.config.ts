@@ -16,8 +16,9 @@ export default defineConfig(({ mode }) => {
     resolve: {
       alias: {
         // Workspace packages → source files for instant HMR
-        "@deepgram/agent-widget":   path.resolve("../packages/widget/src/index.ts"),
-        "@deepgram/agent-react-ui": path.resolve("../packages/react-ui/src/index.ts"),
+        "@deepgram/agent-widget":              path.resolve("../packages/widget/src/index.ts"),
+        "@deepgram/agent-react-ui/styles.css": path.resolve("../packages/react-ui/src/styles.css"),
+        "@deepgram/agent-react-ui":            path.resolve("../packages/react-ui/src/index.ts"),
         "@deepgram/agent-react":    path.resolve("../packages/react/src/index.ts"),
         "@deepgram/agent":          path.resolve("../packages/sdk/src/index.ts"),
 
@@ -149,6 +150,7 @@ export default defineConfig(({ mode }) => {
           button:         path.resolve("04-widget-button/index.html"),
           embedded:       path.resolve("05-widget-embedded/index.html"),
           orb:            path.resolve("06-widget-orb/index.html"),
+          floatingOrb:    path.resolve("07-widget-floating-orb/index.html"),
           reactSidebar:   path.resolve("10-react-sidebar/index.html"),
           reactInline:    path.resolve("11-react-inline/index.html"),
           reactFloating:  path.resolve("12-react-floating/index.html"),

@@ -42,8 +42,8 @@ const DEFLATE_PULL = 2;
 const DEFLATE_TRANSITION_TIME_MS = 1000;
 const INFLATE_TRANSITION_TIME_MS = 300;
 const CHATTER_SIZE_MULTIPLIER = 1.15;
-const CHATTER_WINDOW_SIZE = 3;
-const CHATTER_FRAME_LAG = 5;
+const CHATTER_WINDOW_SIZE = 10;
+const CHATTER_FRAME_LAG = 3;
 
 const pi = (n: number): number => Math.PI * n;
 
@@ -172,37 +172,35 @@ function drawCrescent(
   const w = ctx.canvas.width / 2;
   const h = ctx.canvas.height / 2;
   const center = { x: w * (1 + offset.x), y: h * (1 + offset.y) };
-  const bezierDistance = radius * (4 / 3) * Math.tan(pi(1 / 8));
+  const bezD = radius * (4 / 3) * Math.tan(pi(1 / 8));
 
   ctx.strokeStyle = gradient;
   ctx.beginPath();
 
-  // The "true circle" part — half the circle
   const arcStart = deflAngle + pi(1 / 2);
   const arcEnd = deflAngle + pi(3 / 2);
   ctx.arc(center.x, center.y, radius, arcStart, arcEnd, false);
 
-  // The "deflatable" part — two bezier curves
   const start = coordsFrom(center, radius, arcEnd);
-  const angleTowardsXAxis = pi(3 / 2) - deflAngle;
-  const distanceDownToXAxis = Math.cos(angleTowardsXAxis) * radius;
+  const angleToX = pi(3 / 2) - deflAngle;
+  const distDown = Math.cos(angleToX) * radius;
   const mid = coordsFrom(
     coordsFrom(center, radius, deflAngle),
-    distanceDownToXAxis * deflDepth * DEFLATE_PULL,
+    distDown * deflDepth * DEFLATE_PULL,
     pi(1 / 2),
   );
   const end = coordsFrom(center, radius, arcStart);
 
-  // Control points for first bezier (start → mid)
-  const cp1 = coordsFrom(start, bezierDistance, arcEnd + pi(1 / 2));
-  const cp2 = coordsFrom(mid, bezierDistance, deflAngle + pi(3 / 2));
-  ctx.bezierCurveTo(cp1.x, cp1.y, cp2.x, cp2.y, mid.x, mid.y);
-
-  // Control points for second bezier (mid → end)
-  const cp3 = coordsFrom(mid, bezierDistance, deflAngle + pi(1 / 2));
-  const cp4 = coordsFrom(end, bezierDistance, arcStart + pi(3 / 2));
-  ctx.bezierCurveTo(cp3.x, cp3.y, cp4.x, cp4.y, end.x, end.y);
-
+  ctx.bezierCurveTo(
+    ...Object.values(coordsFrom(start, bezD, arcEnd + pi(1 / 2))) as [number, number],
+    ...Object.values(coordsFrom(mid, bezD, deflAngle + pi(3 / 2))) as [number, number],
+    mid.x, mid.y,
+  );
+  ctx.bezierCurveTo(
+    ...Object.values(coordsFrom(mid, bezD, deflAngle + pi(1 / 2))) as [number, number],
+    ...Object.values(coordsFrom(end, bezD, arcStart + pi(3 / 2))) as [number, number],
+    end.x, end.y,
+  );
   ctx.stroke();
 }
 
@@ -235,14 +233,25 @@ function drawFrame(ctx: CanvasRenderingContext2D, shape: Shape, dt: number, line
     * Math.sin(shape.time * pi(1) / PULSE_PERIOD_SECONDS / 1000)
     * lerp(1, 0, shape.deflation);
 
+  // Base deflation from state transition
+  const baseDeflation = easeInOutQuad(shape.deflation);
+  // When in talking state (deflation ~0.85), agent volume modulates the mouth:
+  // high volume → less deflation (mouth opens), low volume → more deflation (mouth closes)
+  const isTalking = shape.targetDeflation > 0.3 && shape.targetDeflation < 1;
+
   lineConfigs.forEach((line, i) => {
     ctx.lineWidth = line.width;
     ctx.shadowColor = line.segments[0].color;
     ctx.shadowBlur = line.width * 1.1;
 
-    const agentChatter = lerp(1, CHATTER_SIZE_MULTIPLIER, rollingAvg(shape.agentNoise, i * CHATTER_FRAME_LAG));
-    const userChatter = lerp(1, 1 / CHATTER_SIZE_MULTIPLIER, rollingAvg(shape.userNoise, i * CHATTER_FRAME_LAG));
-    const r = maxR * 0.8 * agentChatter * userChatter * pulse;
+    let r = maxR * 0.8 * pulse;
+
+    // Listening: subtle radius flutter from mic input volume
+    const isListening = shape.targetDeflation === 0 && shape.deflation < 0.05;
+    if (isListening) {
+      const vol = Math.min(0.7, rollingAvg(shape.userNoise, i * CHATTER_FRAME_LAG));
+      r = Math.min(r * (1 + vol * (CHATTER_SIZE_MULTIPLIER - 1) * 2), maxR * 0.92);
+    }
 
     const gradient = makeGradient(
       ctx, line.centerOffset,
@@ -250,10 +259,17 @@ function drawFrame(ctx: CanvasRenderingContext2D, shape: Shape, dt: number, line
       line.segments,
     );
 
+    // Mouth movement: volume modulates deflation depth per-line with lag
+    let deflation = baseDeflation;
+    if (isTalking) {
+      const vol = rollingAvg(shape.agentNoise, i * CHATTER_FRAME_LAG);
+      deflation = baseDeflation * (1 - vol * 0.4);
+    }
+
     drawCrescent(
       ctx, line.centerOffset,
       r + line.radiusOffset * r,
-      shape.deflation,
+      deflation,
       pi(3 / 2) + Math.sin(shape.time * pi(2) / ROCKING_PERIOD_SECONDS / 1000) * shape.rockingAngle,
       gradient,
     );
@@ -266,7 +282,7 @@ function drawFrame(ctx: CanvasRenderingContext2D, shape: Shape, dt: number, line
 
 function deflationFor(state: OrbState): number {
   switch (state) {
-    case "talking":   return 0.85; // strong mouth shape
+    case "talking":   return 0.55; // gentle crescent mouth
     case "listening": return 0;    // full circle
     case "idle": default: return 1; // fully pinched
   }

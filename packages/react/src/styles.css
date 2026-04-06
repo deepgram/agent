@@ -10,8 +10,8 @@
  *   [data-dg-agent] { --dg-va-primary: #6366f1; }
  *
  * SURFACE TOKENS
- *   --dg-va-bg               panel background          light-dark(#fff, #101014)
- *   --dg-va-bg-raised        cards, bubbles            light-dark(#f3f4f6, #18181c)
+ *   --dg-va-bg               panel background          light-dark(#fff, #18181c)
+ *   --dg-va-bg-raised        cards, bubbles            light-dark(#f3f4f6, #222228)
  *   --dg-va-bg-input         input field bg            light-dark(#f3f4f6, #1e1e24)
  *   --dg-va-bg-hover         surface hover             light-dark(#f9fafb, #1a1a1f)
  *   --dg-va-bg-active        surface pressed           light-dark(#f3f4f6, #222228)
@@ -75,7 +75,7 @@
   border-bottom: 1px solid var(--dg-va-border, light-dark(rgba(0,0,0,0.1), rgba(255,255,255,0.08)));
   gap: 10px;
   flex-shrink: 0;
-  background: var(--dg-va-bg, light-dark(#ffffff, #101014));
+  background: var(--dg-va-bg, light-dark(#ffffff, #18181c));
 }
 
 .dg-va-header-icon {
@@ -168,7 +168,7 @@
 
 [data-agent-conversation] [data-role="assistant"] {
   align-self: flex-start;
-  background: var(--dg-va-bg-raised, light-dark(#f3f4f6, #18181c));
+  background: var(--dg-va-bg-raised, light-dark(#f3f4f6, #222228));
   border: 1px solid var(--dg-va-border, light-dark(rgba(0,0,0,0.08), rgba(255,255,255,0.08)));
   color: var(--dg-va-text, light-dark(#111827, #ffffff));
 }
@@ -197,7 +197,7 @@
   flex-direction: column;
   gap: 10px;
   flex-shrink: 0;
-  background: var(--dg-va-bg, light-dark(#ffffff, #101014));
+  background: var(--dg-va-bg, light-dark(#ffffff, #18181c));
 }
 
 /* ── Text input ───────────────────────────────────────────────────────── */
@@ -258,7 +258,7 @@
   height: 40px;
   border-radius: var(--dg-va-btn-radius);
   border: 1px solid var(--dg-va-border, light-dark(rgba(0,0,0,0.1), rgba(255,255,255,0.08)));
-  background: var(--dg-va-bg-raised, light-dark(#f3f4f6, #18181c));
+  background: var(--dg-va-bg-raised, light-dark(#f3f4f6, #222228));
   color: var(--dg-va-text, light-dark(#111827, #ffffff));
   cursor: pointer;
   display: flex;
@@ -322,7 +322,7 @@
 }
 [data-agent-start-button][data-state="connected"],
 [data-agent-start-button][data-state="reconnecting"] {
-  background: var(--dg-va-bg-raised, light-dark(#f3f4f6, #18181c));
+  background: var(--dg-va-bg-raised, light-dark(#f3f4f6, #222228));
   color: var(--dg-va-text, light-dark(#111827, #ffffff));
   border: 1px solid var(--dg-va-border, light-dark(rgba(0,0,0,0.1), rgba(255,255,255,0.08)));
 }

@@ -3,36 +3,107 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Floating FAB — React</title>
+  <title>Floating — React</title>
   <link rel="stylesheet" href="/src/shared-styles.css" />
-  <link rel="stylesheet" href="/src/react-example.css" />
-  <style>body { padding: 0; }</style>
+  <style>
+    body { padding: 20px 24px; }
+
+    /* Floating panel + FAB — the only CSS you need. */
+    .agent-fab {
+      position: fixed; bottom: 24px; right: 24px;
+      width: 56px; height: 56px; border-radius: 50%;
+      background: #13EF93; color: #000; border: none;
+      font-size: 24px; cursor: pointer; z-index: 99998;
+    }
+    .agent-floating {
+      position: fixed; bottom: 90px; right: 24px;
+      width: min(380px, 90vw); height: 520px;
+      display: flex; flex-direction: column;
+      border-radius: 16px; overflow: hidden;
+      box-shadow: 0 8px 32px rgba(0,0,0,.5);
+      z-index: 99999;
+    }
+  </style>
 </head>
 <body>
-  <div style="padding:20px 24px;border-bottom:1px solid rgba(255,255,255,.08)">
-    <a class="back" href="/" style="margin:0 12px 0 0">←</a>
-    <span style="font-weight:600;color:#7dd3fc">React</span>
-    <span style="color:#6b7280;font-size:.85rem;margin-left:8px">Floating FAB — click 🎙 to open</span>
-  </div>
+  <a class="back" href="/">← Examples</a>
+  <h1>Floating FAB <span class="badge badge-source" style="background:rgba(56,189,248,.2);color:#7dd3fc">React</span></h1>
+  <p class="desc">Click the mic button in the corner to open the agent panel. Built with <code>@deepgram/agent-react-ui</code> components.</p>
 
-  <div class="code-wrap" style="padding:16px 24px 0">
-    <h3>No TTS variant</h3>
-    <pre class="code"><span class="tag">&lt;AgentProvider</span> <span class="at">config</span>={config} <span class="at">tts</span>={<span class="kw">false</span>}<span class="tag">&gt;</span>
-  <span class="tag">&lt;AgentConversation /&gt;</span>     <span class="cm">// text responses only</span>
-  <span class="tag">&lt;AgentTextInput /&gt;</span>
-  <span class="tag">&lt;AgentMicrophoneButton /&gt;</span>
-  <span class="cm">// No AgentSpeakerButton — nothing to mute</span>
-  <span class="tag">&lt;AgentStartButton /&gt;</span>
-<span class="tag">&lt;/AgentProvider&gt;</span></pre>
+  <div class="code-wrap">
+    <h3>Code</h3>
+    <pre class="code"><span class="kw">import</span> {
+  <span class="fn">AgentProvider</span>, <span class="fn">AgentConversation</span>,
+  <span class="fn">AgentTextInput</span>, <span class="fn">AgentStartButton</span>,
+} <span class="kw">from</span> <span class="str">'@deepgram/agent-react-ui'</span>;
+
+<span class="tag">&lt;button</span> <span class="at">className</span>=<span class="str">"agent-fab"</span> <span class="at">onClick</span>={toggle}<span class="tag">&gt;</span>🎙<span class="tag">&lt;/button&gt;</span>
+{open &amp;&amp; (
+  <span class="tag">&lt;AgentProvider</span> <span class="at">config</span>={config}<span class="tag">&gt;</span>
+    <span class="tag">&lt;div</span> <span class="at">className</span>=<span class="str">"agent-floating"</span> <span class="at">data-dg-agent</span> <span class="at">data-dg-scheme</span>=<span class="str">"dark"</span><span class="tag">&gt;</span>
+      <span class="tag">&lt;AgentConversation /&gt;</span>
+      <span class="tag">&lt;div</span> <span class="at">style</span>={{ padding: 12, display: <span class="str">"flex"</span>, flexDirection: <span class="str">"column"</span>, gap: 10 }}<span class="tag">&gt;</span>
+        <span class="tag">&lt;AgentTextInput /&gt;</span>
+        <span class="tag">&lt;AgentStartButton /&gt;</span>
+      <span class="tag">&lt;/div&gt;</span>
+    <span class="tag">&lt;/div&gt;</span>
+  <span class="tag">&lt;/AgentProvider&gt;</span>
+)}</pre>
   </div>
 
   <div id="react-root"></div>
 
   <script type="module">
-    import { createElement } from "react";
+    import { createElement, useState } from "react";
     import { render } from "react-dom";
-    import { ReactFloatingExample } from "../src/react-example.tsx";
-    render(createElement(ReactFloatingExample), document.getElementById("react-root"));
+    import {
+      AgentProvider, AgentStatus, AgentConversation,
+      AgentTextInput, AgentMicrophoneButton, AgentSpeakerButton,
+      AgentStartButton,
+    } from "@deepgram/agent-react-ui";
+    import { baseConfig } from "../src/agent-config.ts";
+
+    const config = {
+      auth: { tokenFactory: baseConfig.tokenFactory },
+      agent: baseConfig.agent,
+      audio: {
+        input: { encoding: "linear16", sampleRate: 16_000 },
+        output: { encoding: "linear16", sampleRate: 24_000 },
+      },
+    };
+
+    function App() {
+      const [open, setOpen] = useState(false);
+
+      return createElement("div", null,
+        createElement("button", {
+          className: "agent-fab",
+          onClick: () => setOpen(o => !o),
+          "aria-label": "Open voice agent",
+        }, "🎙"),
+
+        open && createElement(AgentProvider, { config },
+          createElement("div", { className: "agent-floating", "data-dg-agent": "", "data-dg-scheme": "dark" },
+            createElement("div", { style: { padding: "14px 16px", display: "flex", alignItems: "center", gap: 10, borderBottom: "1px solid rgba(255,255,255,.08)" } },
+              createElement("span", { style: { fontWeight: 600, flex: 1, color: "#fff" } }, "Voice Agent"),
+              createElement(AgentStatus),
+              createElement("button", { onClick: () => setOpen(false), style: { background: "none", border: "none", color: "#8b8b9a", cursor: "pointer", fontSize: 18 } }, "✕"),
+            ),
+            createElement(AgentConversation),
+            createElement("div", { style: { padding: "12px 16px", display: "flex", flexDirection: "column", gap: 10, borderTop: "1px solid rgba(255,255,255,.08)" } },
+              createElement("div", { style: { display: "flex", gap: 8, alignItems: "center" } },
+                createElement(AgentTextInput),
+                createElement(AgentMicrophoneButton),
+                createElement(AgentSpeakerButton),
+              ),
+              createElement(AgentStartButton),
+            ),
+          ),
+        ),
+      );
+    }
+
+    render(createElement(App), document.getElementById("react-root"));
   </script>
 </body>
 </html>

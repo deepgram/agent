@@ -63,9 +63,27 @@ export function AgentProvider({
     session.on("disconnected", () => { onState(); setMode("idle"); });
 
     // Mode tracking: speaking / listening
-    session.on("agent-started-speaking", () => setMode("speaking"));
-    session.on("agent-audio-done",       () => setMode("listening"));
+    // The server may skip AgentStartedSpeaking, so we also infer speaking from
+    // audio chunk arrival. AgentAudioDone fires when the server is done SENDING
+    // audio, but playback continues — we delay the listening transition until
+    // the player finishes playing the queued buffers.
+    let audioDoneTimer: ReturnType<typeof setTimeout> | null = null;
+
+    session.on("agent-started-speaking", () => {
+      if (audioDoneTimer) { clearTimeout(audioDoneTimer); audioDoneTimer = null; }
+      setMode("speaking");
+    });
+    session.on("agent-audio-done", () => {
+      // Wait for the player to finish playing queued audio before switching to listening
+      const remaining = player?.getRemainingPlaybackTime() ?? 0;
+      if (audioDoneTimer) clearTimeout(audioDoneTimer);
+      audioDoneTimer = setTimeout(() => {
+        audioDoneTimer = null;
+        setMode("listening");
+      }, remaining * 1000);
+    });
     session.on("user-started-speaking",  () => {
+      if (audioDoneTimer) { clearTimeout(audioDoneTimer); audioDoneTimer = null; }
       setMode("listening");
       player?.interrupt();
     });
@@ -79,7 +97,11 @@ export function AgentProvider({
     });
 
     if (player) {
-      session.on("audio", (chunk) => player.queue(chunk));
+      session.on("audio", (chunk) => {
+        // Infer speaking mode from audio flow — covers servers that skip AgentStartedSpeaking
+        setMode("speaking");
+        player.queue(chunk);
+      });
     }
 
     session.on("function-call-request", async (msg) => {
@@ -103,6 +125,7 @@ export function AgentProvider({
     }
 
     return () => {
+      if (audioDoneTimer) clearTimeout(audioDoneTimer);
       session.removeAllListeners();
       session.disconnect();
       micRef.current?.stop();

@@ -1,8 +1,8 @@
 import { useRef, useEffect, useCallback } from "react";
 
 export interface LiveWaveformProps {
-  /** Function returning current volume level (0–1). */
-  getVolume: () => number;
+  /** One or more functions returning volume (0–1). When multiple are given, the max is used. */
+  getVolume: (() => number) | (() => number)[];
   /** Whether to animate. When false, renders a flat line. */
   active?: boolean;
   /** Waveform color. Default: uses --dg-va-primary CSS variable. */
@@ -49,7 +49,8 @@ export function LiveWaveform({
 
     ctx.clearRect(0, 0, rect.width, rect.height);
 
-    const volume = active ? getVolume() : 0;
+    const fns = Array.isArray(getVolume) ? getVolume : [getVolume];
+    const volume = active ? Math.max(...fns.map((fn) => fn())) : 0;
     const amplitude = Math.min(1, volume * 2) * rect.height * 0.35;
     const midY = rect.height / 2;
 

@@ -79,8 +79,8 @@ export function VoiceButton({
         aria-hidden="true"
       >
         {isActive ? (
-          // Stop icon (square)
-          <rect x="6" y="6" width="12" height="12" rx="2" />
+          // Stop icon (filled square)
+          <rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor" />
         ) : (
           // Mic icon
           <>

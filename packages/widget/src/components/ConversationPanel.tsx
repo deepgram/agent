@@ -36,21 +36,12 @@ export function ConversationPanel({ config, onClose, inline = false }: Conversat
       {config.showTranscript !== false && (
         <AgentConversation
           className="dg-va-conversation"
-          itemClassName="dg-va-message"
           emptyState={
             <div class="dg-va-empty-state">
               <AgentIcon width={40} height={40} />
               <p>{config.text?.emptyStateHint ?? "Press Start to begin the conversation"}</p>
             </div>
           }
-          renderMessage={(entry) => (
-            <div
-              key={entry.id}
-              class={`dg-va-message ${entry.role === "user" ? "dg-va-message-user" : "dg-va-message-assistant"}`}
-            >
-              {entry.content}
-            </div>
-          )}
         />
       )}
 

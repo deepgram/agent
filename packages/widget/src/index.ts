@@ -1,6 +1,7 @@
 import { render, h } from "preact";
 import { SidebarWidget, InlineWidget, FloatingWidget, ButtonWidget, EmbeddedWidget, OrbWidget } from "./widget.js";
 import type { WidgetConfig, WidgetColorScheme, WidgetTheme } from "./types.js";
+import "@deepgram/agent-react-ui/styles.css";
 import "./styles.css";
 
 export type {

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Floating Orb — TS Source</title>
+  <link rel="stylesheet" href="/src/shared-styles.css" />
+  <style>
+    body { padding: 32px 24px; }
+    .demo-content { max-width: 600px; }
+    .demo-content p { color: #9ca3af; line-height: 1.6; margin-bottom: 16px; }
+
+    /* Floating card in bottom-right corner */
+    #agent-orb-card {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 1000;
+      background: #18181c;
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 20px;
+      padding: 10px;
+      box-shadow: 0 8px 32px rgba(0,0,0,.5);
+    }
+  </style>
+</head>
+<body>
+  <a class="back" href="/">← Examples</a>
+  <h1>Floating Orb Card <span class="badge badge-source">TS Source</span></h1>
+  <p class="desc">The Deepgram orb in a floating card anchored to the bottom-right corner. The orb animates with voice — idle crescent, listening circle, talking mouth.</p>
+
+  <div class="code-wrap">
+    <h3>Code</h3>
+    <pre class="code"><span class="kw">import</span> { <span class="fn">init</span> } <span class="kw">from</span> <span class="str">'@deepgram/agent-widget'</span>;
+
+<span class="fn">init</span>({
+  <span class="at">tokenFactory</span>: () =&gt; <span class="fn">fetch</span>(<span class="str">'/api/token'</span>).<span class="fn">then</span>(r =&gt; r.<span class="fn">json</span>()).<span class="fn">then</span>(d =&gt; d.token),
+  <span class="at">agent</span>: { <span class="cm">/* ... */</span> },
+  <span class="at">layout</span>: <span class="str">'orb'</span>,
+  <span class="at">containerId</span>: <span class="str">'agent-orb'</span>,
+});</pre>
+    <p class="desc" style="margin-top:8px;font-size:.8rem">The floating card is plain CSS — the widget mounts inside it.</p>
+  </div>
+
+  <div class="demo-content">
+    <h2 style="color:#e5e7eb;font-size:1rem;margin:32px 0 12px">Page content</h2>
+    <p>This example shows the orb widget mounted inside a fixed-position card. The card floats in the bottom-right corner while the page content scrolls underneath.</p>
+    <p>The orb reacts to your voice when listening (circle pulses with mic volume) and shows a mouth shape when the agent speaks (opens and closes with output volume).</p>
+    <p>Try scrolling — the card stays anchored. Click "Talk to our agent" to start a conversation.</p>
+    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+    <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+  </div>
+
+  <!-- Floating card with orb widget inside -->
+  <div id="agent-orb-card">
+    <div id="agent-orb"></div>
+  </div>
+
+  <script type="module">
+    import { init } from "@deepgram/agent-widget";
+    import { baseConfig } from "../src/agent-config.ts";
+    init({
+      ...baseConfig,
+      layout: "orb",
+      containerId: "agent-orb",
+      colorScheme: "dark",
+    });
+  </script>
+</body>
+</html>

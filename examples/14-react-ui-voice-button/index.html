@@ -19,22 +19,33 @@
   <p class="desc">Minimal voice agent UI — one button with a live waveform. Uses VoiceButton for lifecycle control and LiveWaveform for visual feedback. No transcript, no text input.</p>
 
   <div class="code-wrap">
-    <h3>Code</h3>
-    <pre class="code"><span class="kw">import</span> { <span class="fn">AgentProvider</span>, <span class="fn">VoiceButton</span>, <span class="fn">LiveWaveform</span> }
-  <span class="kw">from</span> <span class="str">'@deepgram/agent-react-ui'</span>;
+    <h3>Code — single source</h3>
+    <pre class="code"><span class="kw">import</span> { <span class="fn">AgentProvider</span>, <span class="fn">VoiceButton</span>, <span class="fn">LiveWaveform</span>,
+  <span class="fn">useAgentPlayer</span> } <span class="kw">from</span> <span class="str">'@deepgram/agent-react-ui'</span>;
 
-<span class="tag">&lt;AgentProvider</span> <span class="at">config</span>={config}<span class="tag">&gt;</span>
-  <span class="tag">&lt;LiveWaveform</span> <span class="at">getVolume</span>={getOutputVolume} <span class="tag">/&gt;</span>
-  <span class="tag">&lt;VoiceButton /&gt;</span>
-<span class="tag">&lt;/AgentProvider&gt;</span></pre>
+<span class="kw">const</span> { getOutputVolume } = <span class="fn">useAgentPlayer</span>();
+
+<span class="tag">&lt;LiveWaveform</span> <span class="at">getVolume</span>={getOutputVolume} <span class="tag">/&gt;</span></pre>
+  </div>
+
+  <div class="code-wrap">
+    <h3>Code — multiple sources (used below)</h3>
+    <pre class="code"><span class="kw">const</span> { getOutputVolume } = <span class="fn">useAgentPlayer</span>();
+<span class="kw">const</span> { getInputVolume } = <span class="fn">useAgentMicrophone</span>();
+
+<span class="cm">// Pass an array — waveform reacts to whichever is louder</span>
+<span class="tag">&lt;LiveWaveform</span> <span class="at">getVolume</span>={[getOutputVolume, getInputVolume]} <span class="tag">/&gt;</span></pre>
   </div>
 
   <div id="react-root"></div>
 
   <script type="module">
-    import { createElement, useState } from "react";
+    import { createElement } from "react";
     import { render } from "react-dom";
-    import { AgentProvider, VoiceButton, LiveWaveform, AgentStatus } from "@deepgram/agent-react-ui";
+    import {
+      AgentProvider, VoiceButton, LiveWaveform, AgentStatus,
+      useAgentPlayer, useAgentMicrophone, useAgentMode,
+    } from "@deepgram/agent-react-ui";
     import { baseConfig } from "../src/agent-config.ts";
 
     const config = {
@@ -46,19 +57,22 @@
       },
     };
 
-    function App() {
-      // LiveWaveform needs a volume getter — for demo, use a sine wave
-      const [active, setActive] = useState(false);
-      const getVolume = () => active ? (Math.sin(Date.now() / 200) + 1) / 4 : 0;
+    function Inner() {
+      const { getOutputVolume } = useAgentPlayer();
+      const { getInputVolume } = useAgentMicrophone();
+      const { mode } = useAgentMode();
+      const active = mode === "speaking" || mode === "listening";
 
+      return createElement("div", { className: "demo", "data-dg-agent": "", "data-dg-scheme": "dark" },
+        createElement(LiveWaveform, { getVolume: [getOutputVolume, getInputVolume], active, style: { width: 200, height: 60 } }),
+        createElement(VoiceButton),
+        createElement(AgentStatus),
+      );
+    }
+
+    function App() {
       return createElement(AgentProvider, { config },
-        createElement("div", { className: "demo" },
-          createElement(LiveWaveform, { getVolume, active, style: { width: 200, height: 60 } }),
-          createElement(VoiceButton, {
-            onClick: () => setActive(prev => !prev),
-          }),
-          createElement(AgentStatus),
-        ),
+        createElement(Inner),
       );
     }
 

@@ -238,6 +238,9 @@ function OrbView({ config }: WidgetProps) {
         getOutputVolume={getOutputVolume}
         size={config.theme?.fabSize ?? 180}
       />
+      <span class="dg-va-orb-status" data-state={state} aria-live="polite">
+        {orbState === "talking" ? "Agent speaking" : orbState === "listening" ? "Listening…" : ""}
+      </span>
       <button
         class={`dg-va-orb-btn ${isActive ? "dg-va-orb-btn-active" : ""}`}
         disabled={isConnecting}
@@ -246,9 +249,6 @@ function OrbView({ config }: WidgetProps) {
       >
         {label}
       </button>
-      <span class="dg-va-orb-status" data-state={state} aria-live="polite">
-        {orbState === "talking" ? "Agent speaking" : orbState === "listening" ? "Listening…" : ""}
-      </span>
     </div>
   );
 }

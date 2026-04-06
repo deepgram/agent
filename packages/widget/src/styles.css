@@ -20,8 +20,8 @@
  *
  * SURFACE TOKENS (base surfaces — panels, cards, inputs)
  * ──────────────────────────────────────────────────────
- *   --dg-va-bg               panel / surface background     light-dark(#fff, #101014)
- *   --dg-va-bg-raised        cards, bubbles, input wrappers  light-dark(#f3f4f6, #18181c)
+ *   --dg-va-bg               panel / surface background     light-dark(#fff, #18181c)
+ *   --dg-va-bg-raised        cards, bubbles, input wrappers  light-dark(#f3f4f6, #222228)
  *   --dg-va-bg-input         input field background          light-dark(#f3f4f6, #1e1e24)
  *   --dg-va-bg-hover         surface hover state             light-dark(#f9fafb, #1a1a1f)
  *   --dg-va-bg-active        surface pressed state           light-dark(#f3f4f6, #222228)
@@ -102,7 +102,7 @@
   right: 0;
   bottom: 0;
   width: var(--dg-va-panel-w);
-  background: var(--dg-va-bg, light-dark(#ffffff, #101014));
+  background: var(--dg-va-bg, light-dark(#ffffff, #18181c));
   color: var(--dg-va-text, light-dark(#111827, #ffffff));
   border-left: 1px solid var(--dg-va-border, light-dark(rgba(0,0,0,0.1), rgba(255,255,255,0.08)));
   display: flex;
@@ -132,7 +132,7 @@
   position: relative;
   width: 100%;
   height: 100%;
-  background: var(--dg-va-bg, light-dark(#ffffff, #101014));
+  background: var(--dg-va-bg, light-dark(#ffffff, #18181c));
   color: var(--dg-va-text, light-dark(#111827, #ffffff));
   display: flex;
   flex-direction: column;
@@ -169,7 +169,7 @@
   border-bottom: 1px solid var(--dg-va-border, light-dark(rgba(0,0,0,0.1), rgba(255,255,255,0.08)));
   gap: 10px;
   flex-shrink: 0;
-  background: var(--dg-va-bg, light-dark(#ffffff, #101014));
+  background: var(--dg-va-bg, light-dark(#ffffff, #18181c));
 }
 
 .dg-va-header-icon {
@@ -274,7 +274,7 @@
 
 .dg-va-message-assistant {
   align-self: flex-start;
-  background: var(--dg-va-bg-raised, light-dark(#f3f4f6, #18181c));
+  background: var(--dg-va-bg-raised, light-dark(#f3f4f6, #222228));
   border: 1px solid var(--dg-va-border, light-dark(rgba(0,0,0,0.08), rgba(255,255,255,0.08)));
   color: var(--dg-va-text, light-dark(#111827, #ffffff));
 }
@@ -301,7 +301,7 @@
   flex-direction: column;
   gap: 10px;
   flex-shrink: 0;
-  background: var(--dg-va-bg, light-dark(#ffffff, #101014));
+  background: var(--dg-va-bg, light-dark(#ffffff, #18181c));
 }
 
 .dg-va-control-row {
@@ -337,7 +337,7 @@
   height: 40px;
   border-radius: var(--dg-va-btn-radius);
   border: 1px solid var(--dg-va-border, light-dark(rgba(0,0,0,0.1), rgba(255,255,255,0.08)));
-  background: var(--dg-va-bg-raised, light-dark(#f3f4f6, #18181c));
+  background: var(--dg-va-bg-raised, light-dark(#f3f4f6, #222228));
   color: var(--dg-va-text, light-dark(#111827, #ffffff));
   cursor: pointer;
   display: flex;
@@ -391,7 +391,7 @@
 }
 .dg-va-start-btn:disabled  { opacity: 0.4; cursor: not-allowed; }
 .dg-va-start-btn.dg-va-stop {
-  background: var(--dg-va-bg-raised, light-dark(#f3f4f6, #18181c));
+  background: var(--dg-va-bg-raised, light-dark(#f3f4f6, #222228));
   color: var(--dg-va-text, light-dark(#111827, #ffffff));
   border: 1px solid var(--dg-va-border, light-dark(rgba(0,0,0,0.1), rgba(255,255,255,0.08)));
 }

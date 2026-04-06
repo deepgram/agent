@@ -95,7 +95,7 @@
 
     function LiveDemo() {
       return createElement(AgentProvider, { config },
-        createElement("div", { className: "demo" },
+        createElement("div", { className: "demo", "data-dg-agent": "", "data-dg-scheme": "dark" },
           createElement(LiveOrb),
           createElement(AgentStatus),
           createElement(AgentStartButton),
