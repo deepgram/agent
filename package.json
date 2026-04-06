@@ -12,7 +12,7 @@
     "dev:examples": "op run --env-file examples/.env -- bun run --cwd examples dev",
     "typecheck": "bun run --filter 'packages/*' typecheck",
     "lint": "bun run --filter 'packages/*' lint",
-    "test": "bun run --filter '@deepgram/agent' --filter '@deepgram/agent-react' --filter '@deepgram/agent-widget' test",
+    "test": "bun run --filter '@deepgram/agent' --filter '@deepgram/agent-react' --filter '@deepgram/agent-react-ui' --filter '@deepgram/agent-widget' test",
     "test:e2e": "bun test tests/e2e/"
   },
   "overrides": {

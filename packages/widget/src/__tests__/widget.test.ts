@@ -1,17 +1,26 @@
 import { describe, it, expect, mock } from "bun:test";
 
-// Mock dependencies to avoid importing @deepgram/agent-react transitively
-mock.module("@deepgram/agent-react", () => ({
+const hookMocks = {
   AgentProvider: ({ children }: any) => children,
+  useAgentContext: () => ({}),
+  useAgentState: () => ({ state: "idle", isActive: false, isConnecting: false, start: async () => {}, stop: () => {} }),
+  useAgentConversation: () => ({ conversation: [], sendUserMessage: () => {}, clearConversation: () => {} }),
+  useAgentMicrophone: () => ({ micActive: false, micMuted: false, setMicMuted: () => {}, toggle: () => {}, enabled: true }),
+  useAgentPlayer: () => ({ outputMuted: false, setOutputMuted: () => {}, toggle: () => {}, enabled: true }),
+  useAgentSession: () => ({}),
+};
+
+const componentMocks = {
   AgentStatus: () => null,
   AgentConversation: () => null,
   AgentTextInput: () => null,
   AgentMicrophoneButton: () => null,
   AgentSpeakerButton: () => null,
   AgentStartButton: () => null,
-  useAgentState: () => ({ state: "idle", isActive: false, isConnecting: false, start: async () => {}, stop: () => {} }),
-}));
+};
 
+mock.module("@deepgram/agent-react", () => hookMocks);
+mock.module("@deepgram/agent-react-ui", () => ({ ...hookMocks, ...componentMocks }));
 mock.module("@deepgram/agent", () => ({}));
 
 const { buildSessionConfig } = await import("../widget.js");

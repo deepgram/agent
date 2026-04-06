@@ -12,6 +12,7 @@
   "dependencies": {
     "@deepgram/agent": "workspace:*",
     "@deepgram/agent-react": "workspace:*",
+    "@deepgram/agent-react-ui": "workspace:*",
     "@deepgram/agent-widget": "workspace:*"
   },
   "devDependencies": {

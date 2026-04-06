@@ -16,9 +16,10 @@ export default defineConfig(({ mode }) => {
     resolve: {
       alias: {
         // Workspace packages → source files for instant HMR
-        "@deepgram/agent-widget": path.resolve("../packages/widget/src/index.ts"),
-        "@deepgram/agent-react":  path.resolve("../packages/react/src/index.ts"),
-        "@deepgram/agent":        path.resolve("../packages/sdk/src/index.ts"),
+        "@deepgram/agent-widget":   path.resolve("../packages/widget/src/index.ts"),
+        "@deepgram/agent-react-ui": path.resolve("../packages/react-ui/src/index.ts"),
+        "@deepgram/agent-react":    path.resolve("../packages/react/src/index.ts"),
+        "@deepgram/agent":          path.resolve("../packages/sdk/src/index.ts"),
 
         // React → Preact compat (all packages share widget's preact install)
         // esbuild injects react/jsx-dev-runtime in dev and react/jsx-runtime in prod

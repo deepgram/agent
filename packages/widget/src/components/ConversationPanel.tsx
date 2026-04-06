@@ -5,7 +5,7 @@ import {
   AgentMicrophoneButton,
   AgentSpeakerButton,
   AgentStartButton,
-} from "@deepgram/agent-react";
+} from "@deepgram/agent-react-ui";
 import { CloseIcon, AgentIcon, MicIcon, MicOffIcon, SpeakerIcon, SpeakerOffIcon, SendIcon } from "./icons.js";
 import type { WidgetConfig } from "../types.js";
 

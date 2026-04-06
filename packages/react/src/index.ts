@@ -17,19 +17,8 @@ export type { UseAgentConversationResult } from "./hooks/useAgentConversation.js
 export type { UseAgentMicrophoneResult }   from "./hooks/useAgentMicrophone.js";
 export type { UseAgentPlayerResult }       from "./hooks/useAgentPlayer.js";
 
-// Pre-built components — compose these to build your UI
-export { AgentStatus }           from "./components/AgentStatus.js";
-export { AgentConversation }     from "./components/AgentConversation.js";
-export { AgentTextInput }        from "./components/AgentTextInput.js";
-export { AgentMicrophoneButton } from "./components/AgentMicrophoneButton.js";
-export { AgentSpeakerButton }    from "./components/AgentSpeakerButton.js";
-export { AgentStartButton }      from "./components/AgentStartButton.js";
-export type { AgentStatusProps }           from "./components/AgentStatus.js";
-export type { AgentConversationProps }     from "./components/AgentConversation.js";
-export type { AgentTextInputProps }        from "./components/AgentTextInput.js";
-export type { AgentMicrophoneButtonProps } from "./components/AgentMicrophoneButton.js";
-export type { AgentSpeakerButtonProps }    from "./components/AgentSpeakerButton.js";
-export type { AgentStartButtonProps }      from "./components/AgentStartButton.js";
+// Standalone hook — no provider needed
+export { useDeepgramAgent } from "./hooks/useDeepgramAgent.js";
 
 // SDK types re-exported for convenience
 export type {

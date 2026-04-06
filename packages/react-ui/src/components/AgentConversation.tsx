@@ -1,22 +1,14 @@
 import { useEffect, useRef } from "react";
-import { useAgentConversation } from "../hooks/useAgentConversation.js";
-import type { ConversationEntry } from "../context.js";
+import { useAgentConversation, type ConversationEntry } from "@deepgram/agent-react";
 
 export interface AgentConversationProps {
   className?: string;
   itemClassName?: string;
-  /** Custom renderer for a single message. */
   renderMessage?: (entry: ConversationEntry) => unknown;
-  /** Content shown when there are no messages yet. */
   emptyState?: unknown;
-  /** Auto-scroll to bottom on new messages. Default: true */
   autoScroll?: boolean;
 }
 
-/**
- * Renders the conversation history.
- * Each message has a `data-role` attribute ("user" | "assistant") for styling.
- */
 export function AgentConversation({
   className,
   itemClassName,

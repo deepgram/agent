@@ -24,6 +24,7 @@
   "dependencies": {
     "@deepgram/agent": "workspace:*",
     "@deepgram/agent-react": "workspace:*",
+    "@deepgram/agent-react-ui": "workspace:*",
     "preact": "10.29.1",
     "sugar-high": "1.0.0"
   },

@@ -1,23 +1,15 @@
 import { useState } from "react";
-import { useAgentState } from "../hooks/useAgentState.js";
+import { useAgentState } from "@deepgram/agent-react";
 
 export interface AgentStartButtonProps {
   className?: string;
-  /** Label when not connected. */
   startLabel?: unknown;
-  /** Label while connecting. */
   connectingLabel?: unknown;
-  /** Label when connected (clicking stops). */
   stopLabel?: unknown;
-  /** Label while reconnecting (clicking stops). */
   reconnectingLabel?: unknown;
   onClick?: () => void;
 }
 
-/**
- * Start / stop button that reflects connection state.
- * Disabled while connecting; shows the reconnecting label while recovering.
- */
 export function AgentStartButton({
   className,
   startLabel       = "Start",

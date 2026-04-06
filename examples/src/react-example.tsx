@@ -14,7 +14,7 @@ import {
   AgentSpeakerButton,
   AgentStartButton,
   type ConversationEntry,
-} from "@deepgram/agent-react";
+} from "@deepgram/agent-react-ui";
 import { baseConfig } from "./agent-config.js";
 
 // ---------------------------------------------------------------------------

@@ -4,21 +4,30 @@ import { describe, it, expect, mock } from "bun:test";
 let capturedConfig: any = null;
 let capturedProps: any = null;
 
-mock.module("@deepgram/agent-react", () => ({
+const hookMocks = {
   AgentProvider: (props: any) => {
     capturedConfig = props.config;
     capturedProps = props;
     return null;
   },
+  useAgentContext: () => ({}),
+  useAgentState: () => ({ state: "idle", isActive: false, isConnecting: false, start: async () => {}, stop: () => {} }),
+  useAgentConversation: () => ({ conversation: [], sendUserMessage: () => {}, clearConversation: () => {} }),
+  useAgentMicrophone: () => ({ micActive: false, micMuted: false, setMicMuted: () => {}, toggle: () => {}, enabled: true }),
+  useAgentPlayer: () => ({ outputMuted: false, setOutputMuted: () => {}, toggle: () => {}, enabled: true }),
+  useAgentSession: () => ({}),
+};
+
+mock.module("@deepgram/agent-react", () => hookMocks);
+mock.module("@deepgram/agent-react-ui", () => ({
+  ...hookMocks,
   AgentStatus: () => null,
   AgentConversation: () => null,
   AgentTextInput: () => null,
   AgentMicrophoneButton: () => null,
   AgentSpeakerButton: () => null,
   AgentStartButton: () => null,
-  useAgentState: () => ({ state: "idle", isActive: false, isConnecting: false, start: async () => {}, stop: () => {} }),
 }));
-
 mock.module("@deepgram/agent", () => ({}));
 
 const { buildSessionConfig } = await import("../../widget.js");

@@ -12,13 +12,15 @@
       "react-dom": ["./node_modules/preact/compat/"],
       "react/jsx-runtime": ["./node_modules/preact/jsx-runtime"],
       "@deepgram/agent": ["../sdk/dist/index"],
-      "@deepgram/agent-react": ["../react/dist/index"]
+      "@deepgram/agent-react": ["../react/dist/index"],
+      "@deepgram/agent-react-ui": ["../react-ui/dist/index"]
     }
   },
   "include": ["src"],
   "exclude": ["src/__tests__"],
   "references": [
     { "path": "../sdk" },
-    { "path": "../react" }
+    { "path": "../react" },
+    { "path": "../react-ui" }
   ]
 }

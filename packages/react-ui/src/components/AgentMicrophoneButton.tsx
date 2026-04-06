@@ -1,23 +1,13 @@
-import { useAgentMicrophone } from "../hooks/useAgentMicrophone.js";
+import { useAgentMicrophone } from "@deepgram/agent-react";
 
 export interface AgentMicrophoneButtonProps {
   className?: string;
-  /** Content when mic is active (unmuted). */
   activeLabel?: unknown;
-  /** Content when mic is muted. */
   mutedLabel?: unknown;
-  /** Content when mic is disabled (provider microphone={false}). */
   disabledLabel?: unknown;
   onClick?: () => void;
 }
 
-/**
- * Toggles the microphone mute state.
- * Hidden (returns null) when the provider has microphone={false}.
- *
- * Presence of this component is intentional — when it's absent, the mic
- * auto-opens on connect with no visible toggle.
- */
 export function AgentMicrophoneButton({
   className,
   activeLabel  = "Mute mic",

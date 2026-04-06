@@ -1,20 +1,12 @@
-import { useAgentPlayer } from "../hooks/useAgentPlayer.js";
+import { useAgentPlayer } from "@deepgram/agent-react";
 
 export interface AgentSpeakerButtonProps {
   className?: string;
-  /** Content when speaker is on. */
   activeLabel?: unknown;
-  /** Content when speaker is muted. */
   mutedLabel?: unknown;
   onClick?: () => void;
 }
 
-/**
- * Toggles audio playback mute.
- * Hidden (returns null) when the provider has tts={false}.
- *
- * When absent, audio plays automatically with no visible toggle.
- */
 export function AgentSpeakerButton({
   className,
   activeLabel = "Mute speaker",
