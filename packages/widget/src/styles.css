@@ -538,6 +538,7 @@
   gap: 20px;
   padding: var(--dg-va-padding);
   font-family: var(--dg-va-font);
+  background: transparent;
 }
 
 .dg-va-orb-btn {
