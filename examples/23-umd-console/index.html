@@ -896,8 +896,18 @@ Auth and infrastructure: JWT, Bearer token, API token, OAuth, concurrency, rate 
     const projectId = window.location.pathname.match(/\/projects?\/([^/]+)/)?.[1] ?? null;
 
     DeepgramAgent.init({
+      tokenFactory: () => fetch('/api/token').then(r => r.json()).then(d => d.token),
+      agent: {
+        listen: { provider: { type: 'deepgram', version: 'v1', model: 'nova-3' } },
+        think:  { provider: { type: 'open_ai',  model: 'gpt-4o-mini' } },
+        speak:  { provider: { type: 'deepgram', model: 'aura-2-thalia-en' } },
+        greeting: "Hi! I'm your Deepgram Console assistant. How can I help?",
+      },
+      layout: 'sidebar',
       buttonId: 'dg-ask-ai-btn',
-      staging: window.location.hostname.includes('staging'),
+      colorScheme: 'dark',
+      showTranscript: true,
+      name: 'Console AI',
       skills: [
         ...navigationSkills,
         ...projectSkills,
