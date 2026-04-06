@@ -1,4 +1,3 @@
-import { useState } from "preact/hooks";
 import { AgentProvider, useAgentState, useAgentMode, useAgentMicrophone, useAgentPlayer } from "@deepgram/agent-react";
 import type { AgentSessionConfig } from "@deepgram/agent";
 import { Orb } from "@deepgram/agent-react-ui";
@@ -33,8 +32,7 @@ function placementClass(config: WidgetConfig): string {
 // Sidebar
 // ---------------------------------------------------------------------------
 
-export function SidebarWidget({ config }: WidgetProps) {
-  const [open, setOpen] = useState(false);
+export function SidebarWidget({ config, onToggle }: WidgetProps & { onToggle?: () => void }) {
   const pc = placementClass(config);
 
   return (
@@ -47,13 +45,13 @@ export function SidebarWidget({ config }: WidgetProps) {
         : undefined}
     >
       <div
-        class={`dg-va-overlay ${open ? "dg-va-open" : ""}`}
-        onClick={() => config.dismissible !== false && setOpen(false)}
+        class="dg-va-overlay"
+        onClick={() => config.dismissible !== false && onToggle?.()}
       />
-      <div class={`dg-va-panel ${pc} ${open ? "dg-va-open" : ""}`}>
+      <div class={`dg-va-panel ${pc}`}>
         <ConversationPanel
           config={config}
-          onClose={config.dismissible !== false ? () => setOpen(false) : undefined}
+          onClose={config.dismissible !== false ? onToggle : undefined}
         />
       </div>
     </AgentProvider>
@@ -80,8 +78,7 @@ export function InlineWidget({ config }: WidgetProps) {
 // Floating FAB
 // ---------------------------------------------------------------------------
 
-export function FloatingWidget({ config }: WidgetProps) {
-  const [open, setOpen] = useState(false);
+export function FloatingWidget({ config, onToggle }: WidgetProps & { onToggle?: () => void }) {
   const pc = placementClass(config);
 
   return (
@@ -92,7 +89,7 @@ export function FloatingWidget({ config }: WidgetProps) {
     >
       <button
         class={`dg-va-fab ${pc}`}
-        onClick={() => setOpen((o) => !o)}
+        onClick={() => onToggle?.()}
         aria-label="Open voice agent"
       >
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
@@ -102,13 +99,13 @@ export function FloatingWidget({ config }: WidgetProps) {
         </svg>
       </button>
       <div
-        class={`dg-va-overlay ${open ? "dg-va-open" : ""}`}
-        onClick={() => config.dismissible !== false && setOpen(false)}
+        class="dg-va-overlay"
+        onClick={() => config.dismissible !== false && onToggle?.()}
       />
-      <div class={`dg-va-panel ${pc} ${open ? "dg-va-open" : ""}`}>
+      <div class={`dg-va-panel ${pc}`}>
         <ConversationPanel
           config={config}
-          onClose={config.dismissible !== false ? () => setOpen(false) : undefined}
+          onClose={config.dismissible !== false ? onToggle : undefined}
         />
       </div>
     </AgentProvider>

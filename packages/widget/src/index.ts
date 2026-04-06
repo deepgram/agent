@@ -174,9 +174,9 @@ export function init(config: WidgetConfig): () => void {
   };
 
   if (layout === "floating") {
-    render(h(FloatingWidget, { config }), root);
+    render(h(FloatingWidget, { config, onToggle: toggle }), root);
   } else {
-    render(h(SidebarWidget, { config }), root);
+    render(h(SidebarWidget, { config, onToggle: toggle }), root);
   }
 
   if (config.defaultOpen) {
