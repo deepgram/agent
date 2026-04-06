@@ -23,14 +23,20 @@ export {
   useAgentMicrophone,
   useAgentPlayer,
   useAgentSession,
+  useAgentMode,
+  useAgentControls,
+  useAgentClientTool,
 } from "@deepgram/agent-react";
 
 export type {
   AgentProviderProps,
   AgentContextValue,
+  AgentMode,
   ConversationEntry,
   UseAgentStateResult,
   UseAgentConversationResult,
   UseAgentMicrophoneResult,
   UseAgentPlayerResult,
+  UseAgentModeResult,
+  UseAgentControlsResult,
 } from "@deepgram/agent-react";
