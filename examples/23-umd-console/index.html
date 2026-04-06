@@ -3,17 +3,52 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Deepgram Console — AI Assistant</title>
+  <title>Console AI — Bundled UMD</title>
+  <link rel="stylesheet" href="/src/shared-styles.css" />
+  <style>
+    body { padding: 32px 24px; }
+    header { display: flex; align-items: center; justify-content: space-between; padding-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,.08); margin-bottom: 24px; }
+    #dg-ask-ai-btn { padding: 10px 20px; background: #fcd34d; color: #000; font-weight: 600; border: none; border-radius: 10px; cursor: pointer; }
+  </style>
 </head>
 <body>
+  <a class="back" href="/">← Examples</a>
+  <header>
+    <div>
+      <h1>Console AI <span class="badge badge-umd">Bundled UMD</span></h1>
+      <p class="desc" style="margin:0">Deepgram Console AI assistant with navigation skills, tool calls, and context-aware actions.</p>
+    </div>
+    <button id="dg-ask-ai-btn" type="button">Ask AI</button>
+  </header>
 
-  <!--
-    In the real console this button lives in the top nav, rendered by Elm.
-    The widget attaches a click handler to it by ID.
-  -->
-  <button id="dg-ask-ai-btn" type="button">Ask AI</button>
+  <div class="code-wrap">
+    <h3>Code</h3>
+    <pre class="code"><span class="tag">&lt;script</span> <span class="at">src</span>=<span class="str">"https://cdn.deepgram.com/agent-widget/latest/widget.umd.js"</span><span class="tag">&gt;&lt;/script&gt;</span>
+<span class="tag">&lt;script&gt;</span>
+  <span class="fn">DeepgramAgent</span>.<span class="fn">init</span>({
+    <span class="at">buttonId</span>: <span class="str">'dg-ask-ai-btn'</span>,
+    <span class="at">skills</span>: [
+      {
+        <span class="at">id</span>: <span class="str">'nav-dashboard'</span>,
+        <span class="at">name</span>: <span class="str">'Go to Dashboard'</span>,
+        <span class="at">description</span>: <span class="str">'Navigate to the project dashboard'</span>,
+        <span class="at">category</span>: <span class="str">'navigation'</span>,
+        <span class="at">risk</span>: <span class="str">'safe'</span>,
+        <span class="at">parameters</span>: [],
+        <span class="at">execute</span>: <span class="kw">async</span> (_params, ctx) =&gt; {
+          ctx.<span class="fn">navigate</span>(<span class="str">`/project/${ctx.projectId}/dashboard`</span>);
+          <span class="kw">return</span> { success: <span class="kw">true</span>, message: <span class="str">'Navigated to Dashboard.'</span> };
+        },
+      },
+      <span class="cm">// ... 30+ skills for keys, billing, team, usage, etc.</span>
+    ],
+    <span class="at">systemPrompt</span>: <span class="str">'You are a helpful assistant for the Deepgram Console...'</span>,
+  });
+<span class="tag">&lt;/script&gt;</span></pre>
+  </div>
 
-  <script src="../../dist/deepgram-agent.umd.js"></script>
+  <!-- In dev, the Vite middleware serves the local build at /widget.umd.js -->
+  <script src="/widget.umd.js"></script>
   <script type="module">
 
     // ─── Navigation skills ────────────────────────────────────────────────────
