@@ -17,7 +17,9 @@
   "scripts": {
     "build": "tsc --noEmit && vite build",
     "typecheck": "tsc --noEmit",
-    "dev": "vite build --watch"
+    "dev": "vite build --watch",
+    "test": "bun test",
+    "test:watch": "bun test --watch"
   },
   "dependencies": {
     "@deepgram/sdk": "5.0.0",
@@ -28,12 +30,17 @@
     "onnxruntime-web": "1.24.3"
   },
   "peerDependenciesMeta": {
-    "@ricky0123/vad-web": { "optional": true },
-    "onnxruntime-web": { "optional": true }
+    "@ricky0123/vad-web": {
+      "optional": true
+    },
+    "onnxruntime-web": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@ricky0123/vad-web": "0.0.30",
     "@types/node": "22.15.3",
+    "happy-dom": "20.8.9",
     "onnxruntime-web": "1.24.3",
     "terser": "5.46.1",
     "typescript": "5.9.3",
