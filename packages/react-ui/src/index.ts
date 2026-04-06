@@ -14,6 +14,12 @@ export type { AgentMicrophoneButtonProps } from "./components/AgentMicrophoneBut
 export type { AgentSpeakerButtonProps }    from "./components/AgentSpeakerButton.js";
 export type { AgentStartButtonProps }      from "./components/AgentStartButton.js";
 
+// Visualization components
+export { BarVisualizer }  from "./components/BarVisualizer.js";
+export { LiveWaveform }   from "./components/LiveWaveform.js";
+export type { BarVisualizerProps } from "./components/BarVisualizer.js";
+export type { LiveWaveformProps }  from "./components/LiveWaveform.js";
+
 // Re-export hooks and provider for convenience — consumers can use just this package
 export {
   AgentProvider,
