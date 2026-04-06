@@ -9,4 +9,10 @@ RUN bun run --filter '@deepgram/*' build
 WORKDIR /app/examples
 EXPOSE 8080
 
-CMD ["bunx", "vite", "--host", "0.0.0.0", "--port", "8080"]
+# Copy UMD examples into dist (they're static HTML, not bundled by Vite)
+RUN cp -r 20-umd-sidebar dist/20-umd-sidebar && \
+    cp -r 21-umd-inline dist/21-umd-inline && \
+    cp -r 22-umd-floating dist/22-umd-floating && \
+    cp -r 23-umd-console dist/23-umd-console
+
+CMD ["bun", "run", "serve.ts"]
