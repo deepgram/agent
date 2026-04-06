@@ -19,10 +19,12 @@ export { VoiceButton }    from "./components/VoiceButton.js";
 export { BarVisualizer }  from "./components/BarVisualizer.js";
 export { LiveWaveform }   from "./components/LiveWaveform.js";
 export { MicSelector }    from "./components/MicSelector.js";
+export { Response }       from "./components/Response.js";
 export type { VoiceButtonProps, VoiceButtonState } from "./components/VoiceButton.js";
 export type { BarVisualizerProps } from "./components/BarVisualizer.js";
 export type { LiveWaveformProps }  from "./components/LiveWaveform.js";
 export type { MicSelectorProps, AudioDevice } from "./components/MicSelector.js";
+export type { ResponseProps } from "./components/Response.js";
 
 // Re-export hooks and provider for convenience — consumers can use just this package
 export {
