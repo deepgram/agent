@@ -1,4 +1,3 @@
-import { useState } from "preact/hooks";
 import {
   AgentStatus,
   AgentConversation,
@@ -7,7 +6,7 @@ import {
   AgentSpeakerButton,
   AgentStartButton,
 } from "@deepgram/agent-react";
-import { CloseIcon, AgentIcon, MicIcon, MicOffIcon, SpeakerIcon, SpeakerOffIcon } from "./icons.js";
+import { CloseIcon, AgentIcon, MicIcon, MicOffIcon, SpeakerIcon, SpeakerOffIcon, SendIcon } from "./icons.js";
 import type { WidgetConfig } from "../types.js";
 
 interface ConversationPanelProps {
@@ -41,7 +40,7 @@ export function ConversationPanel({ config, onClose, inline = false }: Conversat
           emptyState={
             <div class="dg-va-empty-state">
               <AgentIcon width={40} height={40} />
-              <p>Press Start to begin the conversation</p>
+              <p>{config.text?.emptyStateHint ?? "Press Start to begin the conversation"}</p>
             </div>
           }
           renderMessage={(entry) => (
@@ -62,7 +61,7 @@ export function ConversationPanel({ config, onClose, inline = false }: Conversat
             <AgentTextInput
               className="dg-va-text-input-row"
               placeholder={config.text?.inputPlaceholder ?? "Type a message…"}
-              submitButton={<SpeakerIcon width={18} height={18} />}
+              submitButton={<SendIcon width={18} height={18} />}
             />
           )}
 

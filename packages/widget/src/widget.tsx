@@ -1,5 +1,5 @@
 import { useState } from "preact/hooks";
-import { AgentProvider } from "@deepgram/agent-react";
+import { AgentProvider, useAgentState } from "@deepgram/agent-react";
 import type { AgentSessionConfig } from "@deepgram/agent";
 import { ConversationPanel } from "./components/ConversationPanel.js";
 import type { WidgetConfig } from "./types.js";
@@ -8,7 +8,7 @@ interface WidgetProps {
   config: WidgetConfig;
 }
 
-function buildSessionConfig(config: WidgetConfig): AgentSessionConfig {
+export function buildSessionConfig(config: WidgetConfig): AgentSessionConfig {
   if (!config.apiKey && !config.tokenFactory) {
     throw new Error("[@deepgram/agent-widget] Either apiKey or tokenFactory is required");
   }
@@ -39,9 +39,7 @@ export function SidebarWidget({ config }: WidgetProps) {
   return (
     <AgentProvider
       config={buildSessionConfig(config)}
-      microphone={config.vad !== undefined ? true : config.vad ?? true}
       microphoneOptions={{ vad: config.vad ?? false }}
-      tts={config.playerSampleRate !== undefined ? true : true}
       playerSampleRate={config.playerSampleRate}
       onFunctionCall={config.on?.onFunctionCallRequest
         ? async (fn) => { config.on!.onFunctionCallRequest!({ type: "FunctionCallRequest", functions: [fn] }); return JSON.stringify({ ok: true }); }
@@ -112,6 +110,93 @@ export function FloatingWidget({ config }: WidgetProps) {
           onClose={config.dismissible !== false ? () => setOpen(false) : undefined}
         />
       </div>
+    </AgentProvider>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Embedded — fills container width, aspect-ratio height, includes chat
+// ---------------------------------------------------------------------------
+
+export function EmbeddedWidget({ config }: WidgetProps) {
+  return (
+    <AgentProvider
+      config={buildSessionConfig(config)}
+      microphoneOptions={{ vad: config.vad ?? false }}
+      playerSampleRate={config.playerSampleRate}
+      onFunctionCall={config.on?.onFunctionCallRequest
+        ? async (fn) => { config.on!.onFunctionCallRequest!({ type: "FunctionCallRequest", functions: [fn] }); return JSON.stringify({ ok: true }); }
+        : undefined}
+    >
+      <ConversationPanel config={config} inline />
+    </AgentProvider>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Button — single "talk to agent" button, no panel
+// ---------------------------------------------------------------------------
+
+function AgentButton({ config }: WidgetProps) {
+  const { state, isActive, isConnecting, start, stop } = useAgentState();
+
+  const idle = state === "idle" || state === "disconnected";
+  const live = state === "connected";
+
+  const label = isConnecting
+    ? (config.text?.connectingLabel ?? "Connecting…")
+    : isActive
+    ? (config.text?.stopLabel ?? "End conversation")
+    : (config.text?.startLabel ?? "Talk to our agent");
+
+  async function handleClick() {
+    if (isActive) {
+      stop();
+    } else {
+      await start();
+    }
+  }
+
+  return (
+    <button
+      class={`dg-va-agent-btn ${live ? "dg-va-agent-btn-live" : ""}`}
+      data-state={state}
+      disabled={isConnecting}
+      aria-label={label}
+      onClick={handleClick}
+    >
+      {live && <span class="dg-va-agent-btn-dot" />}
+      <svg class="dg-va-agent-btn-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+        {idle ? (
+          <>
+            <path d="M12 2a3 3 0 0 1 3 3v7a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3Z" />
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+            <line x1="12" x2="12" y1="19" y2="22" />
+          </>
+        ) : (
+          <>
+            <line x1="18" x2="6" y1="6" y2="18" />
+            <line x1="6" x2="18" y1="6" y2="18" />
+          </>
+        )}
+      </svg>
+      <span>{label}</span>
+    </button>
+  );
+}
+
+export function ButtonWidget({ config }: WidgetProps) {
+  return (
+    <AgentProvider
+      config={buildSessionConfig(config)}
+      microphoneOptions={{ vad: config.vad ?? false }}
+      playerSampleRate={config.playerSampleRate}
+      tts={true}
+      onFunctionCall={config.on?.onFunctionCallRequest
+        ? async (fn) => { config.on!.onFunctionCallRequest!({ type: "FunctionCallRequest", functions: [fn] }); return JSON.stringify({ ok: true }); }
+        : undefined}
+    >
+      <AgentButton config={config} />
     </AgentProvider>
   );
 }

@@ -1,5 +1,5 @@
 import { render, h } from "preact";
-import { SidebarWidget, InlineWidget, FloatingWidget } from "./widget.js";
+import { SidebarWidget, InlineWidget, FloatingWidget, ButtonWidget, EmbeddedWidget } from "./widget.js";
 import type { WidgetConfig, WidgetColorScheme, WidgetTheme } from "./types.js";
 import "./styles.css";
 
@@ -64,6 +64,62 @@ export function init(config: WidgetConfig): () => void {
     render(h(InlineWidget, { config }), container);
     return () => {
       render(null, container);
+      container.removeAttribute("data-dg-agent");
+      container.removeAttribute("data-dg-scheme");
+    };
+  }
+
+  if (layout === "button") {
+    // Button can mount into a containerId or append a wrapper to body
+    let root: HTMLElement;
+    let createdRoot = false;
+    if (config.containerId) {
+      const el = document.getElementById(config.containerId);
+      if (!el) throw new Error(`[@deepgram/agent-widget] Container #${config.containerId} not found`);
+      root = el;
+    } else {
+      root = document.createElement("div");
+      document.body.appendChild(root);
+      createdRoot = true;
+    }
+    root.setAttribute("data-dg-agent", "");
+    applyColorScheme(root, config.colorScheme);
+    applyTheme(root, config.theme);
+
+    render(h(ButtonWidget, { config }), root);
+    return () => {
+      render(null, root);
+      if (createdRoot) root.remove();
+      else {
+        root.removeAttribute("data-dg-agent");
+        root.removeAttribute("data-dg-scheme");
+      }
+    };
+  }
+
+  if (layout === "embedded") {
+    const containerId = config.containerId;
+    if (!containerId) {
+      throw new Error(
+        '[@deepgram/agent-widget] layout "embedded" requires containerId',
+      );
+    }
+    const container = document.getElementById(containerId);
+    if (!container) {
+      throw new Error(
+        `[@deepgram/agent-widget] Container #${containerId} not found`,
+      );
+    }
+
+    container.setAttribute("data-dg-agent", "");
+    container.classList.add("dg-va-embedded");
+    applyColorScheme(container, config.colorScheme);
+    applyTheme(container, config.theme);
+
+    render(h(EmbeddedWidget, { config }), container);
+    return () => {
+      render(null, container);
+      container.classList.remove("dg-va-embedded");
       container.removeAttribute("data-dg-agent");
       container.removeAttribute("data-dg-scheme");
     };
@@ -152,16 +208,38 @@ function injectClassSchemeStyle(scheme: Extract<WidgetColorScheme, { mode: "clas
 // ---------------------------------------------------------------------------
 
 const TOKEN_MAP: Array<[keyof WidgetTheme, string]> = [
-  ["primary",          "--dg-va-primary"],
-  ["background",       "--dg-va-bg"],
-  ["backgroundRaised", "--dg-va-bg-raised"],
-  ["backgroundInput",  "--dg-va-bg-input"],
-  ["text",             "--dg-va-text"],
-  ["textMuted",        "--dg-va-text-muted"],
-  ["border",           "--dg-va-border"],
-  ["error",            "--dg-va-error"],
-  ["buttonRadius",     "--dg-va-btn-radius"],
-  ["panelRadius",      "--dg-va-radius"],
+  // Accent
+  ["primary",              "--dg-va-primary"],
+  ["primaryHover",         "--dg-va-primary-hover"],
+  ["primaryActive",        "--dg-va-primary-active"],
+  ["onPrimary",            "--dg-va-on-primary"],
+  // Surface
+  ["background",           "--dg-va-bg"],
+  ["backgroundRaised",     "--dg-va-bg-raised"],
+  ["backgroundInput",      "--dg-va-bg-input"],
+  ["backgroundHover",      "--dg-va-bg-hover"],
+  ["backgroundActive",     "--dg-va-bg-active"],
+  // Text
+  ["text",                 "--dg-va-text"],
+  ["textMuted",            "--dg-va-text-muted"],
+  // Chrome
+  ["border",               "--dg-va-border"],
+  ["error",                "--dg-va-error"],
+  ["overlay",              "--dg-va-overlay"],
+  // Messages
+  ["userMessageBackground","--dg-va-msg-user-bg"],
+  ["userMessageBorder",    "--dg-va-msg-user-border"],
+  // Radius
+  ["panelRadius",          "--dg-va-radius"],
+  ["buttonRadius",         "--dg-va-btn-radius"],
+  ["inputRadius",          "--dg-va-input-radius"],
+  ["messageRadius",        "--dg-va-msg-radius"],
+  // Structural
+  ["padding",              "--dg-va-padding"],
+  ["font",                 "--dg-va-font"],
+  ["aspect",               "--dg-va-aspect"],
+  ["minHeight",            "--dg-va-min-h"],
+  ["maxHeight",            "--dg-va-max-h"],
 ];
 
 function applyTheme(root: HTMLElement, theme: WidgetTheme | undefined): void {

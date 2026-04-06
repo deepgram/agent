@@ -17,8 +17,10 @@ export type TokenFactory = () => Promise<string>;
  * - `sidebar`  — panel slides in from the right edge (default)
  * - `inline`   — mounts into a host container element
  * - `floating` — a FAB button reveals an overlay panel
+ * - `button`   — single button: click to talk, click again to disconnect
+ * - `embedded` — card that fills container width with aspect-ratio height, includes chat
  */
-export type WidgetLayout = "sidebar" | "inline" | "floating";
+export type WidgetLayout = "sidebar" | "inline" | "floating" | "button" | "embedded";
 
 /**
  * Where the FAB / panel anchor appears on screen.
@@ -92,28 +94,71 @@ export type WidgetColorScheme =
  * ```
  */
 export interface WidgetTheme {
-  /** Brand/accent colour. Default adapts: same green (#13EF93) on both modes */
+  // ── Accent tokens ──
+  /** Brand/accent colour. Default: #13EF93 */
   primary?: string;
-  /** Panel background */
+  /** Accent hover state. Default: color-mix(85% primary, #000) */
+  primaryHover?: string;
+  /** Accent pressed state. Default: color-mix(70% primary, #000) */
+  primaryActive?: string;
+  /** Text/icon colour on primary-background surfaces. Default: light-dark(#000, #000) */
+  onPrimary?: string;
+
+  // ── Surface tokens ──
+  /** Panel / surface background. Default: light-dark(#fff, #101014) */
   background?: string;
-  /** Raised element background (message bubbles, input) */
+  /** Raised element background (bubbles, input wrappers). Default: light-dark(#f3f4f6, #18181c) */
   backgroundRaised?: string;
-  /** Input field background */
+  /** Input field background. Default: light-dark(#f3f4f6, #1e1e24) */
   backgroundInput?: string;
-  /** Primary text colour */
+  /** Surface hover state. Default: light-dark(#f9fafb, #1a1a1f) */
+  backgroundHover?: string;
+  /** Surface pressed state. Default: light-dark(#f3f4f6, #222228) */
+  backgroundActive?: string;
+
+  // ── Text tokens ──
+  /** Primary text colour. Default: light-dark(#111827, #fff) */
   text?: string;
-  /** Muted/secondary text colour */
+  /** Muted/secondary text colour. Default: light-dark(#6b7280, #8b8b9a) */
   textMuted?: string;
-  /** Widget border colour */
+
+  // ── Chrome tokens ──
+  /** Border / divider colour. Default: light-dark(rgba(0,0,0,.1), rgba(255,255,255,.08)) */
   border?: string;
-  /** Error/destructive colour */
+  /** Error/destructive colour. Default: light-dark(#dc2626, #ef4444) */
   error?: string;
-  /** Button border radius. Default: 10px */
-  buttonRadius?: string;
+  /** Overlay backdrop colour. Default: light-dark(rgba(0,0,0,.25), rgba(0,0,0,.5)) */
+  overlay?: string;
+
+  // ── Message tokens ──
+  /** User message bubble background */
+  userMessageBackground?: string;
+  /** User message bubble border */
+  userMessageBorder?: string;
+
+  // ── Radius tokens ──
   /** Panel border radius. Default: 16px */
   panelRadius?: string;
+  /** Button border radius. Default: 10px */
+  buttonRadius?: string;
+  /** Input border radius. Default: 8px */
+  inputRadius?: string;
+  /** Message bubble border radius. Default: 12px */
+  messageRadius?: string;
+
+  // ── Structural tokens ──
   /** FAB button size in px. Default: 56 */
   fabSize?: number;
+  /** Content padding. Default: "16px" */
+  padding?: string;
+  /** Font family. Default: "system-ui, -apple-system, sans-serif" */
+  font?: string;
+  /** Embedded layout aspect ratio. Default: "4 / 3" */
+  aspect?: string;
+  /** Embedded layout minimum height. Default: "320px" */
+  minHeight?: string;
+  /** Embedded layout maximum height. Default: "80vh" */
+  maxHeight?: string;
 }
 
 // ---------------------------------------------------------------------------
