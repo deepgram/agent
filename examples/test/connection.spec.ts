@@ -17,7 +17,7 @@ test("agent connects and stays stable for 10s", async ({ page }) => {
     console.error(`  PAGE ERROR: ${err.message}`);
   });
 
-  await page.goto("/sidebar.html");
+  await page.goto("/01-widget-sidebar/");
 
   await page.getByRole("button", { name: "Open Agent" }).click();
   await page.getByRole("button", { name: "Start" }).click();

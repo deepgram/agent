@@ -142,12 +142,14 @@ export default defineConfig(({ mode }) => {
       rollupOptions: {
         input: {
           main:           path.resolve("index.html"),
-          sidebar:        path.resolve("sidebar.html"),
-          inline:         path.resolve("inline.html"),
-          floating:       path.resolve("floating.html"),
-          reactSidebar:   path.resolve("react-sidebar.html"),
-          reactInline:    path.resolve("react-inline.html"),
-          reactFloating:  path.resolve("react-floating.html"),
+          sidebar:        path.resolve("01-widget-sidebar/index.html"),
+          inline:         path.resolve("02-widget-inline/index.html"),
+          floating:       path.resolve("03-widget-floating/index.html"),
+          button:         path.resolve("04-widget-button/index.html"),
+          embedded:       path.resolve("05-widget-embedded/index.html"),
+          reactSidebar:   path.resolve("10-react-sidebar/index.html"),
+          reactInline:    path.resolve("11-react-inline/index.html"),
+          reactFloating:  path.resolve("12-react-floating/index.html"),
           // UMD pages are static HTML — no bundling needed, excluded from build
         },
       },

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Button — TS Source</title>
+  <link rel="stylesheet" href="/src/shared-styles.css" />
+  <style>
+    body { padding: 32px 24px; }
+    .demo-area {
+      margin: 32px 0;
+      padding: 48px;
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+    .demo-area p { color: #6b7280; font-size: .85rem; }
+  </style>
+</head>
+<body>
+  <a class="back" href="/">← Examples</a>
+  <h1>Button Layout <span class="badge badge-source">TS Source</span></h1>
+  <p class="desc">A single button — click to talk, click again to disconnect. No panel, no transcript.</p>
+
+  <div class="code-wrap">
+    <h3>Code</h3>
+    <pre class="code"><span class="kw">import</span> { <span class="fn">init</span> } <span class="kw">from</span> <span class="str">'@deepgram/agent-widget'</span>;
+
+<span class="fn">init</span>({
+  <span class="at">tokenFactory</span>: () =&gt; <span class="fn">fetch</span>(<span class="str">'/api/token'</span>).<span class="fn">then</span>(r =&gt; r.<span class="fn">json</span>()).<span class="fn">then</span>(d =&gt; d.token),
+  <span class="at">agent</span>: {
+    <span class="at">listen</span>: { <span class="at">provider</span>: { <span class="at">type</span>: <span class="str">'deepgram'</span>, <span class="at">version</span>: <span class="str">'v1'</span>, <span class="at">model</span>: <span class="str">'nova-3'</span> } },
+    <span class="at">think</span>:  { <span class="at">provider</span>: { <span class="at">type</span>: <span class="str">'open_ai'</span>, <span class="at">model</span>: <span class="str">'gpt-4o-mini'</span> } },
+    <span class="at">speak</span>:  { <span class="at">provider</span>: { <span class="at">type</span>: <span class="str">'deepgram'</span>, <span class="at">model</span>: <span class="str">'aura-2-thalia-en'</span> } },
+  },
+  <span class="at">layout</span>: <span class="str">'button'</span>,
+  <span class="at">containerId</span>: <span class="str">'agent-btn'</span>,
+});</pre>
+  </div>
+
+  <div class="demo-area">
+    <div id="agent-btn"></div>
+    <p>Click the button above to start a voice conversation</p>
+  </div>
+
+  <script type="module">
+    import { init } from "@deepgram/agent-widget";
+    import { baseConfig } from "../src/agent-config.ts";
+    init({
+      ...baseConfig,
+      layout: "button",
+      containerId: "agent-btn",
+      colorScheme: "dark",
+    });
+  </script>
+</body>
+</html>

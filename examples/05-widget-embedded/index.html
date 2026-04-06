@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Embedded — TS Source</title>
+  <link rel="stylesheet" href="/src/shared-styles.css" />
+  <style>
+    body { padding: 32px 24px; max-width: 900px; margin: 0 auto; }
+    .widget-container { margin: 32px 0; }
+  </style>
+</head>
+<body>
+  <a class="back" href="/">← Examples</a>
+  <h1>Embedded Layout <span class="badge badge-source">TS Source</span></h1>
+  <p class="desc">Fills the container width with an aspect-ratio height. Includes full chat — transcript, text input, mic and speaker controls. Drop it into any content area.</p>
+
+  <div class="code-wrap">
+    <h3>Code</h3>
+    <pre class="code"><span class="kw">import</span> { <span class="fn">init</span> } <span class="kw">from</span> <span class="str">'@deepgram/agent-widget'</span>;
+
+<span class="fn">init</span>({
+  <span class="at">tokenFactory</span>: () =&gt; <span class="fn">fetch</span>(<span class="str">'/api/token'</span>).<span class="fn">then</span>(r =&gt; r.<span class="fn">json</span>()).<span class="fn">then</span>(d =&gt; d.token),
+  <span class="at">agent</span>: { <span class="cm">/* ... */</span> },
+  <span class="at">layout</span>: <span class="str">'embedded'</span>,
+  <span class="at">containerId</span>: <span class="str">'agent-embed'</span>,
+});</pre>
+  </div>
+
+  <div class="widget-container">
+    <div id="agent-embed"></div>
+  </div>
+
+  <script type="module">
+    import { init } from "@deepgram/agent-widget";
+    import { baseConfig } from "../src/agent-config.ts";
+    init({
+      ...baseConfig,
+      layout: "embedded",
+      containerId: "agent-embed",
+      colorScheme: "dark",
+    });
+  </script>
+</body>
+</html>
