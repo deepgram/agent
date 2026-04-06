@@ -345,6 +345,35 @@
   outline-offset: 2px;
 }
 
+/* ── Mic selector ─────────────────────────────────────────────────────── */
+
+[data-agent-mic-selector] {
+  appearance: none;
+  background: var(--dg-va-bg-input, light-dark(#f3f4f6, #1e1e24));
+  border: 1px solid var(--dg-va-border, light-dark(rgba(0,0,0,0.1), rgba(255,255,255,0.08)));
+  border-radius: var(--dg-va-input-radius, 8px);
+  color: var(--dg-va-text, light-dark(#111827, #ffffff));
+  padding: 8px 32px 8px 12px;
+  font-size: 13px;
+  font-family: var(--dg-va-font, system-ui, -apple-system, sans-serif);
+  cursor: pointer;
+  transition: border-color 0.15s;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+}
+[data-agent-mic-selector]:hover:not(:disabled) {
+  border-color: var(--dg-va-primary);
+}
+[data-agent-mic-selector]:focus {
+  border-color: var(--dg-va-primary);
+  outline: none;
+}
+[data-agent-mic-selector]:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* ── Voice button (all-in-one lifecycle button) ──────────────────────── */
 
 [data-agent-voice-button] {

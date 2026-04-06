@@ -18,9 +18,11 @@ export type { AgentStartButtonProps }      from "./components/AgentStartButton.j
 export { VoiceButton }    from "./components/VoiceButton.js";
 export { BarVisualizer }  from "./components/BarVisualizer.js";
 export { LiveWaveform }   from "./components/LiveWaveform.js";
+export { MicSelector }    from "./components/MicSelector.js";
 export type { VoiceButtonProps, VoiceButtonState } from "./components/VoiceButton.js";
 export type { BarVisualizerProps } from "./components/BarVisualizer.js";
 export type { LiveWaveformProps }  from "./components/LiveWaveform.js";
+export type { MicSelectorProps, AudioDevice } from "./components/MicSelector.js";
 
 // Re-export hooks and provider for convenience — consumers can use just this package
 export {
