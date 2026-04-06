@@ -26,23 +26,31 @@
     <pre class="code"><span class="tag">&lt;script</span> <span class="at">src</span>=<span class="str">"https://cdn.deepgram.com/agent-widget/latest/widget.umd.js"</span><span class="tag">&gt;&lt;/script&gt;</span>
 <span class="tag">&lt;script&gt;</span>
   <span class="fn">DeepgramAgent</span>.<span class="fn">init</span>({
-    <span class="at">buttonId</span>: <span class="str">'dg-ask-ai-btn'</span>,
-    <span class="at">skills</span>: [
-      {
-        <span class="at">id</span>: <span class="str">'nav-dashboard'</span>,
-        <span class="at">name</span>: <span class="str">'Go to Dashboard'</span>,
-        <span class="at">description</span>: <span class="str">'Navigate to the project dashboard'</span>,
-        <span class="at">category</span>: <span class="str">'navigation'</span>,
-        <span class="at">risk</span>: <span class="str">'safe'</span>,
-        <span class="at">parameters</span>: [],
-        <span class="at">execute</span>: <span class="kw">async</span> (_params, ctx) =&gt; {
-          ctx.<span class="fn">navigate</span>(<span class="str">`/project/${ctx.projectId}/dashboard`</span>);
-          <span class="kw">return</span> { success: <span class="kw">true</span>, message: <span class="str">'Navigated to Dashboard.'</span> };
-        },
+    <span class="at">tokenFactory</span>: () =&gt; <span class="fn">fetch</span>(<span class="str">'/api/token'</span>)
+      .<span class="fn">then</span>(r =&gt; r.<span class="fn">json</span>()).<span class="fn">then</span>(d =&gt; d.token),
+    <span class="at">agent</span>: {
+      <span class="at">think</span>: {
+        <span class="at">provider</span>: { <span class="at">type</span>: <span class="str">'open_ai'</span>, <span class="at">model</span>: <span class="str">'gpt-4o-mini'</span> },
+        <span class="at">prompt</span>: <span class="str">'You are a Deepgram Console assistant...'</span>,
+        <span class="at">functions</span>: [
+          { <span class="at">name</span>: <span class="str">'nav-dashboard'</span>, <span class="at">description</span>: <span class="str">'Go to Dashboard'</span>,
+            <span class="at">parameters</span>: { <span class="at">type</span>: <span class="str">'object'</span>, <span class="at">properties</span>: {} },
+            <span class="at">client_side</span>: <span class="kw">true</span> },
+          <span class="cm">// ... 30+ client-side functions</span>
+        ],
       },
-      <span class="cm">// ... 30+ skills for keys, billing, team, usage, etc.</span>
-    ],
-    <span class="at">systemPrompt</span>: <span class="str">'You are a helpful assistant for the Deepgram Console...'</span>,
+      <span class="at">speak</span>: { <span class="at">provider</span>: { <span class="at">type</span>: <span class="str">'deepgram'</span>, <span class="at">model</span>: <span class="str">'aura-2-thalia-en'</span> } },
+    },
+    <span class="at">layout</span>: <span class="str">'sidebar'</span>,
+    <span class="at">buttonId</span>: <span class="str">'dg-ask-ai-btn'</span>,
+    <span class="at">on</span>: {
+      <span class="at">onFunctionCallRequest</span>: (msg) =&gt; {
+        <span class="cm">// Handle client-side function calls</span>
+        <span class="kw">for</span> (<span class="kw">const</span> fn <span class="kw">of</span> msg.functions) {
+          <span class="fn">handleSkill</span>(fn.name, fn.input);
+        }
+      },
+    },
   });
 <span class="tag">&lt;/script&gt;</span></pre>
   </div>
@@ -893,32 +901,67 @@ Auth and infrastructure: JWT, Bearer token, API token, OAuth, concurrency, rate 
 
     // ─── Init ─────────────────────────────────────────────────────────────────
 
+    // Build a lookup map from all skill arrays
+    const allSkills = [
+      ...navigationSkills,
+      ...projectSkills,
+      ...apiKeySkills,
+      ...teamSkills,
+      ...billingSkills,
+      ...usageSkills,
+      ...settingsSkills,
+      ...selfHostedSkills,
+    ];
+    const skillMap = Object.fromEntries(allSkills.map(s => [s.id, s]));
+
+    // Convert skills to agent function definitions for the think provider
+    const functions = allSkills.map(s => ({
+      name: s.id,
+      description: s.description,
+      parameters: {
+        type: 'object',
+        properties: Object.fromEntries(
+          (s.parameters || []).map(p => [p.name, { type: p.type || 'string', description: p.description }])
+        ),
+        required: (s.parameters || []).filter(p => p.required).map(p => p.name),
+      },
+      client_side: true,
+    }));
+
     const projectId = window.location.pathname.match(/\/projects?\/([^/]+)/)?.[1] ?? null;
 
     DeepgramAgent.init({
       tokenFactory: () => fetch('/api/token').then(r => r.json()).then(d => d.token),
       agent: {
         listen: { provider: { type: 'deepgram', version: 'v1', model: 'nova-3' } },
-        think:  { provider: { type: 'open_ai',  model: 'gpt-4o-mini' } },
-        speak:  { provider: { type: 'deepgram', model: 'aura-2-thalia-en' } },
+        think: {
+          provider: { type: 'open_ai', model: 'gpt-4o-mini' },
+          prompt: buildSystemPrompt(projectId),
+          functions,
+        },
+        speak: { provider: { type: 'deepgram', model: 'aura-2-thalia-en' } },
         greeting: "Hi! I'm your Deepgram Console assistant. How can I help?",
       },
       layout: 'sidebar',
       buttonId: 'dg-ask-ai-btn',
       colorScheme: 'dark',
       showTranscript: true,
-      name: 'Console AI',
-      skills: [
-        ...navigationSkills,
-        ...projectSkills,
-        ...apiKeySkills,
-        ...teamSkills,
-        ...billingSkills,
-        ...usageSkills,
-        ...settingsSkills,
-        ...selfHostedSkills,
-      ],
-      systemPrompt: buildSystemPrompt(projectId),
+      text: { name: 'Console AI' },
+      on: {
+        onFunctionCallRequest: (msg) => {
+          for (const fn of msg.functions) {
+            const skill = skillMap[fn.name];
+            if (!skill) continue;
+            const ctx = {
+              projectId,
+              navigate: (path) => console.log(`[Console AI] Navigate → ${path}`),
+            };
+            skill.execute(fn.input || {}, ctx)
+              .then(result => console.log(`[Console AI] ${fn.name}:`, result))
+              .catch(err => console.error(`[Console AI] ${fn.name} error:`, err));
+          }
+        },
+      },
     });
 
   </script>
