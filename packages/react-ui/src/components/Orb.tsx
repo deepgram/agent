@@ -264,22 +264,24 @@ function drawFrame(ctx: CanvasRenderingContext2D, shape: Shape, dt: number, line
 
 function deflationFor(state: OrbState): number {
   switch (state) {
-    case "listening": case "talking": return 0;
-    case "idle": default: return 1;
+    case "talking":   return 0.35; // mouth shape — chatter drives the "talking" movement
+    case "listening": return 0;    // full circle — open and ready
+    case "idle": default: return 1; // fully deflated — closed/pinched
   }
 }
 
 function rockingFor(state: OrbState): number {
   switch (state) {
-    case "listening": case "talking": return pi(1 / 15);
+    case "talking":   return pi(1 / 20);
+    case "listening": return pi(1 / 15);
     case "idle": default: return pi(1 / 2);
   }
 }
 
 function speedFor(state: OrbState): number {
   switch (state) {
-    case "talking": return 1;
-    case "listening": return 0.8;
+    case "talking":   return 1;
+    case "listening": return 0.7;
     case "idle": default: return 0.2;
   }
 }
