@@ -129,6 +129,7 @@ export default defineConfig(({ mode }) => {
     ],
 
     server: {
+      allowedHosts: true,
       fs: {
         // Allow serving files from the monorepo root so Vite can resolve and
         // hot-reload source files in ../packages/* via the alias map.
