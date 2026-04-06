@@ -19,8 +19,9 @@ export type TokenFactory = () => Promise<string>;
  * - `floating` — a FAB button reveals an overlay panel
  * - `button`   — single button: click to talk, click again to disconnect
  * - `embedded` — card that fills container width with aspect-ratio height, includes chat
+ * - `orb`      — animated orb with start/stop button, audio-reactive
  */
-export type WidgetLayout = "sidebar" | "inline" | "floating" | "button" | "embedded";
+export type WidgetLayout = "sidebar" | "inline" | "floating" | "button" | "embedded" | "orb";
 
 /**
  * Where the FAB / panel anchor appears on screen.

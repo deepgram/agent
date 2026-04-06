@@ -529,13 +529,60 @@
   animation: dg-va-pulse 1.5s ease-in-out infinite;
 }
 
+/* ── Orb layout ───────────────────────────────────────────────────────── */
+
+.dg-va-orb-layout {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding: var(--dg-va-padding);
+  font-family: var(--dg-va-font);
+}
+
+.dg-va-orb-btn {
+  padding: 12px 28px;
+  font-family: var(--dg-va-font);
+  font-size: 15px;
+  font-weight: 600;
+  border: 1px solid var(--dg-va-border, light-dark(rgba(0,0,0,0.12), rgba(255,255,255,0.12)));
+  border-radius: var(--dg-va-btn-radius);
+  background: var(--dg-va-bg-raised, light-dark(#f4f4f5, #27272a));
+  color: var(--dg-va-text, light-dark(#18181b, #e5e7eb));
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.dg-va-orb-btn:hover:not(:disabled) {
+  background: var(--dg-va-bg-hover, light-dark(#f9fafb, #1a1a1f));
+  border-color: var(--dg-va-primary);
+}
+.dg-va-orb-btn:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+.dg-va-orb-btn-active {
+  background: var(--dg-va-primary);
+  color: var(--dg-va-on-primary, light-dark(#000, #000));
+  border-color: var(--dg-va-primary);
+}
+.dg-va-orb-btn-active:hover:not(:disabled) {
+  background: var(--dg-va-primary-hover);
+}
+
+.dg-va-orb-status {
+  font-size: 13px;
+  color: var(--dg-va-text-muted, light-dark(#6b7280, #8b8b9a));
+  min-height: 1.2em;
+}
+
 /* ── Focus ring (keyboard accessibility) ──────────────────────────────── */
 
 .dg-va-agent-btn:focus-visible,
 .dg-va-start-btn:focus-visible,
 .dg-va-icon-btn:focus-visible,
 .dg-va-fab:focus-visible,
-.dg-va-close-btn:focus-visible {
+.dg-va-close-btn:focus-visible,
+.dg-va-orb-btn:focus-visible {
   outline: 2px solid var(--dg-va-primary);
   outline-offset: 2px;
 }

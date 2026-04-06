@@ -8,6 +8,7 @@ mock.module("../widget.js", () => ({
   FloatingWidget: ({ config }: any) => h("div", { class: "dg-va-panel" }),
   ButtonWidget: ({ config }: any) => h("button", { class: "dg-va-agent-btn" }, "Talk"),
   EmbeddedWidget: ({ config }: any) => h("div", { class: "dg-va-panel-inline" }),
+  OrbWidget: ({ config }: any) => h("div", { class: "dg-va-orb-layout" }),
 }));
 
 const { init } = await import("../index.js");

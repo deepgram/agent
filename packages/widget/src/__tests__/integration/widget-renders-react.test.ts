@@ -13,9 +13,12 @@ const hookMocks = {
   useAgentContext: () => ({}),
   useAgentState: () => ({ state: "idle", isActive: false, isConnecting: false, start: async () => {}, stop: () => {} }),
   useAgentConversation: () => ({ conversation: [], sendUserMessage: () => {}, clearConversation: () => {} }),
-  useAgentMicrophone: () => ({ micActive: false, micMuted: false, setMicMuted: () => {}, toggle: () => {}, enabled: true }),
-  useAgentPlayer: () => ({ outputMuted: false, setOutputMuted: () => {}, toggle: () => {}, enabled: true }),
+  useAgentMicrophone: () => ({ micActive: false, micMuted: false, setMicMuted: () => {}, toggle: () => {}, enabled: true, getInputVolume: () => 0 }),
+  useAgentPlayer: () => ({ outputMuted: false, setOutputMuted: () => {}, toggle: () => {}, enabled: true, getOutputVolume: () => 0 }),
   useAgentSession: () => ({}),
+  useAgentMode: () => ({ mode: "idle", isSpeaking: false, isListening: false }),
+  useAgentControls: () => ({ start: async () => {}, stop: () => {}, sendUserMessage: () => {}, clearConversation: () => {}, setMicMuted: () => {}, setOutputMuted: () => {} }),
+  useAgentClientTool: () => {},
 };
 
 mock.module("@deepgram/agent-react", () => hookMocks);
@@ -27,6 +30,7 @@ mock.module("@deepgram/agent-react-ui", () => ({
   AgentMicrophoneButton: () => null,
   AgentSpeakerButton: () => null,
   AgentStartButton: () => null,
+  Orb: () => null,
 }));
 mock.module("@deepgram/agent", () => ({}));
 

@@ -1,6 +1,7 @@
 import { useState } from "preact/hooks";
-import { AgentProvider, useAgentState } from "@deepgram/agent-react";
+import { AgentProvider, useAgentState, useAgentMode, useAgentMicrophone, useAgentPlayer } from "@deepgram/agent-react";
 import type { AgentSessionConfig } from "@deepgram/agent";
+import { Orb } from "@deepgram/agent-react-ui";
 import { ConversationPanel } from "./components/ConversationPanel.js";
 import type { WidgetConfig } from "./types.js";
 
@@ -197,6 +198,73 @@ export function ButtonWidget({ config }: WidgetProps) {
         : undefined}
     >
       <AgentButton config={config} />
+    </AgentProvider>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Orb — animated hoop with start/stop, audio-reactive
+// ---------------------------------------------------------------------------
+
+function OrbView({ config }: WidgetProps) {
+  const { state, isActive, isConnecting, start, stop } = useAgentState();
+  const { mode } = useAgentMode();
+  const { getInputVolume } = useAgentMicrophone();
+  const { getOutputVolume } = useAgentPlayer();
+
+  const orbState = mode === "speaking" ? "talking" as const
+    : mode === "listening" ? "listening" as const
+    : "idle" as const;
+
+  const label = isConnecting
+    ? (config.text?.connectingLabel ?? "Connecting…")
+    : isActive
+    ? (config.text?.stopLabel ?? "End conversation")
+    : (config.text?.startLabel ?? "Talk to our agent");
+
+  async function handleClick() {
+    if (isActive) {
+      stop();
+    } else {
+      await start();
+    }
+  }
+
+  return (
+    <div class="dg-va-orb-layout" data-state={state}>
+      <Orb
+        state={orbState}
+        getInputVolume={getInputVolume}
+        getOutputVolume={getOutputVolume}
+        size={config.theme?.fabSize ?? 180}
+      />
+      <button
+        class={`dg-va-orb-btn ${isActive ? "dg-va-orb-btn-active" : ""}`}
+        disabled={isConnecting}
+        aria-label={label}
+        onClick={handleClick}
+      >
+        {label}
+      </button>
+      <span class="dg-va-orb-status" data-state={state} aria-live="polite">
+        {orbState === "talking" ? "Agent speaking" : orbState === "listening" ? "Listening…" : ""}
+      </span>
+    </div>
+  );
+}
+
+export function OrbWidget({ config }: WidgetProps) {
+  return (
+    <AgentProvider
+      config={buildSessionConfig(config)}
+      microphoneOptions={{ vad: config.vad ?? false }}
+      playerSampleRate={config.playerSampleRate}
+      tts={true}
+      onFunctionCall={config.on?.onFunctionCallRequest
+        ? async (fn) => { config.on!.onFunctionCallRequest!({ type: "FunctionCallRequest", functions: [fn] }); return JSON.stringify({ ok: true }); }
+        : undefined}
+    >
+      <OrbView config={config} />
     </AgentProvider>
   );
 }

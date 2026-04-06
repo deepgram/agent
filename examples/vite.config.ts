@@ -148,6 +148,7 @@ export default defineConfig(({ mode }) => {
           floating:       path.resolve("03-widget-floating/index.html"),
           button:         path.resolve("04-widget-button/index.html"),
           embedded:       path.resolve("05-widget-embedded/index.html"),
+          orb:            path.resolve("06-widget-orb/index.html"),
           reactSidebar:   path.resolve("10-react-sidebar/index.html"),
           reactInline:    path.resolve("11-react-inline/index.html"),
           reactFloating:  path.resolve("12-react-floating/index.html"),

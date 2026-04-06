@@ -1,5 +1,5 @@
 import { render, h } from "preact";
-import { SidebarWidget, InlineWidget, FloatingWidget, ButtonWidget, EmbeddedWidget } from "./widget.js";
+import { SidebarWidget, InlineWidget, FloatingWidget, ButtonWidget, EmbeddedWidget, OrbWidget } from "./widget.js";
 import type { WidgetConfig, WidgetColorScheme, WidgetTheme } from "./types.js";
 import "./styles.css";
 
@@ -87,6 +87,33 @@ export function init(config: WidgetConfig): () => void {
     applyTheme(root, config.theme);
 
     render(h(ButtonWidget, { config }), root);
+    return () => {
+      render(null, root);
+      if (createdRoot) root.remove();
+      else {
+        root.removeAttribute("data-dg-agent");
+        root.removeAttribute("data-dg-scheme");
+      }
+    };
+  }
+
+  if (layout === "orb") {
+    let root: HTMLElement;
+    let createdRoot = false;
+    if (config.containerId) {
+      const el = document.getElementById(config.containerId);
+      if (!el) throw new Error(`[@deepgram/agent-widget] Container #${config.containerId} not found`);
+      root = el;
+    } else {
+      root = document.createElement("div");
+      document.body.appendChild(root);
+      createdRoot = true;
+    }
+    root.setAttribute("data-dg-agent", "");
+    applyColorScheme(root, config.colorScheme);
+    applyTheme(root, config.theme);
+
+    render(h(OrbWidget, { config }), root);
     return () => {
       render(null, root);
       if (createdRoot) root.remove();
