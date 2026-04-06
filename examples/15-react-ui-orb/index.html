@@ -25,50 +25,34 @@
 <body>
   <a class="back" href="/">← Examples</a>
   <h1>Deepgram Orb <span class="badge badge-source" style="background:rgba(56,189,248,.2);color:#7dd3fc">React UI</span></h1>
-  <p class="desc">The signature Deepgram hoop animation — 4 gradient crescent arcs that rotate, pulse, deflate, and react to audio volume. Ported from <code>deepgram/browser-agent</code>.</p>
+  <p class="desc">The signature Deepgram hoop animation — state-driven, no audio source required. Click the states below to see the orb deflate, inflate, speed up, and rock.</p>
 
   <div class="code-wrap">
-    <h3>Code</h3>
+    <h3>State-driven (default)</h3>
     <pre class="code"><span class="kw">import</span> { <span class="fn">Orb</span> } <span class="kw">from</span> <span class="str">'@deepgram/agent-react-ui'</span>;
 
+<span class="cm">// Just pass the state — no audio source needed</span>
+<span class="tag">&lt;Orb</span> <span class="at">state</span>={<span class="str">"listening"</span>} <span class="tag">/&gt;</span>
+
+<span class="cm">// Custom colors</span>
+<span class="tag">&lt;Orb</span> <span class="at">state</span>={<span class="str">"speaking"</span>} <span class="at">colors</span>={[<span class="str">"#6366f1"</span>, <span class="str">"#ec4899"</span>]} <span class="tag">/&gt;</span>
+
+<span class="cm">// Optional audio reactivity</span>
 <span class="tag">&lt;Orb</span>
-  <span class="at">state</span>={mode}
-  <span class="at">agentVolume</span>={getOutputVolume()}
-  <span class="at">userVolume</span>={getInputVolume()}
-  <span class="at">size</span>={200}
+  <span class="at">state</span>={<span class="str">"speaking"</span>}
+  <span class="at">getOutputVolume</span>={() =&gt; player.getOutputVolume()}
 <span class="tag">/&gt;</span></pre>
   </div>
 
   <div id="react-root"></div>
 
   <script type="module">
-    import { createElement, useState, useEffect } from "react";
+    import { createElement, useState } from "react";
     import { render } from "react-dom";
     import { Orb } from "@deepgram/agent-react-ui";
 
     function App() {
       const [state, setState] = useState("idle");
-      const [agentVol, setAgentVol] = useState(0);
-      const [userVol, setUserVol] = useState(0);
-
-      // Simulate volume when in speaking/listening state
-      useEffect(() => {
-        if (state === "idle" || state === "connecting") {
-          setAgentVol(0);
-          setUserVol(0);
-          return;
-        }
-        const id = setInterval(() => {
-          if (state === "speaking") {
-            setAgentVol(0.3 + Math.random() * 0.5);
-            setUserVol(0);
-          } else if (state === "listening") {
-            setAgentVol(0);
-            setUserVol(0.2 + Math.random() * 0.4);
-          }
-        }, 80);
-        return () => clearInterval(id);
-      }, [state]);
 
       const btn = (s) => createElement("button", {
         className: state === s ? "active" : "",
@@ -76,10 +60,10 @@
       }, s);
 
       return createElement("div", { className: "demo" },
-        createElement(Orb, { state, agentVolume: agentVol, userVolume: userVol, size: 220 }),
+        createElement(Orb, { state, size: 220 }),
         createElement("div", { className: "status" }, `State: ${state}`),
         createElement("div", { className: "controls" },
-          btn("idle"), btn("connecting"), btn("listening"), btn("speaking"),
+          btn("idle"), btn("connecting"), btn("listening"), btn("speaking"), btn("thinking"),
         ),
       );
     }

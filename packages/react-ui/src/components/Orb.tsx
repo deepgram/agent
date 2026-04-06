@@ -4,17 +4,19 @@ import { useRef, useEffect, useCallback } from "react";
 // Types
 // ---------------------------------------------------------------------------
 
-export type OrbState = "idle" | "connecting" | "listening" | "speaking";
+export type OrbState = "idle" | "connecting" | "listening" | "speaking" | "thinking";
 
 export interface OrbProps {
-  /** Agent state — controls animation speed, deflation, rocking. */
+  /** Agent state — controls animation speed, deflation, rocking, and pulse. */
   state?: OrbState;
-  /** Current agent output volume (0–1). Drives the "chatter" effect. */
-  agentVolume?: number;
-  /** Current user input volume (0–1). Drives the inverse chatter. */
-  userVolume?: number;
+  /** Two gradient colors. Default: Deepgram brand palette. */
+  colors?: [string, string];
   /** Size in px. Default: 200. */
   size?: number;
+  /** Optional volume getter for audio-reactive chatter (0–1). */
+  getInputVolume?: () => number;
+  /** Optional volume getter for audio-reactive chatter (0–1). */
+  getOutputVolume?: () => number;
   className?: string;
 }
 
@@ -37,17 +39,8 @@ const CHATTER_FRAME_LAG = 5;
 const pi = (n: number): number => Math.PI * n;
 
 // ---------------------------------------------------------------------------
-// Color palette
+// Default color palette
 // ---------------------------------------------------------------------------
-
-const Color = {
-  springGreen: "#13ef93cc",
-  magenta: "#ee028ccc",
-  lightPurple: "#ae63f9cc",
-  lightBlue: "#14a9fbcc",
-  green: "#a1f9d4cc",
-  transparent: "transparent",
-} as const;
 
 interface Point { x: number; y: number }
 interface ColorStop { pct: number; color: string }
@@ -60,46 +53,62 @@ interface LineConfig {
   width: number;
 }
 
-const lines: LineConfig[] = [
-  {
-    segments: [
-      { pct: 0.42, color: Color.transparent },
-      { pct: 0.61, color: Color.magenta },
-    ],
-    startAngle: 3.52, speedMultiplier: 1.21,
-    centerOffset: { x: 0.01, y: -0.01 }, radiusOffset: 0.02, width: 3.38,
-  },
-  {
-    segments: [
-      { pct: 0.28, color: Color.springGreen },
-      { pct: 0.62, color: Color.magenta },
-      { pct: 0.8, color: Color.transparent },
-    ],
-    startAngle: 1.59, speedMultiplier: 0.64,
-    centerOffset: { x: -0.03, y: -0.01 }, radiusOffset: 0.05, width: 2.39,
-  },
-  {
-    segments: [
-      { pct: 0.1, color: Color.transparent },
-      { pct: 0.31, color: Color.green },
-      { pct: 0.45, color: Color.lightBlue },
-      { pct: 0.66, color: Color.lightPurple },
-    ],
-    startAngle: 2.86, speedMultiplier: 0.94,
-    centerOffset: { x: 0.02, y: 0.02 }, radiusOffset: -0.06, width: 2.64,
-  },
-  {
-    segments: [
-      { pct: 0.1, color: Color.lightPurple },
-      { pct: 0.5, color: Color.transparent },
-      { pct: 0.9, color: Color.green },
-    ],
-    startAngle: 5.67, speedMultiplier: 1.3,
-    centerOffset: { x: -0.01, y: 0.01 }, radiusOffset: 0.04, width: 2.95,
-  },
-];
+function buildPalette(colors?: [string, string]) {
+  const c1 = colors?.[0] ?? "#13ef93";
+  const c2 = colors?.[1] ?? "#ee028c";
+  return {
+    primary: c1 + "cc",
+    secondary: c2 + "cc",
+    lightPurple: "#ae63f9cc",
+    lightBlue: "#14a9fbcc",
+    green: "#a1f9d4cc",
+    transparent: "transparent",
+  };
+}
 
-const LINE_COUNT = lines.length;
+function buildLines(colors?: [string, string]): LineConfig[] {
+  const c = buildPalette(colors);
+  return [
+    {
+      segments: [
+        { pct: 0.42, color: c.transparent },
+        { pct: 0.61, color: c.secondary },
+      ],
+      startAngle: 3.52, speedMultiplier: 1.21,
+      centerOffset: { x: 0.01, y: -0.01 }, radiusOffset: 0.02, width: 3.38,
+    },
+    {
+      segments: [
+        { pct: 0.28, color: c.primary },
+        { pct: 0.62, color: c.secondary },
+        { pct: 0.8, color: c.transparent },
+      ],
+      startAngle: 1.59, speedMultiplier: 0.64,
+      centerOffset: { x: -0.03, y: -0.01 }, radiusOffset: 0.05, width: 2.39,
+    },
+    {
+      segments: [
+        { pct: 0.1, color: c.transparent },
+        { pct: 0.31, color: c.green },
+        { pct: 0.45, color: c.lightBlue },
+        { pct: 0.66, color: c.lightPurple },
+      ],
+      startAngle: 2.86, speedMultiplier: 0.94,
+      centerOffset: { x: 0.02, y: 0.02 }, radiusOffset: -0.06, width: 2.64,
+    },
+    {
+      segments: [
+        { pct: 0.1, color: c.lightPurple },
+        { pct: 0.5, color: c.transparent },
+        { pct: 0.9, color: c.green },
+      ],
+      startAngle: 5.67, speedMultiplier: 1.3,
+      centerOffset: { x: -0.01, y: 0.01 }, radiusOffset: 0.04, width: 2.95,
+    },
+  ];
+}
+
+const LINE_COUNT = 4;
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -125,7 +134,6 @@ interface Shape {
   rockingAngle: number;
   agentNoise: number[];
   userNoise: number[];
-  // Transition targets
   targetDeflation: number;
   targetRocking: number;
   transitionStart: number;
@@ -192,10 +200,9 @@ function rollingAvg(noise: number[], start: number): number {
   return win.reduce((a, b) => a + b, 0) / win.length;
 }
 
-function drawFrame(ctx: CanvasRenderingContext2D, shape: Shape, dt: number) {
+function drawFrame(ctx: CanvasRenderingContext2D, shape: Shape, dt: number, lineConfigs: LineConfig[]) {
   shape.time += dt * lerp(1, shape.speed, shape.deflation);
 
-  // Transition deflation and rocking
   const elapsed = performance.now() - shape.transitionStart;
   if (shape.deflation !== shape.targetDeflation) {
     const dur = shape.targetDeflation > shape.startDeflation
@@ -217,7 +224,7 @@ function drawFrame(ctx: CanvasRenderingContext2D, shape: Shape, dt: number) {
     * Math.sin(shape.time * pi(1) / PULSE_PERIOD_SECONDS / 1000)
     * lerp(1, 0, shape.deflation);
 
-  lines.forEach((line, i) => {
+  lineConfigs.forEach((line, i) => {
     ctx.lineWidth = line.width;
     ctx.shadowColor = line.segments[0].color;
     ctx.shadowBlur = line.width * 1.1;
@@ -248,7 +255,7 @@ function drawFrame(ctx: CanvasRenderingContext2D, shape: Shape, dt: number) {
 
 function deflationFor(state: OrbState): number {
   switch (state) {
-    case "listening": case "speaking": return 0;
+    case "listening": case "speaking": case "thinking": return 0;
     case "connecting": return 0.65;
     case "idle": default: return 1;
   }
@@ -256,7 +263,7 @@ function deflationFor(state: OrbState): number {
 
 function rockingFor(state: OrbState): number {
   switch (state) {
-    case "listening": case "speaking": return pi(1 / 15);
+    case "listening": case "speaking": case "thinking": return pi(1 / 15);
     case "connecting": return pi(1 / 15);
     case "idle": default: return pi(1 / 2);
   }
@@ -264,7 +271,9 @@ function rockingFor(state: OrbState): number {
 
 function speedFor(state: OrbState): number {
   switch (state) {
-    case "listening": case "speaking": return 1;
+    case "speaking": return 1;
+    case "listening": return 0.8;
+    case "thinking": return 0.6;
     case "connecting": return 0.5;
     case "idle": default: return 0.2;
   }
@@ -277,33 +286,49 @@ function speedFor(state: OrbState): number {
 /**
  * Deepgram animated orb — the signature hoop visualization.
  *
- * Canvas 2D rendering of 4 crescent arcs with gradient colors that:
- * - Rotate continuously
- * - Pulse gently when active
- * - "Chatter" (expand/contract) in response to agent/user volume
- * - Deflate into a pinched shape when idle, inflate when active
- * - Rock with variable amplitude based on state
+ * Canvas 2D rendering of 4 crescent arcs with gradient colors that
+ * change behavior based on agent state:
  *
- * Ported from deepgram/browser-agent `hoop.ts`.
+ * - `idle` — deflated, slow rocking, minimal animation
+ * - `connecting` — partially inflated, moderate speed
+ * - `listening` — fully inflated, gentle pulse, awaiting speech
+ * - `speaking` — fully inflated, fast rotation, active pulse
+ * - `thinking` — fully inflated, medium speed, processing
  *
- * @example
+ * Optionally audio-reactive via `getInputVolume` / `getOutputVolume`.
+ * Without volume getters, the orb uses state-only animation.
+ *
+ * Ported from deepgram/browser-agent `hoop.ts`. No external dependencies.
+ *
+ * @example State-driven (no audio):
+ * ```tsx
+ * <Orb state={isConnected ? "listening" : "idle"} />
+ * ```
+ *
+ * @example Audio-reactive:
  * ```tsx
  * <Orb
- *   state={mode === "speaking" ? "speaking" : mode === "listening" ? "listening" : "idle"}
- *   agentVolume={getOutputVolume()}
- *   userVolume={getInputVolume()}
- *   size={200}
+ *   state="speaking"
+ *   getOutputVolume={() => player.getOutputVolume()}
+ *   getInputVolume={() => mic.getInputVolume()}
  * />
+ * ```
+ *
+ * @example Custom colors:
+ * ```tsx
+ * <Orb state="listening" colors={["#6366f1", "#ec4899"]} />
  * ```
  */
 export function Orb({
   state = "idle",
-  agentVolume = 0,
-  userVolume = 0,
+  colors,
   size = 200,
+  getInputVolume,
+  getOutputVolume,
   className,
 }: OrbProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const linesRef = useRef(buildLines(colors));
   const shapeRef = useRef<Shape>({
     time: 0,
     speed: speedFor("idle"),
@@ -318,6 +343,11 @@ export function Orb({
     startRocking: rockingFor("idle"),
   });
 
+  // Rebuild line configs when colors change
+  useEffect(() => {
+    linesRef.current = buildLines(colors);
+  }, [colors]);
+
   // Update state transitions
   useEffect(() => {
     const shape = shapeRef.current;
@@ -328,19 +358,6 @@ export function Orb({
     shape.targetDeflation = deflationFor(state);
     shape.targetRocking = rockingFor(state);
   }, [state]);
-
-  // Push volume samples into noise buffers
-  useEffect(() => {
-    const shape = shapeRef.current;
-    shape.agentNoise.shift();
-    shape.agentNoise.push(agentVolume);
-  }, [agentVolume]);
-
-  useEffect(() => {
-    const shape = shapeRef.current;
-    shape.userNoise.shift();
-    shape.userNoise.push(userVolume);
-  }, [userVolume]);
 
   // Animation loop
   const animate = useCallback(() => {
@@ -355,13 +372,25 @@ export function Orb({
     function loop(now: number) {
       const dt = now - last;
       last = now;
-      drawFrame(ctx!, shapeRef.current, dt);
+
+      // Sample volume if getters are provided
+      const shape = shapeRef.current;
+      if (getOutputVolume) {
+        shape.agentNoise.shift();
+        shape.agentNoise.push(getOutputVolume());
+      }
+      if (getInputVolume) {
+        shape.userNoise.shift();
+        shape.userNoise.push(getInputVolume());
+      }
+
+      drawFrame(ctx!, shape, dt, linesRef.current);
       raf = requestAnimationFrame(loop);
     }
 
     raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(raf);
-  }, []);
+  }, [getInputVolume, getOutputVolume]);
 
   useEffect(() => {
     const cleanup = animate();
