@@ -111,6 +111,7 @@ export function init(config: WidgetConfig): () => void {
       createdRoot = true;
     }
     root.setAttribute("data-dg-agent", "");
+    root.style.background = "transparent";
     applyColorScheme(root, config.colorScheme);
     applyTheme(root, config.theme);
 
