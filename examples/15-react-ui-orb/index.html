@@ -6,10 +6,10 @@
   <title>Orb — React UI</title>
   <link rel="stylesheet" href="/src/shared-styles.css" />
   <style>
-    body { padding: 32px 24px; max-width: 600px; margin: 0 auto; }
+    body { padding: 32px 24px; max-width: 700px; margin: 0 auto; }
     .demo {
       display: flex; flex-direction: column; align-items: center; gap: 20px;
-      margin: 32px 0; padding: 40px;
+      margin: 24px 0; padding: 40px;
       border: 1px solid rgba(255,255,255,.08); border-radius: 16px;
       background: #0d0d10;
     }
@@ -20,28 +20,33 @@
     }
     .controls button.active { background: #13EF93; color: #000; border-color: #13EF93; }
     .status { font-size: 13px; color: #6b7280; }
+    .sliders { display: flex; gap: 16px; align-items: center; }
+    .sliders label { font-size: 12px; color: #6b7280; display: flex; align-items: center; gap: 6px; }
+    .sliders input[type="range"] { width: 100px; }
   </style>
 </head>
 <body>
   <a class="back" href="/">← Examples</a>
   <h1>Deepgram Orb <span class="badge badge-source" style="background:rgba(56,189,248,.2);color:#7dd3fc">React UI</span></h1>
-  <p class="desc">The signature Deepgram hoop animation — state-driven, no audio source required. Click the states below to see the orb deflate, inflate, speed up, and rock.</p>
+  <p class="desc">The signature Deepgram hoop animation. Three states: <code>idle</code>, <code>listening</code>, <code>talking</code>. Optional input/output volume for audio reactivity.</p>
 
   <div class="code-wrap">
-    <h3>State-driven (default)</h3>
+    <h3>Usage</h3>
     <pre class="code"><span class="kw">import</span> { <span class="fn">Orb</span> } <span class="kw">from</span> <span class="str">'@deepgram/agent-react-ui'</span>;
 
-<span class="cm">// Just pass the state — no audio source needed</span>
+<span class="cm">// State-only</span>
 <span class="tag">&lt;Orb</span> <span class="at">state</span>={<span class="str">"listening"</span>} <span class="tag">/&gt;</span>
 
-<span class="cm">// Custom colors</span>
-<span class="tag">&lt;Orb</span> <span class="at">state</span>={<span class="str">"speaking"</span>} <span class="at">colors</span>={[<span class="str">"#6366f1"</span>, <span class="str">"#ec4899"</span>]} <span class="tag">/&gt;</span>
-
-<span class="cm">// Optional audio reactivity</span>
-<span class="tag">&lt;Orb</span>
-  <span class="at">state</span>={<span class="str">"speaking"</span>}
+<span class="cm">// With auto volume (getter functions, sampled per frame)</span>
+<span class="tag">&lt;Orb</span> <span class="at">state</span>={<span class="str">"talking"</span>}
   <span class="at">getOutputVolume</span>={() =&gt; player.getOutputVolume()}
-<span class="tag">/&gt;</span></pre>
+  <span class="at">getInputVolume</span>={() =&gt; mic.getInputVolume()} <span class="tag">/&gt;</span>
+
+<span class="cm">// With manual volume (direct values)</span>
+<span class="tag">&lt;Orb</span> <span class="at">state</span>={<span class="str">"talking"</span>} <span class="at">outputVolume</span>={0.6} <span class="at">inputVolume</span>={0.2} <span class="tag">/&gt;</span>
+
+<span class="cm">// Custom colors</span>
+<span class="tag">&lt;Orb</span> <span class="at">state</span>={<span class="str">"listening"</span>} <span class="at">colors</span>={[<span class="str">"#6366f1"</span>, <span class="str">"#ec4899"</span>]} <span class="tag">/&gt;</span></pre>
   </div>
 
   <div id="react-root"></div>
@@ -53,6 +58,8 @@
 
     function App() {
       const [state, setState] = useState("idle");
+      const [inputVol, setInputVol] = useState(0);
+      const [outputVol, setOutputVol] = useState(0);
 
       const btn = (s) => createElement("button", {
         className: state === s ? "active" : "",
@@ -60,10 +67,26 @@
       }, s);
 
       return createElement("div", { className: "demo" },
-        createElement(Orb, { state, size: 220 }),
+        createElement(Orb, { state, inputVolume: inputVol, outputVolume: outputVol, size: 220 }),
         createElement("div", { className: "status" }, `State: ${state}`),
         createElement("div", { className: "controls" },
-          btn("idle"), btn("connecting"), btn("listening"), btn("speaking"), btn("thinking"),
+          btn("idle"), btn("listening"), btn("talking"),
+        ),
+        createElement("div", { className: "sliders" },
+          createElement("label", null,
+            "Input",
+            createElement("input", {
+              type: "range", min: 0, max: 1, step: 0.01, value: inputVol,
+              onInput: (e) => setInputVol(Number(e.target.value)),
+            }),
+          ),
+          createElement("label", null,
+            "Output",
+            createElement("input", {
+              type: "range", min: 0, max: 1, step: 0.01, value: outputVol,
+              onInput: (e) => setOutputVol(Number(e.target.value)),
+            }),
+          ),
         ),
       );
     }

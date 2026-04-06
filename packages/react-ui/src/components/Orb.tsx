@@ -4,7 +4,7 @@ import { useRef, useEffect, useCallback } from "react";
 // Types
 // ---------------------------------------------------------------------------
 
-export type OrbState = "idle" | "connecting" | "listening" | "speaking" | "thinking";
+export type OrbState = "idle" | "listening" | "talking";
 
 export interface OrbProps {
   /** Agent state — controls animation speed, deflation, rocking, and pulse. */
@@ -13,10 +13,19 @@ export interface OrbProps {
   colors?: [string, string];
   /** Size in px. Default: 200. */
   size?: number;
-  /** Optional volume getter for audio-reactive chatter (0–1). */
+
+  // ── Audio reactivity (automatic mode — getter sampled per frame) ──
+  /** Getter returning current input volume (0–1). Sampled per animation frame. */
   getInputVolume?: () => number;
-  /** Optional volume getter for audio-reactive chatter (0–1). */
+  /** Getter returning current output volume (0–1). Sampled per animation frame. */
   getOutputVolume?: () => number;
+
+  // ── Audio reactivity (manual mode — direct values) ──
+  /** Direct input volume value (0–1). Use when you control the value yourself. */
+  inputVolume?: number;
+  /** Direct output volume value (0–1). Use when you control the value yourself. */
+  outputVolume?: number;
+
   className?: string;
 }
 
@@ -255,26 +264,22 @@ function drawFrame(ctx: CanvasRenderingContext2D, shape: Shape, dt: number, line
 
 function deflationFor(state: OrbState): number {
   switch (state) {
-    case "listening": case "speaking": case "thinking": return 0;
-    case "connecting": return 0.65;
+    case "listening": case "talking": return 0;
     case "idle": default: return 1;
   }
 }
 
 function rockingFor(state: OrbState): number {
   switch (state) {
-    case "listening": case "speaking": case "thinking": return pi(1 / 15);
-    case "connecting": return pi(1 / 15);
+    case "listening": case "talking": return pi(1 / 15);
     case "idle": default: return pi(1 / 2);
   }
 }
 
 function speedFor(state: OrbState): number {
   switch (state) {
-    case "speaking": return 1;
+    case "talking": return 1;
     case "listening": return 0.8;
-    case "thinking": return 0.6;
-    case "connecting": return 0.5;
     case "idle": default: return 0.2;
   }
 }
@@ -290,28 +295,36 @@ function speedFor(state: OrbState): number {
  * change behavior based on agent state:
  *
  * - `idle` — deflated, slow rocking, minimal animation
- * - `connecting` — partially inflated, moderate speed
  * - `listening` — fully inflated, gentle pulse, awaiting speech
- * - `speaking` — fully inflated, fast rotation, active pulse
- * - `thinking` — fully inflated, medium speed, processing
+ * - `talking` — fully inflated, fast rotation, active pulse
  *
- * Optionally audio-reactive via `getInputVolume` / `getOutputVolume`.
- * Without volume getters, the orb uses state-only animation.
+ * Audio reactivity (optional, two modes):
+ * - **Automatic:** pass `getInputVolume` / `getOutputVolume` getter functions
+ *   (sampled per animation frame — zero re-renders)
+ * - **Manual:** pass `inputVolume` / `outputVolume` number props
+ *   (push new values via state/props)
+ *
+ * Without any volume props the orb animates on state alone.
  *
  * Ported from deepgram/browser-agent `hoop.ts`. No external dependencies.
  *
- * @example State-driven (no audio):
+ * @example State-only:
  * ```tsx
- * <Orb state={isConnected ? "listening" : "idle"} />
+ * <Orb state="listening" />
  * ```
  *
- * @example Audio-reactive:
+ * @example Automatic volume (getter functions):
  * ```tsx
  * <Orb
- *   state="speaking"
+ *   state="talking"
  *   getOutputVolume={() => player.getOutputVolume()}
  *   getInputVolume={() => mic.getInputVolume()}
  * />
+ * ```
+ *
+ * @example Manual volume (direct values):
+ * ```tsx
+ * <Orb state="talking" outputVolume={0.6} inputVolume={0.2} />
  * ```
  *
  * @example Custom colors:
@@ -325,6 +338,8 @@ export function Orb({
   size = 200,
   getInputVolume,
   getOutputVolume,
+  inputVolume,
+  outputVolume,
   className,
 }: OrbProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -359,6 +374,23 @@ export function Orb({
     shape.targetRocking = rockingFor(state);
   }, [state]);
 
+  // Manual volume: push values into noise buffers when props change
+  useEffect(() => {
+    if (outputVolume != null) {
+      const shape = shapeRef.current;
+      shape.agentNoise.shift();
+      shape.agentNoise.push(outputVolume);
+    }
+  }, [outputVolume]);
+
+  useEffect(() => {
+    if (inputVolume != null) {
+      const shape = shapeRef.current;
+      shape.userNoise.shift();
+      shape.userNoise.push(inputVolume);
+    }
+  }, [inputVolume]);
+
   // Animation loop
   const animate = useCallback(() => {
     const canvas = canvasRef.current;
@@ -373,7 +405,7 @@ export function Orb({
       const dt = now - last;
       last = now;
 
-      // Sample volume if getters are provided
+      // Automatic mode: sample volume getters per frame
       const shape = shapeRef.current;
       if (getOutputVolume) {
         shape.agentNoise.shift();
