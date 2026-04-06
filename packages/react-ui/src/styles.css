@@ -345,6 +345,71 @@
   outline-offset: 2px;
 }
 
+/* ── Voice button (all-in-one lifecycle button) ──────────────────────── */
+
+[data-agent-voice-button] {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 28px;
+  font-family: var(--dg-va-font, system-ui, -apple-system, sans-serif);
+  font-size: 15px;
+  font-weight: 600;
+  border: 1px solid var(--dg-va-border, light-dark(rgba(0,0,0,0.12), rgba(255,255,255,0.12)));
+  border-radius: var(--dg-va-btn-radius, 10px);
+  background: var(--dg-va-bg-raised, light-dark(#f4f4f5, #27272a));
+  color: var(--dg-va-text, light-dark(#18181b, #e5e7eb));
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, box-shadow 0.2s;
+}
+[data-agent-voice-button]:hover:not(:disabled) {
+  background: var(--dg-va-bg-hover, light-dark(#f9fafb, #1a1a1f));
+  border-color: var(--dg-va-primary);
+}
+[data-agent-voice-button]:active:not(:disabled) {
+  background: var(--dg-va-bg-active, light-dark(#f3f4f6, #222228));
+}
+[data-agent-voice-button]:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+[data-agent-voice-button]:focus-visible {
+  outline: 2px solid var(--dg-va-primary);
+  outline-offset: 2px;
+}
+
+/* Listening — mic active, accent border */
+[data-agent-voice-button][data-voice-state="listening"] {
+  border-color: var(--dg-va-primary);
+  box-shadow: 0 0 0 1px var(--dg-va-primary),
+    0 0 12px color-mix(in srgb, var(--dg-va-primary, #13EF93) 20%, transparent);
+}
+
+/* Speaking — primary background, pulsing */
+[data-agent-voice-button][data-voice-state="speaking"] {
+  background: var(--dg-va-primary);
+  color: var(--dg-va-on-primary, light-dark(#000, #000));
+  border-color: var(--dg-va-primary);
+  animation: dg-va-pulse 1.5s ease-in-out infinite;
+}
+[data-agent-voice-button][data-voice-state="speaking"]:hover:not(:disabled) {
+  background: var(--dg-va-primary-hover);
+}
+[data-agent-voice-button][data-voice-state="speaking"] svg {
+  stroke: var(--dg-va-on-primary, light-dark(#000, #000));
+}
+
+/* Connecting — subtle pulse */
+[data-agent-voice-button][data-voice-state="connecting"] {
+  animation: dg-va-pulse 1s ease-in-out infinite;
+}
+
+/* Error */
+[data-agent-voice-button][data-voice-state="error"] {
+  border-color: var(--dg-va-error, light-dark(#dc2626, #ef4444));
+  color: var(--dg-va-error, light-dark(#dc2626, #ef4444));
+}
+
 /* ── Pulse animation ──────────────────────────────────────────────────── */
 
 @keyframes dg-va-pulse {
