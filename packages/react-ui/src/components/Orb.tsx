@@ -172,35 +172,37 @@ function drawCrescent(
   const w = ctx.canvas.width / 2;
   const h = ctx.canvas.height / 2;
   const center = { x: w * (1 + offset.x), y: h * (1 + offset.y) };
-  const bezD = radius * (4 / 3) * Math.tan(pi(1 / 8));
+  const bezierDistance = radius * (4 / 3) * Math.tan(pi(1 / 8));
 
   ctx.strokeStyle = gradient;
   ctx.beginPath();
 
+  // The "true circle" part — half the circle
   const arcStart = deflAngle + pi(1 / 2);
   const arcEnd = deflAngle + pi(3 / 2);
   ctx.arc(center.x, center.y, radius, arcStart, arcEnd, false);
 
+  // The "deflatable" part — two bezier curves
   const start = coordsFrom(center, radius, arcEnd);
-  const angleToX = pi(3 / 2) - deflAngle;
-  const distDown = Math.cos(angleToX) * radius;
+  const angleTowardsXAxis = pi(3 / 2) - deflAngle;
+  const distanceDownToXAxis = Math.cos(angleTowardsXAxis) * radius;
   const mid = coordsFrom(
     coordsFrom(center, radius, deflAngle),
-    distDown * deflDepth * DEFLATE_PULL,
+    distanceDownToXAxis * deflDepth * DEFLATE_PULL,
     pi(1 / 2),
   );
   const end = coordsFrom(center, radius, arcStart);
 
-  ctx.bezierCurveTo(
-    ...Object.values(coordsFrom(start, bezD, arcEnd + pi(1 / 2))) as [number, number],
-    ...Object.values(coordsFrom(mid, bezD, deflAngle + pi(3 / 2))) as [number, number],
-    mid.x, mid.y,
-  );
-  ctx.bezierCurveTo(
-    ...Object.values(coordsFrom(mid, bezD, deflAngle + pi(1 / 2))) as [number, number],
-    ...Object.values(coordsFrom(end, bezD, arcStart + pi(3 / 2))) as [number, number],
-    end.x, end.y,
-  );
+  // Control points for first bezier (start → mid)
+  const cp1 = coordsFrom(start, bezierDistance, arcEnd + pi(1 / 2));
+  const cp2 = coordsFrom(mid, bezierDistance, deflAngle + pi(3 / 2));
+  ctx.bezierCurveTo(cp1.x, cp1.y, cp2.x, cp2.y, mid.x, mid.y);
+
+  // Control points for second bezier (mid → end)
+  const cp3 = coordsFrom(mid, bezierDistance, deflAngle + pi(1 / 2));
+  const cp4 = coordsFrom(end, bezierDistance, arcStart + pi(3 / 2));
+  ctx.bezierCurveTo(cp3.x, cp3.y, cp4.x, cp4.y, end.x, end.y);
+
   ctx.stroke();
 }
 
@@ -251,7 +253,7 @@ function drawFrame(ctx: CanvasRenderingContext2D, shape: Shape, dt: number, line
     drawCrescent(
       ctx, line.centerOffset,
       r + line.radiusOffset * r,
-      easeInOutQuad(shape.deflation),
+      shape.deflation,
       pi(3 / 2) + Math.sin(shape.time * pi(2) / ROCKING_PERIOD_SECONDS / 1000) * shape.rockingAngle,
       gradient,
     );
@@ -264,15 +266,15 @@ function drawFrame(ctx: CanvasRenderingContext2D, shape: Shape, dt: number, line
 
 function deflationFor(state: OrbState): number {
   switch (state) {
-    case "talking":   return 0.35; // mouth shape — chatter drives the "talking" movement
-    case "listening": return 0;    // full circle — open and ready
-    case "idle": default: return 1; // fully deflated — closed/pinched
+    case "talking":   return 0.85; // strong mouth shape
+    case "listening": return 0;    // full circle
+    case "idle": default: return 1; // fully pinched
   }
 }
 
 function rockingFor(state: OrbState): number {
   switch (state) {
-    case "talking":   return pi(1 / 20);
+    case "talking":   return 0;        // no rocking — mouth stays oriented
     case "listening": return pi(1 / 15);
     case "idle": default: return pi(1 / 2);
   }
