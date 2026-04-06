@@ -152,10 +152,6 @@ export function useDeepgramAgent({
       micOptions,
     );
 
-    mic.on("speech-start", () => {
-      // VAD detected speech locally — could be used to update UI immediately
-    });
-
     micRef.current?.stop();
     micRef.current = mic;
     await mic.start();

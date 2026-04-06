@@ -92,8 +92,9 @@ export class AgentSession extends EventEmitter<AgentSessionEvents> {
 
   disconnect(): void {
     this.intentionalClose = true;
-    this._cleanup("user requested disconnect");
+    this._cleanup();
     this._setState("disconnected");
+    this.emit("disconnected", "user requested disconnect");
   }
 
   // ---------------------------------------------------------------------------
@@ -329,7 +330,7 @@ export class AgentSession extends EventEmitter<AgentSessionEvents> {
   private _scheduleReconnect(reason: string): void {
     const cfg = { ...DEFAULT_RECONNECT, ...this.config.reconnect };
     if (!cfg.enabled || this.reconnectAttempts >= cfg.maxAttempts) {
-      this._cleanup(reason);
+      this._cleanup();
       this._setState("disconnected");
       this.emit("disconnected", reason);
       return;
@@ -350,8 +351,7 @@ export class AgentSession extends EventEmitter<AgentSessionEvents> {
     }, delay);
   }
 
-  private _cleanup(reason: string): void {
-    void reason;
+  private _cleanup(): void {
     this.settingsApplied = false;
     this.audioQueue = [];
     this.keepAlive.stop();
