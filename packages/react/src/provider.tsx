@@ -152,6 +152,16 @@ export function AgentProvider({
     clientToolsRef.current.delete(name);
   }, []);
 
+  // Volume getters — stable refs, called per animation frame by visualizers
+  const getInputVolume = useCallback(
+    () => micRef.current?.getInputVolume() ?? 0,
+    [],
+  );
+  const getOutputVolume = useCallback(
+    () => playerRef.current?.getOutputVolume() ?? 0,
+    [],
+  );
+
   return (
     <AgentContext.Provider
       value={{
@@ -172,6 +182,8 @@ export function AgentProvider({
         outputMuted,
         setOutputMuted,
         ttsEnabled: tts,
+        getInputVolume,
+        getOutputVolume,
         registerClientTool,
         unregisterClientTool,
       }}

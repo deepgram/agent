@@ -9,16 +9,19 @@ export interface UseAgentMicrophoneResult {
   toggle: () => void;
   /** false when microphone={false} on the provider — mic is fully disabled */
   enabled: boolean;
+  /** Current input volume (0–1). Call per frame for visualizers. */
+  getInputVolume: () => number;
 }
 
-/** Microphone state and mute controls. */
+/** Microphone state, mute controls, and volume. */
 export function useAgentMicrophone(): UseAgentMicrophoneResult {
-  const { micActive, micMuted, setMicMuted, micEnabled } = useAgentContext();
+  const { micActive, micMuted, setMicMuted, micEnabled, getInputVolume } = useAgentContext();
   return {
     micActive,
     micMuted,
     setMicMuted,
     toggle: () => setMicMuted(!micMuted),
     enabled: micEnabled,
+    getInputVolume,
   };
 }

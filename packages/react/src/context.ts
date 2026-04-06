@@ -40,6 +40,10 @@ export interface AgentContextValue {
   setOutputMuted: (muted: boolean) => void;
   ttsEnabled: boolean;
 
+  // Volume (for visualizers — call these per frame, not per render)
+  getInputVolume: () => number;
+  getOutputVolume: () => number;
+
   // Client tools — dynamic registration
   registerClientTool: (name: string, handler: (fn: FunctionCallItem) => Promise<string> | string) => void;
   unregisterClientTool: (name: string) => void;
