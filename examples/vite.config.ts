@@ -153,6 +153,7 @@ export default defineConfig(({ mode }) => {
           reactFloating:  path.resolve("12-react-floating/index.html"),
           reactUi:        path.resolve("13-react-ui-standalone/index.html"),
           reactVoice:     path.resolve("14-react-ui-voice-button/index.html"),
+          reactOrb:       path.resolve("15-react-ui-orb/index.html"),
           // UMD pages are static HTML — no bundling needed, excluded from build
         },
       },

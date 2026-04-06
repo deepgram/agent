@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Orb — React UI</title>
+  <link rel="stylesheet" href="/src/shared-styles.css" />
+  <style>
+    body { padding: 32px 24px; max-width: 600px; margin: 0 auto; }
+    .demo {
+      display: flex; flex-direction: column; align-items: center; gap: 20px;
+      margin: 32px 0; padding: 40px;
+      border: 1px solid rgba(255,255,255,.08); border-radius: 16px;
+      background: #0d0d10;
+    }
+    .controls { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+    .controls button {
+      padding: 8px 16px; border-radius: 8px; border: 1px solid rgba(255,255,255,.12);
+      background: #18181c; color: #e5e7eb; cursor: pointer; font-size: 13px;
+    }
+    .controls button.active { background: #13EF93; color: #000; border-color: #13EF93; }
+    .status { font-size: 13px; color: #6b7280; }
+  </style>
+</head>
+<body>
+  <a class="back" href="/">← Examples</a>
+  <h1>Deepgram Orb <span class="badge badge-source" style="background:rgba(56,189,248,.2);color:#7dd3fc">React UI</span></h1>
+  <p class="desc">The signature Deepgram hoop animation — 4 gradient crescent arcs that rotate, pulse, deflate, and react to audio volume. Ported from <code>deepgram/browser-agent</code>.</p>
+
+  <div class="code-wrap">
+    <h3>Code</h3>
+    <pre class="code"><span class="kw">import</span> { <span class="fn">Orb</span> } <span class="kw">from</span> <span class="str">'@deepgram/agent-react-ui'</span>;
+
+<span class="tag">&lt;Orb</span>
+  <span class="at">state</span>={mode}
+  <span class="at">agentVolume</span>={getOutputVolume()}
+  <span class="at">userVolume</span>={getInputVolume()}
+  <span class="at">size</span>={200}
+<span class="tag">/&gt;</span></pre>
+  </div>
+
+  <div id="react-root"></div>
+
+  <script type="module">
+    import { createElement, useState, useEffect } from "react";
+    import { render } from "react-dom";
+    import { Orb } from "@deepgram/agent-react-ui";
+
+    function App() {
+      const [state, setState] = useState("idle");
+      const [agentVol, setAgentVol] = useState(0);
+      const [userVol, setUserVol] = useState(0);
+
+      // Simulate volume when in speaking/listening state
+      useEffect(() => {
+        if (state === "idle" || state === "connecting") {
+          setAgentVol(0);
+          setUserVol(0);
+          return;
+        }
+        const id = setInterval(() => {
+          if (state === "speaking") {
+            setAgentVol(0.3 + Math.random() * 0.5);
+            setUserVol(0);
+          } else if (state === "listening") {
+            setAgentVol(0);
+            setUserVol(0.2 + Math.random() * 0.4);
+          }
+        }, 80);
+        return () => clearInterval(id);
+      }, [state]);
+
+      const btn = (s) => createElement("button", {
+        className: state === s ? "active" : "",
+        onClick: () => setState(s),
+      }, s);
+
+      return createElement("div", { className: "demo" },
+        createElement(Orb, { state, agentVolume: agentVol, userVolume: userVol, size: 220 }),
+        createElement("div", { className: "status" }, `State: ${state}`),
+        createElement("div", { className: "controls" },
+          btn("idle"), btn("connecting"), btn("listening"), btn("speaking"),
+        ),
+      );
+    }
+
+    render(createElement(App), document.getElementById("react-root"));
+  </script>
+</body>
+</html>
