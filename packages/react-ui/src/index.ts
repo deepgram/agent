@@ -1,5 +1,6 @@
-// Styled components — import styles.css for the built-in look:
-//   import "@deepgram/agent-react-ui/styles.css";
+// Styles are auto-included when you import components.
+// For standalone CSS import: import "@deepgram/agent-react-ui/styles.css";
+import "./styles.css";
 
 export { AgentStatus }           from "./components/AgentStatus.js";
 export { AgentConversation }     from "./components/AgentConversation.js";
@@ -38,6 +39,7 @@ export {
   useAgentMode,
   useAgentControls,
   useAgentClientTool,
+  useDeepgramAgent,
 } from "@deepgram/agent-react";
 
 export type {

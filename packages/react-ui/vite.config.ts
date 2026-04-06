@@ -1,4 +1,6 @@
 import { defineConfig } from "vite";
+import { copyFileSync, mkdirSync } from "node:fs";
+import { resolve } from "node:path";
 import react from "@vitejs/plugin-react";
 import dts from "vite-plugin-dts";
 
@@ -18,6 +20,9 @@ export default defineConfig({
         "@deepgram/agent-react",
       ],
     },
+    // Don't extract CSS into a separate file from the JS bundle —
+    // keep it injected so importing components auto-includes styles.
+    // We separately copy the standalone styles.css for opt-in import.
     cssCodeSplit: false,
     minify: "terser",
     sourcemap: true,
@@ -25,5 +30,16 @@ export default defineConfig({
   plugins: [
     react(),
     dts({ rollupTypes: true }),
+    // Copy standalone styles.css to dist for @deepgram/agent-react-ui/styles.css
+    {
+      name: "copy-styles",
+      closeBundle() {
+        mkdirSync(resolve(__dirname, "dist"), { recursive: true });
+        copyFileSync(
+          resolve(__dirname, "src/styles.css"),
+          resolve(__dirname, "dist/styles.css"),
+        );
+      },
+    },
   ],
 });
