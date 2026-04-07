@@ -1,95 +1,145 @@
-# Deepgram Agent
+# Deepgram Voice Agent
 
-A voice and chat AI agent widget for Deepgram-powered sites, powered by [@lukeocodes/composite-voice](https://github.com/lukeocodes/composite-voice).
+Voice agent SDK, React components, and embeddable widget for the [Deepgram Agent API](https://developers.deepgram.com/docs/voice-agent).
 
-## What it does
+```
+@deepgram/sdk  -->  @deepgram/agent  -->  @deepgram/agent-react  -->  @deepgram/agent-react-ui
+                                                                  -->  @deepgram/agent-widget
+```
 
-- Unified voice and text chat through composite-voice's 5-role pipeline (Input → STT → LLM → TTS → Output)
-- Deepgram Nova-3 for speech-to-text, Claude Haiku for LLM, Deepgram Aura-2 for text-to-speech
-- Mic and speaker toggles for independent audio input/output control
-- Skill system — pass any tools you define; the widget has no built-in skills
-- Risk-aware tool execution — safe skills run immediately, confirm/dangerous skills gate on user approval
-- localStorage state persistence across page reloads
-- Built as a UMD bundle (`DeepgramAgent`) for embedding via `<script>` tag
+## Packages
 
-## Prerequisites
+| Package | Description |
+|---------|-------------|
+| [`@deepgram/agent`](packages/sdk/) | Core SDK -- WebSocket session, microphone capture, audio playback |
+| [`@deepgram/agent-react`](packages/react/) | React provider and hooks for agent state, conversation, controls |
+| [`@deepgram/agent-react-ui`](packages/react-ui/) | Pre-built React UI components with CSS variable theming |
+| [`@deepgram/agent-widget`](packages/widget/) | Self-contained widget (UMD + ESM) -- drop into any page, no framework needed |
 
-- [Node.js](https://nodejs.org/) 20+
-- [pnpm](https://pnpm.io/) 9+
+## Quick Start
 
-## Setup
+### Widget (no framework)
+
+```html
+<script src="https://cdn.deepgram.com/agent-widget/latest/widget.umd.js"></script>
+<script>
+  DeepgramAgent.init({
+    tokenFactory: () => fetch('/api/deepgram-token').then(r => r.text()),
+    agent: { think: { provider: { type: 'open_ai' }, model: 'gpt-4o-mini' } },
+  });
+</script>
+```
+
+### React
+
+```tsx
+import { AgentProvider, useAgentState, useAgentConversation } from "@deepgram/agent-react-ui";
+import "@deepgram/agent-react-ui/styles.css";
+import { AgentConversation, AgentStartButton, AgentTextInput } from "@deepgram/agent-react-ui";
+
+function App() {
+  return (
+    <AgentProvider
+      config={{
+        auth: { tokenFactory: () => fetch('/api/deepgram-token').then(r => r.text()) },
+        agent: { think: { provider: { type: 'open_ai' }, model: 'gpt-4o-mini' } },
+      }}
+    >
+      <AgentStartButton />
+      <AgentConversation />
+      <AgentTextInput />
+    </AgentProvider>
+  );
+}
+```
+
+### SDK only
+
+```ts
+import { AgentSession, AgentMicrophone, AgentPlayer } from "@deepgram/agent";
+
+const session = new AgentSession({
+  auth: { tokenFactory: () => fetch('/api/deepgram-token').then(r => r.text()) },
+  agent: { think: { provider: { type: 'open_ai' }, model: 'gpt-4o-mini' } },
+});
+
+const player = new AgentPlayer();
+session.on("audio", (chunk) => player.queue(chunk));
+
+const mic = new AgentMicrophone((data) => session.sendAudio(data));
+await session.connect();
+await mic.start();
+```
+
+## Authentication
+
+The SDK authenticates via the `Sec-WebSocket-Protocol` header (not URL query params). Two auth modes:
+
+- **API key** (server-side only): `{ apiKey: "your-deepgram-api-key" }`
+- **Token factory** (browser-safe): `{ tokenFactory: () => fetch('/api/token').then(r => r.text()) }`
+
+The token factory is called before every connection and reconnection attempt, so tokens can be short-lived and rotated automatically.
+
+## Theming
+
+All visual properties are CSS custom variables on `[data-dg-agent]`, with adaptive `light-dark()` defaults:
+
+```css
+[data-dg-agent] {
+  --dg-va-primary: #6366f1;      /* brand colour */
+  --dg-va-bg: #0d1117;           /* panel background */
+  --dg-va-text: #e6e6e6;         /* primary text */
+  --dg-va-radius: 12px;          /* panel border radius */
+}
+```
+
+Color scheme options: `auto` (follows OS preference), `light`, `dark`, or class-based (`{ mode: 'class', darkSelector: '.dark' }` for Tailwind / next-themes).
+
+See the [widget README](packages/widget/) for the full list of 26 CSS variables.
+
+## Examples
+
+17 examples live in [`examples/`](examples/):
+
+| Range | Type | Examples |
+|-------|------|----------|
+| 01-07 | Widget (TypeScript) | sidebar, inline, floating, button, embedded, orb, floating-orb |
+| 10-15 | React | sidebar, inline, floating, standalone UI, voice button, orb |
+| 20-23 | UMD bundle | sidebar, inline, floating, console |
+
+Run locally:
+
+```bash
+bun run dev:examples    # Vite dev server on :5173
+```
+
+Live demo: [deepgram-agent-examples.fly.dev](https://deepgram-agent-examples.fly.dev)
+
+## Development
+
+**Prerequisites:** [Bun](https://bun.sh/) 1.3+
 
 ```bash
 git clone git@github.com:deepgram/agent.git
 cd agent
-pnpm install
+bun install
 ```
-
-## Development
 
 ```bash
-pnpm dev    # Vite dev server on :5173
+bun run build              # Build all packages
+bun run typecheck           # Type-check all packages
+bun run test                # Run tests
+bun run dev:examples        # Run examples dev server (:5173)
 ```
 
-## Build
+## Deployment
+
+The examples app deploys to Fly.io:
 
 ```bash
-pnpm build
-# Output: dist/deepgram-agent.umd.js
+fly deploy    # deploys to deepgram-agent-examples.fly.dev
 ```
-
-## Embedding
-
-Load the built bundle and call `DeepgramAgent.init()`.
-
-### Examples
-
-Three reference integrations are in [`examples/`](examples/), each showing a different deployment pattern:
-
-**[`deepgram-console`](examples/deepgram-console/index.html)** — FAB toggle sidebar for the Deepgram Console. All 57 skills (navigation, projects, API keys, team, billing, usage, settings, self-hosted, MCP docs search), the system prompt, vocabulary, and GitHub skills context fetching are defined inline. This is the full reference for a production console integration.
-
-**[`deepgram-docs`](examples/deepgram-docs/index.html)** — Inline embed (mounts into a container div rather than a floating sidebar) for a documentation site. Shows custom skills wired to a `/api/docs/search` endpoint with `sources` responses.
-
-**[`deepgram-web`](examples/deepgram-web/index.html)** — FAB toggle for a marketing site. Shows custom skills for pricing, sign-up navigation, and use-case matching with `cta` responses.
-
-### Staging
-
-Pass `staging: true` (or detect from hostname) to switch all endpoints to staging automatically:
-
-```js
-DeepgramAgent.init({
-  buttonId: 'dg-ask-ai-btn',
-  staging: window.location.hostname.includes('staging'),
-  skills: mySkills,
-  systemPrompt: 'You are an assistant for...',
-});
-```
-
-### Custom skills
-
-```js
-DeepgramAgent.init({
-  containerId: 'agent-container',
-  systemPrompt: 'You are an assistant for Acme Corp...',
-  skills: [
-    {
-      id: 'search',
-      name: 'Search',
-      description: 'Search the site',
-      category: 'navigation',
-      risk: 'safe',
-      parameters: [{ name: 'query', type: 'string', description: 'Search query', required: true }],
-      execute: async ({ query }) => {
-        const data = await fetch(`/api/search?q=${encodeURIComponent(query)}`).then(r => r.json());
-        return { success: true, message: `Found ${data.length} results`, data };
-      },
-    },
-  ],
-});
-```
-
-The `BASE_AGENT_GUIDELINES` (TTS formatting, behavioral rules) are always prepended automatically — `systemPrompt` adds your site-specific context on top.
 
 ## License
 
-MIT — see [LICENSE](LICENSE)
+MIT -- see [LICENSE](LICENSE)
