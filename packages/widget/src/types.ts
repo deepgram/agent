@@ -327,4 +327,7 @@ export interface WidgetConfig {
 
   /** Sample rate of audio received from the agent. Default: 24_000 */
   playerSampleRate?: number;
+
+  /** Override the agent WebSocket URL (e.g. to route through a proxy). */
+  url?: string;
 }

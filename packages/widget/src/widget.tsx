@@ -21,6 +21,7 @@ export function buildSessionConfig(config: WidgetConfig): AgentSessionConfig {
       input:  { encoding: "linear16", sampleRate: 16_000 },
       output: { encoding: "linear16", sampleRate: config.playerSampleRate ?? 24_000 },
     },
+    ...(config.url ? { url: config.url } : {}),
   };
 }
 

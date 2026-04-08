@@ -20,7 +20,11 @@ export function AgentConversation({
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (autoScroll) bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    // Only auto-scroll when there are messages, and scroll within the
+    // container — not the entire page.
+    if (autoScroll && conversation.length > 0) {
+      bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
   }, [conversation, autoScroll]);
 
   return (

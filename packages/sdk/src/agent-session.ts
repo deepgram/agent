@@ -157,12 +157,14 @@ export class AgentSession extends EventEmitter<AgentSessionEvents> {
       const token = await this.tokenFactory.get();
 
       // Build client with the right auth scheme:
-      // - tokenFactory → Bearer token (from /v1/auth/grant) → accessToken + Bearer
-      // - apiKey        → raw API key                        → apiKey    + Token
+      // - Custom URL (proxy like dx-api): always Bearer
+      // - tokenFactory → Bearer token (from /v1/auth/grant)
+      // - apiKey        → raw API key → Token header
       // CustomDeepgramClient converts these to Sec-WebSocket-Protocol in browsers.
-      const isBearer = "tokenFactory" in this.config.auth;
+      const isBearer = !!this.config.url || "tokenFactory" in this.config.auth;
+      const clientOpts = this.config.url ? { baseUrl: this.config.url } : {};
       const client = isBearer
-        ? new DeepgramClient({ accessToken: token })
+        ? new DeepgramClient({ accessToken: token, ...clientOpts })
         : new DeepgramClient({ apiKey: token });
       const authorization = isBearer ? `Bearer ${token}` : `Token ${token}`;
 
