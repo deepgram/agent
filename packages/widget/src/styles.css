@@ -155,9 +155,13 @@
     );
   border-radius: var(--dg-va-radius);
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 .dg-va-embedded .dg-va-panel-inline {
   border-radius: 0;
+  flex: 1;
+  min-height: 0;
 }
 
 /* ── Header ────────────────────────────────────────────────────────────── */
@@ -234,6 +238,7 @@
 
 .dg-va-conversation {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
   padding: var(--dg-va-padding);
   display: flex;
