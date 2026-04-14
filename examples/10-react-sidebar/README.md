@@ -1,8 +1,8 @@
 # Sidebar — React
 
-Sidebar layout built with `@deepgram/agent-react-ui` components. All styling via `data-dg-agent` — you provide the container.
+Sidebar layout built with `@deepgram/ui` components. All styling via `data-dg-agent` — you provide the container.
 
-**Package:** `@deepgram/agent-react-ui`
+**Package:** `@deepgram/ui`
 
 ![Screenshot](screenshot.png)
 

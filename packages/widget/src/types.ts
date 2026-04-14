@@ -1,6 +1,5 @@
 import type {
   AgentSettingsObject,
-  MicrophoneOptions,
   ConversationTextMessage,
   AgentStartedSpeakingMessage,
   FunctionCallRequestMessage,
@@ -274,13 +273,6 @@ export interface WidgetConfig {
   dismissible?: boolean;
 
   // ---- Features ----
-
-  /**
-   * Enable Silero VAD via @ricky0123/vad-web (optional peer dep).
-   * When `true`, audio is gated — only speech frames are sent to the agent.
-   * Default: false
-   */
-  vad?: boolean | MicrophoneOptions["vad"];
 
   /** Show conversation transcript. Default: true */
   showTranscript?: boolean;

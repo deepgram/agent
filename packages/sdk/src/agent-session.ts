@@ -5,6 +5,8 @@ import { DeepgramClient } from "@deepgram/sdk";
 import type { AgentSessionConfig, ReconnectConfig } from "./types/config.js";
 import type { AgentSessionEvents } from "./types/events.js";
 import type {
+  AgentContextMessage,
+  AgentSettingsObject,
   AgentV1SettingsPayload,
   ServerMessage,
   SpeakSettings,
@@ -63,6 +65,9 @@ export class AgentSession extends EventEmitter<AgentSessionEvents> {
   private audioQueue: ArrayBuffer[] = [];
   private settingsApplied = false;
   private sessionId: string | null = null;
+  /** Conversation history — accumulated internally so reconnects can pass context */
+  conversationHistory: AgentContextMessage[] = [];
+
 
   private _state: AgentState = "idle";
 
@@ -70,7 +75,7 @@ export class AgentSession extends EventEmitter<AgentSessionEvents> {
     return this._state;
   }
 
-  constructor(private readonly config: AgentSessionConfig) {
+  constructor(private config: AgentSessionConfig) {
     super();
     this.tokenFactory = new CachingTokenFactory(
       resolveTokenFactory(config.auth),
@@ -88,6 +93,7 @@ export class AgentSession extends EventEmitter<AgentSessionEvents> {
   async connect(): Promise<void> {
     this.intentionalClose = false;
     this.reconnectAttempts = 0;
+    this.conversationHistory = [];
     await this._openConnection();
   }
 
@@ -232,7 +238,17 @@ export class AgentSession extends EventEmitter<AgentSessionEvents> {
       },
       // SDK types only cover the object form, but the API also accepts a UUID string.
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      agent: this.config.agent as any,
+      agent: (() => {
+        const agent = this.config.agent as any;
+        if (this.conversationHistory.length === 0) return agent;
+        // There is conversation history — pass it as context and strip greeting
+        // so the server has context but doesn't replay the opening message.
+        return {
+          ...agent,
+          greeting: undefined,
+          context: { messages: this.conversationHistory },
+        };
+      })(),
     };
 
     if (outputCfg) {
@@ -294,6 +310,11 @@ export class AgentSession extends EventEmitter<AgentSessionEvents> {
         this.emit("settings-applied", msg);
         break;
       case "ConversationText":
+        this.conversationHistory.push({
+          type: "History",
+          role: msg.role as "user" | "assistant",
+          content: msg.content,
+        });
         this.emit("conversation-text", msg);
         break;
       case "UserStartedSpeaking":

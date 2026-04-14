@@ -1,8 +1,8 @@
 # Floating — React
 
-Floating panel with FAB trigger built with `@deepgram/agent-react-ui` components.
+Floating panel with FAB trigger built with `@deepgram/ui` components.
 
-**Package:** `@deepgram/agent-react-ui`
+**Package:** `@deepgram/ui`
 
 ![Screenshot](screenshot.png)
 

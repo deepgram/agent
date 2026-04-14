@@ -1,6 +1,6 @@
 {
   "name": "@deepgram/agent-widget",
-  "version": "0.0.1",
+  "version": "0.0.0",
   "description": "Self-contained CDN widget for Deepgram Voice Agent — no framework required",
   "type": "module",
   "main": "dist/widget.umd.js",
@@ -23,17 +23,19 @@
   },
   "dependencies": {
     "@deepgram/agent": "workspace:*",
-    "@deepgram/agent-react": "workspace:*",
-    "@deepgram/agent-react-ui": "workspace:*",
+    "@deepgram/react": "file:../../../react/packages/react",
+    "@deepgram/ui": "file:../../../ui/packages/ui",
     "preact": "10.29.1",
     "sugar-high": "1.1.0"
   },
   "devDependencies": {
+    "@tailwindcss/vite": "4.2.2",
     "@testing-library/preact": "3.2.4",
     "@types/node": "22.15.3",
     "@vitejs/plugin-react": "6.0.1",
     "eventemitter3": "5.0.4",
     "happy-dom": "20.8.9",
+    "tailwindcss": "4.2.2",
     "terser": "5.46.1",
     "typescript": "5.9.3",
     "vite": "8.0.5",

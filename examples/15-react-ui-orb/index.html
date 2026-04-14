@@ -39,7 +39,7 @@
     <pre class="code"><span class="kw">import</span> {
   <span class="fn">AgentProvider</span>, <span class="fn">Orb</span>, <span class="fn">AgentStartButton</span>,
   <span class="fn">useAgentMicrophone</span>, <span class="fn">useAgentPlayer</span>, <span class="fn">useAgentMode</span>,
-} <span class="kw">from</span> <span class="str">'@deepgram/agent-react-ui'</span>;
+} <span class="kw">from</span> <span class="str">'@deepgram/ui'</span>;
 
 <span class="kw">function</span> <span class="fn">LiveOrb</span>() {
   <span class="kw">const</span> { getInputVolume } = <span class="fn">useAgentMicrophone</span>();
@@ -69,7 +69,7 @@
     import {
       AgentProvider, Orb, AgentStartButton, AgentStatus,
       useAgentMicrophone, useAgentPlayer, useAgentMode,
-    } from "@deepgram/agent-react-ui";
+    } from "@deepgram/ui";
     import { baseConfig } from "../src/agent-config.ts";
 
     // ── Live agent demo ──────────────────────────────────────────────

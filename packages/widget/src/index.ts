@@ -1,8 +1,7 @@
 import { render, h } from "preact";
 import { SidebarWidget, InlineWidget, FloatingWidget, ButtonWidget, EmbeddedWidget, OrbWidget } from "./widget.js";
 import type { WidgetConfig, WidgetColorScheme, WidgetTheme } from "./types.js";
-import "@deepgram/agent-react-ui/styles.css";
-import "./styles.css";
+
 
 export type {
   WidgetConfig,
@@ -141,22 +140,26 @@ export function init(config: WidgetConfig): () => void {
     }
 
     container.setAttribute("data-dg-agent", "");
-    container.classList.add("dg-va-embedded");
+    container.classList.add("dg-embedded");
     applyColorScheme(container, config.colorScheme);
     applyTheme(container, config.theme);
 
     render(h(EmbeddedWidget, { config }), container);
     return () => {
       render(null, container);
-      container.classList.remove("dg-va-embedded");
+      container.classList.remove("dg-embedded");
       container.removeAttribute("data-dg-agent");
       container.removeAttribute("data-dg-scheme");
     };
   }
 
-  // Sidebar and floating layouts mount into a root div on <body>
+  // Sidebar and floating layouts mount into a root div on <body>.
+  // The root is position:fixed + inset:0 so that .dg-panel and .dg-overlay
+  // (which are also fixed) remain DOM children of [data-dg-agent], ensuring
+  // CSS custom-property inheritance works correctly in all browsers.
   const root = document.createElement("div");
   root.setAttribute("data-dg-agent", "");
+  root.style.cssText = "position:fixed;inset:0;pointer-events:none;z-index:9997;background:transparent";
   document.body.appendChild(root);
 
   applyColorScheme(root, config.colorScheme);
@@ -169,8 +172,8 @@ export function init(config: WidgetConfig): () => void {
   }
 
   const toggle = () => {
-    root.querySelector<HTMLElement>(".dg-va-panel")?.classList.toggle("dg-va-open");
-    root.querySelector<HTMLElement>(".dg-va-overlay")?.classList.toggle("dg-va-open");
+    root.querySelector<HTMLElement>(".dg-panel")?.classList.toggle("dg-panel-open");
+    root.querySelector<HTMLElement>(".dg-overlay")?.classList.toggle("dg-overlay-open");
   };
 
   if (layout === "floating") {

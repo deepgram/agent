@@ -1,8 +1,8 @@
 # Standalone Card — React UI
 
-Standalone agent card using all `@deepgram/agent-react-ui` components with built-in styling.
+Standalone agent card using all `@deepgram/ui` components with built-in styling.
 
-**Package:** `@deepgram/agent-react-ui`
+**Package:** `@deepgram/ui`
 
 ![Screenshot](screenshot.png)
 

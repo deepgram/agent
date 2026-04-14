@@ -13,6 +13,11 @@ type V1Socket = Awaited<ReturnType<InstanceType<typeof DeepgramClient>["agent"][
 export type AgentV1SettingsPayload = Parameters<V1Socket["sendSettings"]>[0];
 export type AgentSettingsObject    = AgentV1SettingsPayload["agent"];
 
+// Derived from the settings payload — no hand-written types
+type AgentObject = Extract<AgentSettingsObject, object>;
+export type AgentContext         = NonNullable<AgentObject["context"]>;
+export type AgentContextMessage  = NonNullable<AgentContext["messages"]>[number];
+
 // ---------------------------------------------------------------------------
 // Re-export SDK think/speak types with shorter consumer-friendly names
 // ---------------------------------------------------------------------------

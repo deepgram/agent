@@ -4,19 +4,21 @@
   "version": "0.0.1",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "bun --env-file .env vite",
     "build": "vite build",
     "preview": "vite preview",
     "test": "playwright test"
   },
   "dependencies": {
     "@deepgram/agent": "workspace:*",
-    "@deepgram/agent-react": "workspace:*",
-    "@deepgram/agent-react-ui": "workspace:*",
-    "@deepgram/agent-widget": "workspace:*"
+    "@deepgram/agent-widget": "workspace:*",
+    "@deepgram/react": "file:../../react/packages/react",
+    "@deepgram/ui": "file:../../ui/packages/ui"
   },
   "devDependencies": {
     "@playwright/test": "1.59.1",
+    "@tailwindcss/vite": "4.2.2",
+    "tailwindcss": "4.2.2",
     "typescript": "5.9.3",
     "vite": "8.0.5"
   }

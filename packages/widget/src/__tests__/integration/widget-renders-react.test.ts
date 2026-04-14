@@ -21,11 +21,12 @@ const hookMocks = {
   useAgentClientTool: () => {},
 };
 
-mock.module("@deepgram/agent-react", () => hookMocks);
-mock.module("@deepgram/agent-react-ui", () => ({
+mock.module("@deepgram/react", () => hookMocks);
+mock.module("@deepgram/ui", () => ({
   ...hookMocks,
   AgentStatus: () => null,
   AgentConversation: () => null,
+  AgentMessage: () => null,
   AgentTextInput: () => null,
   AgentMicrophoneButton: () => null,
   AgentSpeakerButton: () => null,

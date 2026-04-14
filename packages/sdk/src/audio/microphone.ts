@@ -1,7 +1,6 @@
 import { createWorkletBlobUrl } from "./worklet-source.js";
 
 export interface MicrophoneOptions {
-  vad?: boolean | VadOptions;
   /** Target sample rate for PCM capture. Default: 16_000 */
   sampleRate?: number;
   /** Passed to getUserMedia. Default: true */
@@ -12,14 +11,7 @@ export interface MicrophoneOptions {
   autoGainControl?: boolean;
 }
 
-export interface VadOptions {
-  speechThreshold?: number;
-  silenceThreshold?: number;
-}
-
 export type MicrophoneEventMap = {
-  "speech-start": [];
-  "speech-end": [];
   "audio-frame": [data: ArrayBuffer];
   error: [err: Error];
 };
@@ -31,7 +23,6 @@ export class AgentMicrophone {
   private stream: MediaStream | null = null;
   private workletNode: AudioWorkletNode | null = null;
   private workletBlobUrl: string | null = null;
-  private vadInstance: unknown = null;
   private analyser: AnalyserNode | null = null;
   private listeners = new Map<string, Set<Listener<unknown[]>>>();
   private _muted = false;
@@ -76,7 +67,6 @@ export class AgentMicrophone {
     if (this.stream) return; // already running
 
     const {
-      vad = false,
       sampleRate = 16_000,
       echoCancellation = true,
       noiseSuppression = true,
@@ -87,15 +77,51 @@ export class AgentMicrophone {
       audio: { echoCancellation, noiseSuppression, autoGainControl },
     });
 
-    if (vad) {
-      await this._startWithVad(vad === true ? {} : vad, sampleRate);
-    } else {
-      await this._startRaw(sampleRate);
-    }
+    this.ctx = new AudioContext({ sampleRate });
+    await this.ctx.resume();
+
+    // Create analyser for input volume/frequency data
+    this.analyser = this.ctx.createAnalyser();
+    this.analyser.fftSize = 256;
+
+    this.workletBlobUrl = createWorkletBlobUrl();
+    await this.ctx.audioWorklet.addModule(this.workletBlobUrl);
+
+    const source = this.ctx.createMediaStreamSource(this.stream);
+    this.workletNode = new AudioWorkletNode(this.ctx, "dg-pcm-capture");
+
+    this.workletNode.port.onmessage = (e: MessageEvent<ArrayBuffer>) => {
+      if (!this._muted) {
+        this.onAudioFrame(e.data);
+        this._emit("audio-frame", e.data);
+      }
+    };
+
+    // source → analyser (for volume data) and source → worklet (for PCM capture)
+    source.connect(this.analyser);
+    source.connect(this.workletNode);
+    // Do NOT connect workletNode to destination — we don't want echo
   }
 
   stop(): void {
-    this._teardown();
+    if (this.workletNode) {
+      this.workletNode.port.postMessage("stop");
+      this.workletNode.disconnect();
+      this.workletNode = null;
+    }
+    this.analyser = null;
+    if (this.ctx) {
+      this.ctx.close().catch(() => null);
+      this.ctx = null;
+    }
+    if (this.workletBlobUrl) {
+      URL.revokeObjectURL(this.workletBlobUrl);
+      this.workletBlobUrl = null;
+    }
+    if (this.stream) {
+      this.stream.getTracks().forEach((t) => t.stop());
+      this.stream = null;
+    }
   }
 
   mute(): void {
@@ -123,118 +149,10 @@ export class AgentMicrophone {
     return this;
   }
 
-  // ---------------------------------------------------------------------------
-  // Private
-  // ---------------------------------------------------------------------------
-
   private _emit<K extends keyof MicrophoneEventMap>(
     event: K,
     ...args: MicrophoneEventMap[K]
   ): void {
     this.listeners.get(event)?.forEach((fn) => fn(...args));
-  }
-
-  private async _startRaw(sampleRate: number): Promise<void> {
-    this.ctx = new AudioContext({ sampleRate });
-    await this.ctx.resume();
-
-    // Create analyser for input volume/frequency data
-    this.analyser = this.ctx.createAnalyser();
-    this.analyser.fftSize = 256;
-
-    this.workletBlobUrl = createWorkletBlobUrl();
-    await this.ctx.audioWorklet.addModule(this.workletBlobUrl);
-
-    const source = this.ctx.createMediaStreamSource(this.stream!);
-    this.workletNode = new AudioWorkletNode(this.ctx, "dg-pcm-capture");
-
-    this.workletNode.port.onmessage = (e: MessageEvent<ArrayBuffer>) => {
-      if (!this._muted) {
-        this.onAudioFrame(e.data);
-        this._emit("audio-frame", e.data);
-      }
-    };
-
-    // source → analyser (for volume data) and source → worklet (for PCM capture)
-    source.connect(this.analyser);
-    source.connect(this.workletNode);
-    // Do NOT connect workletNode to destination — we don't want echo
-  }
-
-  private async _startWithVad(opts: VadOptions, sampleRate: number): Promise<void> {
-    let MicVAD: { new: (options: Record<string, unknown>) => Promise<unknown> };
-    try {
-      const mod = await import("@ricky0123/vad-web");
-      MicVAD = mod.MicVAD as typeof MicVAD;
-    } catch {
-      throw new Error(
-        "@ricky0123/vad-web is required for VAD support. " +
-          "Install it: bun add @ricky0123/vad-web onnxruntime-web",
-      );
-    }
-
-    const { speechThreshold = 0.5, silenceThreshold = 0.35 } = opts;
-    let inSpeech = false;
-
-    this.vadInstance = await MicVAD.new({
-      stream: this.stream ?? undefined,
-      positiveSpeechThreshold: speechThreshold,
-      negativeSpeechThreshold: silenceThreshold,
-      preSpeechPadFrames: 5,
-      minSpeechFrames: 3,
-
-      onSpeechStart: () => {
-        inSpeech = true;
-        this._emit("speech-start");
-      },
-
-      onSpeechEnd: () => {
-        inSpeech = false;
-        this._emit("speech-end");
-      },
-
-      onFrameProcessed: (probabilities: { isSpeech: number }) => {
-        if (!inSpeech && probabilities.isSpeech < speechThreshold) return;
-      },
-    });
-
-    // Also run the raw AudioWorklet so we have Int16 PCM to send to agent
-    await this._startRaw(sampleRate);
-
-    // Override the frame handler: only forward when VAD says speech
-    this.workletNode!.port.onmessage = (e: MessageEvent<ArrayBuffer>) => {
-      if (!this._muted && inSpeech) {
-        this.onAudioFrame(e.data);
-        this._emit("audio-frame", e.data);
-      }
-    };
-
-    // Start VAD listening
-    (this.vadInstance as { start: () => void }).start();
-  }
-
-  private _teardown(): void {
-    if (this.workletNode) {
-      this.workletNode.port.postMessage("stop");
-      this.workletNode.disconnect();
-      this.workletNode = null;
-    }
-    if (this.vadInstance) {
-      (this.vadInstance as { destroy: () => Promise<void> }).destroy().catch(() => null);
-      this.vadInstance = null;
-    }
-    this.analyser = null;
-    if (this.ctx) {
-      this.ctx.close().catch(() => null);
-      this.ctx = null;
-    }
-    if (this.workletBlobUrl) {
-      URL.revokeObjectURL(this.workletBlobUrl);
-      this.workletBlobUrl = null;
-    }
-    if (this.stream) {
-      this.stream.getTracks().forEach((t) => t.stop());
-      this.stream = null;
-    }
   }
 }

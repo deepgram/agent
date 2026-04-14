@@ -2,7 +2,7 @@
 
 Deepgram hoop animation — live agent demo with audio-reactive orb plus manual playground.
 
-**Package:** `@deepgram/agent-react-ui`
+**Package:** `@deepgram/ui`
 
 ![Screenshot](screenshot.png)
 

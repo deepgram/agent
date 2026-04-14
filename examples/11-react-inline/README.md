@@ -1,8 +1,8 @@
 # Inline — React
 
-Inline panel built with `@deepgram/agent-react-ui` components. You provide the sized container, components style themselves.
+Inline panel built with `@deepgram/ui` components. You provide the sized container, components style themselves.
 
-**Package:** `@deepgram/agent-react-ui`
+**Package:** `@deepgram/ui`
 
 ![Screenshot](screenshot.png)
 

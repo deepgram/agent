@@ -16,6 +16,7 @@ const hookMocks = {
 const componentMocks = {
   AgentStatus: () => null,
   AgentConversation: () => null,
+  AgentMessage: () => null,
   AgentTextInput: () => null,
   AgentMicrophoneButton: () => null,
   AgentSpeakerButton: () => null,
@@ -23,8 +24,8 @@ const componentMocks = {
   Orb: () => null,
 };
 
-mock.module("@deepgram/agent-react", () => hookMocks);
-mock.module("@deepgram/agent-react-ui", () => ({ ...hookMocks, ...componentMocks }));
+mock.module("@deepgram/react", () => hookMocks);
+mock.module("@deepgram/ui", () => ({ ...hookMocks, ...componentMocks }));
 mock.module("@deepgram/agent", () => ({}));
 
 const { buildSessionConfig } = await import("../widget.js");

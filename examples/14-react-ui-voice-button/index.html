@@ -21,7 +21,7 @@
   <div class="code-wrap">
     <h3>Code — single source</h3>
     <pre class="code"><span class="kw">import</span> { <span class="fn">AgentProvider</span>, <span class="fn">VoiceButton</span>, <span class="fn">LiveWaveform</span>,
-  <span class="fn">useAgentPlayer</span> } <span class="kw">from</span> <span class="str">'@deepgram/agent-react-ui'</span>;
+  <span class="fn">useAgentPlayer</span> } <span class="kw">from</span> <span class="str">'@deepgram/ui'</span>;
 
 <span class="kw">const</span> { getOutputVolume } = <span class="fn">useAgentPlayer</span>();
 
@@ -45,7 +45,7 @@
     import {
       AgentProvider, VoiceButton, LiveWaveform, AgentStatus,
       useAgentPlayer, useAgentMicrophone, useAgentMode,
-    } from "@deepgram/agent-react-ui";
+    } from "@deepgram/ui";
     import { baseConfig } from "../src/agent-config.ts";
 
     const config = {

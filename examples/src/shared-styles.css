@@ -1,5 +1,4 @@
-/* Shared example page styles */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+/* Shared example page styles — Tailwind preflight handles box model reset */
 body {
   font-family: system-ui, -apple-system, sans-serif;
   background: #0d0d10;
@@ -14,6 +13,8 @@ h1 { font-size: 1.2rem; font-weight: 600; color: #13EF93; margin-bottom: 6px; }
 .badge-react   { background: rgba(56,189,248,0.2); color: #7dd3fc; border: 1px solid rgba(56,189,248,0.3); }
 .badge-umd     { background: rgba(245,158,11,0.2); color: #fcd34d; border: 1px solid rgba(245,158,11,0.3); }
 .desc { color: #6b7280; font-size: .875rem; margin-bottom: 24px; }
+.btn-primary { padding: 10px 20px; background: #13EF93; color: #000; font-weight: 600; border: none; border-radius: 10px; cursor: pointer; font-size: .875rem; }
+.btn-primary:hover { background: #0fd880; }
 
 /* Code snippet */
 .code-wrap { margin-top: 24px; }

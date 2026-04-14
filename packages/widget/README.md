@@ -2,7 +2,7 @@
 
 Self-contained voice agent widget for the [Deepgram Agent API](https://developers.deepgram.com/docs/voice-agent). Drop into any page via `<script>` tag or ESM import -- no framework required.
 
-Bundles Preact internally (React components from `@deepgram/agent-react-ui` are aliased to `preact/compat`).
+Bundles Preact internally (React components from `@deepgram/ui` are aliased to `preact/compat`).
 
 ## Install
 

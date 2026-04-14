@@ -1,6 +1,6 @@
 {
   "name": "@deepgram/agent",
-  "version": "0.0.1",
+  "version": "0.0.0",
   "description": "Deepgram Voice Agent SDK — browser/Node WebSocket client with microphone, audio playback, and VAD",
   "type": "module",
   "main": "dist/index.cjs",
@@ -25,23 +25,9 @@
     "@deepgram/sdk": "5.0.0",
     "eventemitter3": "5.0.4"
   },
-  "peerDependencies": {
-    "@ricky0123/vad-web": "0.0.30",
-    "onnxruntime-web": "1.24.3"
-  },
-  "peerDependenciesMeta": {
-    "@ricky0123/vad-web": {
-      "optional": true
-    },
-    "onnxruntime-web": {
-      "optional": true
-    }
-  },
   "devDependencies": {
-    "@ricky0123/vad-web": "0.0.30",
     "@types/node": "22.15.3",
     "happy-dom": "20.8.9",
-    "onnxruntime-web": "1.24.3",
     "terser": "5.46.1",
     "typescript": "5.9.3",
     "vite": "8.0.5",

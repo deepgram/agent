@@ -2,7 +2,7 @@
 
 Minimal voice UI — VoiceButton for lifecycle control and LiveWaveform for visual feedback. No transcript.
 
-**Package:** `@deepgram/agent-react-ui`
+**Package:** `@deepgram/ui`
 
 ![Screenshot](screenshot.png)
 

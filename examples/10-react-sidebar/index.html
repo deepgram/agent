@@ -9,7 +9,7 @@
     body { padding: 20px 24px; }
 
     /* The only CSS you need — a positioned container. Everything inside
-       is handled by @deepgram/agent-react-ui built-in styles. */
+       is handled by @deepgram/ui built-in styles. */
     .agent-sidebar {
       position: fixed;
       top: 0; right: 0; bottom: 0;
@@ -24,7 +24,7 @@
 <body>
   <a class="back" href="/">← Examples</a>
   <h1>Sidebar <span class="badge badge-source" style="background:rgba(56,189,248,.2);color:#7dd3fc">React</span></h1>
-  <p class="desc">Agent panel slides in from the right. Components from <code>@deepgram/agent-react-ui</code> handle all styling via <code>data-dg-agent</code>.</p>
+  <p class="desc">Agent panel slides in from the right. Components from <code>@deepgram/ui</code> handle all styling via <code>data-dg-agent</code>.</p>
 
   <div class="code-wrap">
     <h3>Code</h3>
@@ -32,7 +32,7 @@
   <span class="fn">AgentProvider</span>, <span class="fn">AgentStatus</span>, <span class="fn">AgentConversation</span>,
   <span class="fn">AgentTextInput</span>, <span class="fn">AgentMicrophoneButton</span>,
   <span class="fn">AgentSpeakerButton</span>, <span class="fn">AgentStartButton</span>,
-} <span class="kw">from</span> <span class="str">'@deepgram/agent-react-ui'</span>;
+} <span class="kw">from</span> <span class="str">'@deepgram/ui'</span>;
 
 <span class="tag">&lt;AgentProvider</span> <span class="at">config</span>={config}<span class="tag">&gt;</span>
   <span class="tag">&lt;div</span> <span class="at">className</span>=<span class="str">"agent-sidebar"</span> <span class="at">data-dg-agent</span> <span class="at">data-dg-scheme</span>=<span class="str">"dark"</span><span class="tag">&gt;</span>
@@ -62,7 +62,7 @@
       AgentProvider, AgentStatus, AgentConversation,
       AgentTextInput, AgentMicrophoneButton, AgentSpeakerButton,
       AgentStartButton,
-    } from "@deepgram/agent-react-ui";
+    } from "@deepgram/ui";
     import { baseConfig } from "../src/agent-config.ts";
 
     const config = {
@@ -80,7 +80,8 @@
       return createElement("div", null,
         createElement("button", {
           onClick: () => setOpen(o => !o),
-          style: { padding: "10px 20px", background: "#7dd3fc", color: "#000", fontWeight: 600, border: "none", borderRadius: 10, cursor: "pointer", marginTop: 16 },
+          className: "btn-primary",
+          style: { marginTop: 16 },
         }, open ? "Close" : "Open Agent"),
 
         open && createElement(AgentProvider, { config },

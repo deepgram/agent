@@ -34,7 +34,6 @@ export const baseConfig: Omit<WidgetConfig, "layout" | "containerId"> = {
   },
 
   showTranscript: true,
-  vad: false,
 
   on: {
     onConnect:    () => console.log("[dg-agent] connected"),

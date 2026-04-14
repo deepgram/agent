@@ -1,10 +1,9 @@
 # Deepgram Voice Agent
 
-Voice agent SDK, React components, and embeddable widget for the [Deepgram Agent API](https://developers.deepgram.com/docs/voice-agent).
+Voice agent SDK and embeddable widget for the [Deepgram Agent API](https://developers.deepgram.com/docs/voice-agent).
 
 ```
-@deepgram/sdk  -->  @deepgram/agent  -->  @deepgram/agent-react  -->  @deepgram/agent-react-ui
-                                                                  -->  @deepgram/agent-widget
+@deepgram/agent  ←  @deepgram/react (external)  ←  @deepgram/ui (external)  ←  @deepgram/agent-widget
 ```
 
 ## Packages
@@ -12,9 +11,14 @@ Voice agent SDK, React components, and embeddable widget for the [Deepgram Agent
 | Package | Description |
 |---------|-------------|
 | [`@deepgram/agent`](packages/sdk/) | Core SDK -- WebSocket session, microphone capture, audio playback |
-| [`@deepgram/agent-react`](packages/react/) | React provider and hooks for agent state, conversation, controls |
-| [`@deepgram/agent-react-ui`](packages/react-ui/) | Pre-built React UI components with CSS variable theming |
 | [`@deepgram/agent-widget`](packages/widget/) | Self-contained widget (UMD + ESM) -- drop into any page, no framework needed |
+
+React hooks and UI components live in their own repos:
+
+| Package | Repo |
+|---------|------|
+| [`@deepgram/react`](https://github.com/deepgram/react) | React provider and hooks for agent state, conversation, controls |
+| [`@deepgram/ui`](https://github.com/deepgram/ui) | Pre-built React UI components with Tailwind CSS theming |
 
 ## Quick Start
 
@@ -33,9 +37,9 @@ Voice agent SDK, React components, and embeddable widget for the [Deepgram Agent
 ### React
 
 ```tsx
-import { AgentProvider, useAgentState, useAgentConversation } from "@deepgram/agent-react-ui";
-import "@deepgram/agent-react-ui/styles.css";
-import { AgentConversation, AgentStartButton, AgentTextInput } from "@deepgram/agent-react-ui";
+import { AgentProvider, useAgentState, useAgentConversation } from "@deepgram/ui";
+import "@deepgram/ui/styles.css";
+import { AgentConversation, AgentStartButton, AgentTextInput } from "@deepgram/ui";
 
 function App() {
   return (
@@ -82,20 +86,7 @@ The token factory is called before every connection and reconnection attempt, so
 
 ## Theming
 
-All visual properties are CSS custom variables on `[data-dg-agent]`, with adaptive `light-dark()` defaults:
-
-```css
-[data-dg-agent] {
-  --dg-va-primary: #6366f1;      /* brand colour */
-  --dg-va-bg: #0d1117;           /* panel background */
-  --dg-va-text: #e6e6e6;         /* primary text */
-  --dg-va-radius: 12px;          /* panel border radius */
-}
-```
-
-Color scheme options: `auto` (follows OS preference), `light`, `dark`, or class-based (`{ mode: 'class', darkSelector: '.dark' }` for Tailwind / next-themes).
-
-See the [widget README](packages/widget/) for the full list of 26 CSS variables.
+All styling comes from [`@deepgram/ui`](https://github.com/deepgram/ui)'s compiled Tailwind CSS. The widget exposes 26 CSS custom properties on `[data-dg-agent]` for runtime theming — see the [widget README](packages/widget/) for the full list.
 
 ## Examples
 
@@ -114,6 +105,18 @@ bun run dev:examples    # Vite dev server on :5173
 ```
 
 Live demo: [deepgram-agent-examples.fly.dev](https://deepgram-agent-examples.fly.dev)
+
+## Roadmap
+
+`@deepgram/react` and `@deepgram/ui` have been extracted into their own repos as generic Deepgram browser primitives:
+
+| Package | Repo |
+|---------|------|
+| `@deepgram/agent` | This repo (`packages/sdk/`) |
+| `@deepgram/agent-widget` | This repo (`packages/widget/`) |
+| `@deepgram/react` | [`deepgram/react`](https://github.com/deepgram/react) |
+| `@deepgram/ui` | [`deepgram/ui`](https://github.com/deepgram/ui) |
+| `@deepgram/browser` | Planned: browser instrumentation SDK (non-agent), may re-export agent bits |
 
 ## Development
 

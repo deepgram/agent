@@ -1,7 +1,7 @@
 import { describe, it, expect, afterEach, mock } from "bun:test";
 import { h } from "preact";
 
-// Mock the widget layout components to avoid importing @deepgram/agent-react
+// Mock the widget layout components to avoid importing @deepgram/react
 mock.module("../widget.js", () => ({
   SidebarWidget: ({ config }: any) => h("div", { class: "dg-va-panel" }),
   InlineWidget: ({ config }: any) => h("div", { class: "dg-va-panel" }),

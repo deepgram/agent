@@ -1,6 +1,7 @@
 import { defineConfig, loadEnv } from "vite";
 import fs from "node:fs";
 import path from "node:path";
+import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig(({ mode }) => {
   // loadEnv reads the .env file directly (returns literal op:// strings).
@@ -17,9 +18,9 @@ export default defineConfig(({ mode }) => {
       alias: {
         // Workspace packages → source files for instant HMR
         "@deepgram/agent-widget":              path.resolve("../packages/widget/src/index.ts"),
-        "@deepgram/agent-react-ui/styles.css": path.resolve("../packages/react-ui/src/styles.css"),
-        "@deepgram/agent-react-ui":            path.resolve("../packages/react-ui/src/index.ts"),
-        "@deepgram/agent-react":    path.resolve("../packages/react/src/index.ts"),
+        "@deepgram/ui/styles.css": path.resolve("../../ui/packages/ui/src/styles.css"),
+        "@deepgram/ui":            path.resolve("../../ui/packages/ui/src/index.ts"),
+        "@deepgram/react":         path.resolve("../../react/packages/react/src/index.ts"),
         "@deepgram/agent":          path.resolve("../packages/sdk/src/index.ts"),
 
         // React → Preact compat (all packages share widget's preact install)
@@ -48,6 +49,7 @@ export default defineConfig(({ mode }) => {
     },
 
     plugins: [
+      tailwindcss(),
       // ── Token proxy ────────────────────────────────────────────────────────
       // GET /api/token  →  POST api.deepgram.com/v1/auth/grant
       // Called on-demand when the widget connects, not at server start.
@@ -131,9 +133,14 @@ export default defineConfig(({ mode }) => {
     server: {
       allowedHosts: true,
       fs: {
-        // Allow serving files from the monorepo root so Vite can resolve and
-        // hot-reload source files in ../packages/* via the alias map.
-        allow: [path.resolve("..")],
+        // Allow serving files from the monorepo root and sibling repos so Vite
+        // can resolve and hot-reload source files via the alias map.
+        allow: [
+          path.resolve(".."),                    // agent monorepo root
+          path.resolve("../../react"),           // deepgram/react repo
+          path.resolve("../../ui"),              // deepgram/ui repo
+          path.resolve("../node_modules/.bun"),  // bun cache (WASM/ONNX for VAD)
+        ],
       },
     },
 
