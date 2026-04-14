@@ -1,17 +1,11 @@
 # @deepgram/agent
 
-Core SDK for the [Deepgram Voice Agent API](https://developers.deepgram.com/docs/voice-agent). Manages the WebSocket session, microphone capture with optional Silero VAD, and audio playback with volume/frequency analysis.
+Core SDK for the [Deepgram Voice Agent API](https://developers.deepgram.com/docs/voice-agent). Manages the WebSocket session, microphone capture, and audio playback with volume/frequency analysis.
 
 ## Install
 
 ```bash
 bun add @deepgram/agent
-```
-
-For Silero VAD support (optional):
-
-```bash
-bun add @ricky0123/vad-web onnxruntime-web
 ```
 
 ## Quick Start
@@ -156,7 +150,7 @@ Auto-reconnect is enabled by default with exponential backoff + jitter. Configur
 
 ## AgentMicrophone
 
-Captures PCM audio from the user's microphone via AudioWorklet. Optionally gates audio with Silero VAD so only speech frames are sent.
+Captures PCM audio from the user's microphone via AudioWorklet.
 
 ### Usage
 
@@ -168,7 +162,6 @@ const mic = new AgentMicrophone(
     echoCancellation: true,     // default
     noiseSuppression: true,     // default
     autoGainControl: true,      // default
-    vad: false,                 // set to true or VadOptions for Silero VAD
   },
 );
 
@@ -189,8 +182,6 @@ mic.getInputByteFrequencyData(); // Uint8Array of frequency bin magnitudes (0-25
 
 ```ts
 mic.on("audio-frame", (data: ArrayBuffer) => {});
-mic.on("speech-start", () => {});   // VAD only
-mic.on("speech-end", () => {});     // VAD only
 mic.on("error", (err: Error) => {});
 ```
 
@@ -237,7 +228,7 @@ export type {
   AgentState,
   AgentSessionConfig, AuthConfig, TokenFactory, ReconnectConfig,
   AgentSessionEvents,
-  MicrophoneOptions, VadOptions,
+  MicrophoneOptions,
   PlayerOptions,
   AgentSettingsObject, ThinkSettings, SpeakSettings,
   // Server messages

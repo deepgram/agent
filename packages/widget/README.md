@@ -104,7 +104,6 @@ interface WidgetConfig {
   dismissible?: boolean;                   // Allow close (default: true)
 
   // Features
-  vad?: boolean | VadOptions;              // Silero VAD (default: false)
   showTranscript?: boolean;                // Default: true
   showMicToggle?: boolean;                 // Default: true
   showSpeakerToggle?: boolean;             // Default: true

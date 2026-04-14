@@ -1,0 +1,112 @@
+name: npm Publish
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+  id-token: write
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    outputs:
+      releases_created: ${{ steps.release.outputs.releases_created }}
+      sdk--release_created: ${{ steps.release.outputs['packages/sdk--release_created'] }}
+      sdk--version: ${{ steps.release.outputs['packages/sdk--version'] }}
+      widget--release_created: ${{ steps.release.outputs['packages/widget--release_created'] }}
+      widget--version: ${{ steps.release.outputs['packages/widget--version'] }}
+    steps:
+      - uses: googleapis/release-please-action@v4
+        id: release
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+
+  publish-sdk:
+    needs: release-please
+    if: needs.release-please.outputs.sdk--release_created == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3.10"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+
+      - run: bun install
+
+      - run: bun run --filter '@deepgram/agent' build
+
+      - run: npm publish --provenance --access public
+        working-directory: packages/sdk
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  publish-widget:
+    needs: [release-please, publish-sdk]
+    if: needs.release-please.outputs.widget--release_created == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/checkout@v4
+        with:
+          repository: deepgram/react
+          path: ../react
+
+      - uses: actions/checkout@v4
+        with:
+          repository: deepgram/ui
+          path: ../ui
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3.10"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+
+      - name: Build dependencies
+        run: |
+          cd ../react && bun install && bun run build
+          cd ../ui && bun install && bun run build
+
+      - run: bun install
+
+      - run: bun run --filter '@deepgram/agent' --filter '@deepgram/agent-widget' build
+
+      - name: Swap file pointers to npm versions
+        run: |
+          SDK_VERSION=$(node -e "console.log(require('./packages/sdk/package.json').version)")
+          REACT_VERSION=$(node -e "console.log(require('../react/packages/react/package.json').version)")
+          UI_VERSION=$(node -e "console.log(require('../ui/packages/ui/package.json').version)")
+          node -e "
+            const fs = require('fs');
+            const pkg = JSON.parse(fs.readFileSync('packages/widget/package.json', 'utf8'));
+            pkg.dependencies['@deepgram/agent'] = SDK_VERSION;
+            pkg.dependencies['@deepgram/react'] = REACT_VERSION;
+            pkg.dependencies['@deepgram/ui'] = UI_VERSION;
+            fs.writeFileSync('packages/widget/package.json', JSON.stringify(pkg, null, 2) + '\n');
+          "
+
+      - run: npm publish --provenance --access public
+        working-directory: packages/widget
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

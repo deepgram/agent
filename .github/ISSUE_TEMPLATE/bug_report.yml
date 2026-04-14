@@ -1,5 +1,5 @@
 name: Bug Report
-description: Report a bug with the console agent
+description: Report a bug with the Deepgram Agent SDK or widget
 labels: ["bug"]
 body:
   - type: textarea
@@ -16,8 +16,8 @@ body:
       label: Steps to reproduce
       description: How can we reproduce the issue?
       placeholder: |
-        1. Open the console
-        2. Click "Ask AI"
+        1. Import `@deepgram/agent`
+        2. Call `session.connect()`
         3. ...
 
   - type: textarea
@@ -31,9 +31,8 @@ body:
     attributes:
       label: Package
       options:
-        - Client (widget)
-        - Server (proxy)
-        - Both
+        - "@deepgram/agent"
+        - "@deepgram/agent-widget"
     validations:
       required: true
 

@@ -8,11 +8,6 @@ updates:
       dependencies:
         update-types: [patch, minor]
 
-  - package-ecosystem: "docker"
-    directory: "/packages/server"
-    schedule:
-      interval: "weekly"
-
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
