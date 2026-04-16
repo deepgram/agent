@@ -11,8 +11,8 @@
 
 ## Checklist
 
-- [ ] I have read the [CONTRIBUTING](../CONTRIBUTING.md) guide
-- [ ] Code builds cleanly (`pnpm build`)
+- [ ] I have read the [CONTRIBUTING](./CONTRIBUTING.md) guide
+- [ ] Code builds cleanly (`bun run build`)
 - [ ] Changes tested against the console UI
 - [ ] Documentation updated (if applicable)
 
