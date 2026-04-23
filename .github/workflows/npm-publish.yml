@@ -19,7 +19,7 @@ jobs:
       widget--release_created: ${{ steps.release.outputs['packages/widget--release_created'] }}
       widget--version: ${{ steps.release.outputs['packages/widget--version'] }}
     steps:
-      - uses: googleapis/release-please-action@v4
+      - uses: googleapis/release-please-action@v5
         id: release
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
