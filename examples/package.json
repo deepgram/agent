@@ -12,8 +12,8 @@
   "dependencies": {
     "@deepgram/agents": "workspace:*",
     "@deepgram/agents-widget": "workspace:*",
-    "@deepgram/react": "file:../../react/packages/react",
-    "@deepgram/ui": "file:../../ui/packages/ui"
+    "@deepgram/react": "^0.1.0",
+    "@deepgram/ui": "^0.1.0"
   },
   "devDependencies": {
     "@playwright/test": "1.59.1",
