@@ -11,17 +11,12 @@
     "paths": {
       "react": ["./node_modules/preact/compat/"],
       "react-dom": ["./node_modules/preact/compat/"],
-      "react/jsx-runtime": ["./node_modules/preact/jsx-runtime"],
-      "@deepgram/agents": ["../sdk/dist/index"],
-      "@deepgram/react": ["../../../react/packages/react/dist/index"],
-      "@deepgram/ui": ["../../../ui/packages/ui/dist/index"]
+      "react/jsx-runtime": ["./node_modules/preact/jsx-runtime"]
     }
   },
   "include": ["src"],
   "exclude": ["src/__tests__"],
   "references": [
-    { "path": "../sdk" },
-    { "path": "../../../react/packages/react" },
-    { "path": "../../../ui/packages/ui" }
+    { "path": "../sdk" }
   ]
 }

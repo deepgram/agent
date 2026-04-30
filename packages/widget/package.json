@@ -13,7 +13,18 @@
       "require": "./dist/widget.umd.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deepgram/agent.git",
+    "directory": "packages/widget"
+  },
+  "homepage": "https://github.com/deepgram/agent/tree/main/packages/widget#readme",
+  "bugs": {
+    "url": "https://github.com/deepgram/agent/issues"
+  },
   "scripts": {
     "build": "tsc --noEmit && vite build",
     "typecheck": "tsc --noEmit",
@@ -23,8 +34,8 @@
   },
   "dependencies": {
     "@deepgram/agents": "workspace:*",
-    "@deepgram/react": "file:../../../react/packages/react",
-    "@deepgram/ui": "file:../../../ui/packages/ui",
+    "@deepgram/react": "^0.1.0",
+    "@deepgram/ui": "^0.1.0",
     "preact": "10.29.1",
     "sugar-high": "1.1.0"
   },

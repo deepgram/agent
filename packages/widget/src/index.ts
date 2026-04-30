@@ -17,15 +17,14 @@ export type {
 /**
  * Initialise the Deepgram Voice Agent widget.
  *
- * @example CDN sidebar (default):
- * ```html
- * <script src="https://cdn.deepgram.com/agent-widget/latest/widget.umd.js"></script>
- * <script>
- *   DeepgramAgent.init({
- *     tokenFactory: () => fetch('/api/deepgram-token').then(r => r.text()),
- *     agent: { think: { type: 'open_ai', model: 'gpt-4o-mini' } },
- *   });
- * </script>
+ * @example ESM:
+ * ```ts
+ * import { init } from "@deepgram/agents-widget";
+ *
+ * init({
+ *   tokenFactory: () => fetch('/api/deepgram-token').then(r => r.text()),
+ *   agent: { think: { type: 'open_ai', model: 'gpt-4o-mini' } },
+ * });
  * ```
  *
  * @example Class-based dark mode (Tailwind / next-themes):

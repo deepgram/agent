@@ -1,6 +1,7 @@
 import { describe, it, expect, mock } from "bun:test";
 
-// Track what config gets passed to AgentProvider
+mock.restore();
+
 let capturedConfig: any = null;
 let capturedProps: any = null;
 

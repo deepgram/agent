@@ -1,6 +1,6 @@
 # Inline — Bundled UMD
 
-CDN script tag, no build step. Agent panel mounted inline in a container. Uses `DeepgramAgent.init()` with `layout: 'inline'`.
+Self-hosted UMD bundle. Agent panel mounted inline in a container. Uses `DeepgramAgent.init()` with `layout: 'inline'`.
 
 **Package:** `@deepgram/agents-widget` (UMD bundle)
 

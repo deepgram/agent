@@ -1,6 +1,6 @@
 # Floating FAB — Bundled UMD
 
-CDN script tag, no build step. Floating action button reveals an overlay panel. Uses `DeepgramAgent.init()` with `layout: 'floating'`.
+Self-hosted UMD bundle. Floating action button reveals an overlay panel. Uses `DeepgramAgent.init()` with `layout: 'floating'`.
 
 **Package:** `@deepgram/agents-widget` (UMD bundle)
 
