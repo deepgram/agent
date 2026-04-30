@@ -1,15 +1,34 @@
 import { describe, it, expect, afterEach, mock } from "bun:test";
-import { h } from "preact";
 
-// Mock the widget layout components to avoid importing @deepgram/react
-mock.module("../widget.js", () => ({
-  SidebarWidget: ({ config }: any) => h("div", { class: "dg-va-panel" }),
-  InlineWidget: ({ config }: any) => h("div", { class: "dg-va-panel" }),
-  FloatingWidget: ({ config }: any) => h("div", { class: "dg-va-panel" }),
-  ButtonWidget: ({ config }: any) => h("button", { class: "dg-va-agent-btn" }, "Talk"),
-  EmbeddedWidget: ({ config }: any) => h("div", { class: "dg-va-panel-inline" }),
-  OrbWidget: ({ config }: any) => h("div", { class: "dg-va-orb-layout" }),
-}));
+const noopHook = () => ({});
+const reactStubs = {
+  AgentProvider: ({ children }: any) => children,
+  useAgentContext: noopHook,
+  useAgentState: () => ({ state: "idle", isActive: false, isConnecting: false, start: async () => {}, stop: () => {} }),
+  useAgentConversation: () => ({ conversation: [], sendUserMessage: () => {}, clearConversation: () => {} }),
+  useAgentMicrophone: () => ({ micActive: false, micMuted: false, setMicMuted: () => {}, toggle: () => {}, enabled: true, getInputVolume: () => 0 }),
+  useAgentPlayer: () => ({ outputMuted: false, setOutputMuted: () => {}, toggle: () => {}, enabled: true, getOutputVolume: () => 0 }),
+  useAgentSession: noopHook,
+  useAgentMode: () => ({ mode: "idle", isSpeaking: false, isListening: false }),
+  useAgentControls: () => ({ start: async () => {}, stop: () => {}, sendUserMessage: () => {}, clearConversation: () => {}, setMicMuted: () => {}, setOutputMuted: () => {} }),
+  useAgentClientTool: () => {},
+};
+
+const uiStubs = {
+  ...reactStubs,
+  AgentStatus: () => null,
+  AgentConversation: () => null,
+  AgentMessage: () => null,
+  AgentTextInput: () => null,
+  AgentMicrophoneButton: () => null,
+  AgentSpeakerButton: () => null,
+  AgentStartButton: () => null,
+  Orb: () => null,
+};
+
+mock.module("@deepgram/react", () => reactStubs);
+mock.module("@deepgram/ui", () => uiStubs);
+mock.module("@deepgram/agents", () => ({}));
 
 const { init } = await import("../index.js");
 
