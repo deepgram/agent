@@ -26,7 +26,8 @@
       <h3>Code</h3>
       <pre class="code"><span class="tag">&lt;div</span> <span class="at">id</span>=<span class="str">"agent-container"</span> <span class="at">style</span>=<span class="str">"height:600px"</span><span class="tag">&gt;&lt;/div&gt;</span>
 
-<span class="tag">&lt;script</span> <span class="at">src</span>=<span class="str">"https://cdn.deepgram.com/agent-widget/latest/widget.umd.js"</span><span class="tag">&gt;&lt;/script&gt;</span>
+<span class="cm">&lt;!-- Host widget.umd.js from your own server --&gt;</span>
+<span class="tag">&lt;script</span> <span class="at">src</span>=<span class="str">"/widget.umd.js"</span><span class="tag">&gt;&lt;/script&gt;</span>
 <span class="tag">&lt;script&gt;</span>
   <span class="fn">DeepgramAgent</span>.<span class="fn">init</span>({
     <span class="at">tokenFactory</span>: () =&gt; <span class="fn">fetch</span>(<span class="str">'/api/token'</span>)

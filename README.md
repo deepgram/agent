@@ -24,15 +24,20 @@ React hooks and UI components live in their own repos:
 
 ### Widget (no framework)
 
-```html
-<script src="https://cdn.deepgram.com/agent-widget/latest/widget.umd.js"></script>
-<script>
-  DeepgramAgent.init({
-    tokenFactory: () => fetch('/api/deepgram-token').then(r => r.text()),
-    agent: { think: { provider: { type: 'open_ai' }, model: 'gpt-4o-mini' } },
-  });
-</script>
+```bash
+npm install @deepgram/agents-widget
 ```
+
+```ts
+import { init } from "@deepgram/agents-widget";
+
+init({
+  tokenFactory: () => fetch('/api/deepgram-token').then(r => r.text()),
+  agent: { think: { provider: { type: 'open_ai' }, model: 'gpt-4o-mini' } },
+});
+```
+
+The package also ships a UMD bundle at `dist/widget.umd.js` for `<script>`-tag usage; host it from your own server.
 
 ### React
 

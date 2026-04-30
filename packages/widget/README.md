@@ -1,36 +1,16 @@
 # @deepgram/agents-widget
 
-Self-contained voice agent widget for the [Deepgram Agent API](https://developers.deepgram.com/docs/voice-agent). Drop into any page via `<script>` tag or ESM import -- no framework required.
+Self-contained voice agent widget for the [Deepgram Agent API](https://developers.deepgram.com/docs/voice-agent). Drop into any page via ESM import or self-hosted UMD bundle -- no framework required.
 
 Bundles Preact internally (React components from `@deepgram/ui` are aliased to `preact/compat`).
 
 ## Install
 
-### CDN (UMD)
-
-```html
-<script src="https://cdn.deepgram.com/agent-widget/latest/widget.umd.js"></script>
-```
-
-### Package manager
-
 ```bash
-bun add @deepgram/agents-widget
+npm install @deepgram/agents-widget
 ```
 
 ## Quick Start
-
-```html
-<script src="https://cdn.deepgram.com/agent-widget/latest/widget.umd.js"></script>
-<script>
-  DeepgramAgent.init({
-    tokenFactory: () => fetch('/api/deepgram-token').then(r => r.text()),
-    agent: { think: { provider: { type: 'open_ai' }, model: 'gpt-4o-mini' } },
-  });
-</script>
-```
-
-ESM import:
 
 ```ts
 import { init } from "@deepgram/agents-widget";
@@ -41,6 +21,18 @@ const destroy = init({
 });
 
 // Later: destroy() to unmount
+```
+
+A UMD bundle ships at `dist/widget.umd.js` for `<script>`-tag usage. Host it from your own server:
+
+```html
+<script src="/path/to/widget.umd.js"></script>
+<script>
+  DeepgramAgent.init({
+    tokenFactory: () => fetch('/api/deepgram-token').then(r => r.text()),
+    agent: { think: { provider: { type: 'open_ai' }, model: 'gpt-4o-mini' } },
+  });
+</script>
 ```
 
 ## init(config)

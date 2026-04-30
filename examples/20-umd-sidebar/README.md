@@ -1,6 +1,6 @@
 # Sidebar — Bundled UMD
 
-CDN script tag, no build step, no npm install. Uses `DeepgramAgent.init()` with `layout: 'sidebar'`.
+Self-hosted UMD bundle. Uses `DeepgramAgent.init()` with `layout: 'sidebar'`.
 
 **Package:** `@deepgram/agents-widget` (UMD bundle)
 
