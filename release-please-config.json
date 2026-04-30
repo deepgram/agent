@@ -15,12 +15,14 @@
   "separate-pull-requests": true,
   "packages": {
     "packages/sdk": {
-      "package-name": "@deepgram/agent",
-      "changelog-path": "CHANGELOG.md"
+      "package-name": "@deepgram/agents",
+      "changelog-path": "CHANGELOG.md",
+      "release-as": "0.1.0"
     },
     "packages/widget": {
-      "package-name": "@deepgram/agent-widget",
-      "changelog-path": "CHANGELOG.md"
+      "package-name": "@deepgram/agents-widget",
+      "changelog-path": "CHANGELOG.md",
+      "release-as": "0.1.0"
     }
   }
 }

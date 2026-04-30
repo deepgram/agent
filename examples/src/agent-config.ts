@@ -1,4 +1,4 @@
-import type { WidgetConfig } from "@deepgram/agent-widget";
+import type { WidgetConfig } from "@deepgram/agents-widget";
 
 /**
  * Fetches a short-lived bearer token from the dev-server proxy.

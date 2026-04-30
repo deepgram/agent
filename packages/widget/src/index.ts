@@ -47,13 +47,13 @@ export function init(config: WidgetConfig): () => void {
     const containerId = config.containerId;
     if (!containerId) {
       throw new Error(
-        '[@deepgram/agent-widget] layout "inline" requires containerId',
+        '[@deepgram/agents-widget] layout "inline" requires containerId',
       );
     }
     const container = document.getElementById(containerId);
     if (!container) {
       throw new Error(
-        `[@deepgram/agent-widget] Container #${containerId} not found`,
+        `[@deepgram/agents-widget] Container #${containerId} not found`,
       );
     }
 
@@ -75,7 +75,7 @@ export function init(config: WidgetConfig): () => void {
     let createdRoot = false;
     if (config.containerId) {
       const el = document.getElementById(config.containerId);
-      if (!el) throw new Error(`[@deepgram/agent-widget] Container #${config.containerId} not found`);
+      if (!el) throw new Error(`[@deepgram/agents-widget] Container #${config.containerId} not found`);
       root = el;
     } else {
       root = document.createElement("div");
@@ -102,7 +102,7 @@ export function init(config: WidgetConfig): () => void {
     let createdRoot = false;
     if (config.containerId) {
       const el = document.getElementById(config.containerId);
-      if (!el) throw new Error(`[@deepgram/agent-widget] Container #${config.containerId} not found`);
+      if (!el) throw new Error(`[@deepgram/agents-widget] Container #${config.containerId} not found`);
       root = el;
     } else {
       root = document.createElement("div");
@@ -129,13 +129,13 @@ export function init(config: WidgetConfig): () => void {
     const containerId = config.containerId;
     if (!containerId) {
       throw new Error(
-        '[@deepgram/agent-widget] layout "embedded" requires containerId',
+        '[@deepgram/agents-widget] layout "embedded" requires containerId',
       );
     }
     const container = document.getElementById(containerId);
     if (!container) {
       throw new Error(
-        `[@deepgram/agent-widget] Container #${containerId} not found`,
+        `[@deepgram/agents-widget] Container #${containerId} not found`,
       );
     }
 

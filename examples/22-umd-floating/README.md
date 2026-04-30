@@ -2,7 +2,7 @@
 
 CDN script tag, no build step. Floating action button reveals an overlay panel. Uses `DeepgramAgent.init()` with `layout: 'floating'`.
 
-**Package:** `@deepgram/agent-widget` (UMD bundle)
+**Package:** `@deepgram/agents-widget` (UMD bundle)
 
 ![Screenshot](screenshot.png)
 
@@ -10,7 +10,7 @@ CDN script tag, no build step. Floating action button reveals an overlay panel. 
 
 ```bash
 # From the repo root — build the UMD bundle first
-bun run --filter '@deepgram/agent-widget' build
+bun run --filter '@deepgram/agents-widget' build
 bun run dev:examples
 # Open http://localhost:5173/22-umd-floating/
 ```

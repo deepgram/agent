@@ -28,7 +28,7 @@
 
   <div class="code-wrap">
     <h3>Code</h3>
-    <pre class="code"><span class="kw">import</span> { <span class="fn">init</span> } <span class="kw">from</span> <span class="str">'@deepgram/agent-widget'</span>;
+    <pre class="code"><span class="kw">import</span> { <span class="fn">init</span> } <span class="kw">from</span> <span class="str">'@deepgram/agents-widget'</span>;
 
 <span class="fn">init</span>({
   <span class="at">tokenFactory</span>: () =&gt; <span class="fn">fetch</span>(<span class="str">'/api/token'</span>).<span class="fn">then</span>(r =&gt; r.<span class="fn">json</span>()).<span class="fn">then</span>(d =&gt; d.token),
@@ -44,7 +44,7 @@
   </div>
 
   <script type="module">
-    import { init } from "@deepgram/agent-widget";
+    import { init } from "@deepgram/agents-widget";
     import { baseConfig } from "../src/agent-config.ts";
     init({
       ...baseConfig,

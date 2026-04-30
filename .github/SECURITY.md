@@ -20,5 +20,5 @@ Security updates are applied to the latest release of each package:
 
 | Package | Supported |
 |---------|-----------|
-| `@deepgram/agent` | Latest |
-| `@deepgram/agent-widget` | Latest |
+| `@deepgram/agents` | Latest |
+| `@deepgram/agents-widget` | Latest |

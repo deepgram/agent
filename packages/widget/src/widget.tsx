@@ -1,5 +1,5 @@
 import { AgentProvider, useAgentState, useAgentMode, useAgentMicrophone, useAgentPlayer } from "@deepgram/react";
-import type { AgentSessionConfig, FunctionCallItem } from "@deepgram/agent";
+import type { AgentSessionConfig, FunctionCallItem } from "@deepgram/agents";
 import { Orb } from "@deepgram/ui";
 import { ConversationPanel } from "./components/ConversationPanel.js";
 import type { WidgetConfig } from "./types.js";
@@ -14,7 +14,7 @@ interface WidgetProps {
 
 export function buildSessionConfig(config: WidgetConfig): AgentSessionConfig {
   if (!config.apiKey && !config.tokenFactory) {
-    throw new Error("[@deepgram/agent-widget] Either apiKey or tokenFactory is required");
+    throw new Error("[@deepgram/agents-widget] Either apiKey or tokenFactory is required");
   }
   return {
     auth: config.apiKey

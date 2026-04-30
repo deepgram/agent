@@ -1,8 +1,8 @@
 # Button — Widget
 
-Single button — click to talk, click to stop. Uses `@deepgram/agent-widget` with `layout: 'button'`.
+Single button — click to talk, click to stop. Uses `@deepgram/agents-widget` with `layout: 'button'`.
 
-**Package:** `@deepgram/agent-widget`
+**Package:** `@deepgram/agents-widget`
 
 ![Screenshot](screenshot.png)
 

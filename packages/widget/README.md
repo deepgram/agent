@@ -1,4 +1,4 @@
-# @deepgram/agent-widget
+# @deepgram/agents-widget
 
 Self-contained voice agent widget for the [Deepgram Agent API](https://developers.deepgram.com/docs/voice-agent). Drop into any page via `<script>` tag or ESM import -- no framework required.
 
@@ -15,7 +15,7 @@ Bundles Preact internally (React components from `@deepgram/ui` are aliased to `
 ### Package manager
 
 ```bash
-bun add @deepgram/agent-widget
+bun add @deepgram/agents-widget
 ```
 
 ## Quick Start
@@ -33,7 +33,7 @@ bun add @deepgram/agent-widget
 ESM import:
 
 ```ts
-import { init } from "@deepgram/agent-widget";
+import { init } from "@deepgram/agents-widget";
 
 const destroy = init({
   tokenFactory: () => fetch('/api/deepgram-token').then(r => r.text()),

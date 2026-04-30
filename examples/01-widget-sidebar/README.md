@@ -1,8 +1,8 @@
 # Sidebar — Widget
 
-Sidebar panel slides in from the right. Uses `@deepgram/agent-widget` with `layout: 'sidebar'`.
+Sidebar panel slides in from the right. Uses `@deepgram/agents-widget` with `layout: 'sidebar'`.
 
-**Package:** `@deepgram/agent-widget`
+**Package:** `@deepgram/agents-widget`
 
 ![Screenshot](screenshot.png)
 

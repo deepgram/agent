@@ -16,7 +16,7 @@ body:
       label: Steps to reproduce
       description: How can we reproduce the issue?
       placeholder: |
-        1. Import `@deepgram/agent`
+        1. Import `@deepgram/agents`
         2. Call `session.connect()`
         3. ...
 
@@ -31,8 +31,8 @@ body:
     attributes:
       label: Package
       options:
-        - "@deepgram/agent"
-        - "@deepgram/agent-widget"
+        - "@deepgram/agents"
+        - "@deepgram/agents-widget"
     validations:
       required: true
 

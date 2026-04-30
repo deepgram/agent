@@ -27,7 +27,7 @@ cd agent
 bun install
 ```
 
-If you only plan to work on `@deepgram/agent` (the SDK), the sibling repos are not required.
+If you only plan to work on `@deepgram/agents` (the SDK), the sibling repos are not required.
 
 ## Development
 

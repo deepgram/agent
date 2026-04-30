@@ -4,7 +4,7 @@ import type {
   AgentStartedSpeakingMessage,
   FunctionCallRequestMessage,
   AgentErrorMessage,
-} from "@deepgram/agent";
+} from "@deepgram/agents";
 
 export type TokenFactory = () => Promise<string>;
 
