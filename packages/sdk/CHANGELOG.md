@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.1](https://github.com/deepgram/agent/compare/agents-v0.1.0...agents-v0.1.1) (2026-04-30)
+
+
+### Bug Fixes
+
+* **sdk:** add repository metadata for npm provenance ([#34](https://github.com/deepgram/agent/issues/34)) ([dc836fc](https://github.com/deepgram/agent/commit/dc836fce5e862bd8e04ba204e4433b44e7d29984))
+
 ## 0.1.0 (2026-04-30)
 
 
