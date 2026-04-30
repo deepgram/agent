@@ -16,8 +16,7 @@
   "packages": {
     "packages/sdk": {
       "package-name": "@deepgram/agents",
-      "changelog-path": "CHANGELOG.md",
-      "release-as": "0.1.0"
+      "changelog-path": "CHANGELOG.md"
     },
     "packages/widget": {
       "package-name": "@deepgram/agents-widget",

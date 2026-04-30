@@ -16,6 +16,15 @@
   "files": [
     "dist"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deepgram/agent.git",
+    "directory": "packages/sdk"
+  },
+  "homepage": "https://github.com/deepgram/agent/tree/main/packages/sdk#readme",
+  "bugs": {
+    "url": "https://github.com/deepgram/agent/issues"
+  },
   "scripts": {
     "build": "tsc --noEmit && vite build",
     "typecheck": "tsc --noEmit",
