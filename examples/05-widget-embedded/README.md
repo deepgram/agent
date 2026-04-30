@@ -1,8 +1,8 @@
 # Embedded — Widget
 
-Fills container width with full chat UI. Uses `@deepgram/agent-widget` with `layout: 'embedded'`.
+Fills container width with full chat UI. Uses `@deepgram/agents-widget` with `layout: 'embedded'`.
 
-**Package:** `@deepgram/agent-widget`
+**Package:** `@deepgram/agents-widget`
 
 ![Screenshot](screenshot.png)
 

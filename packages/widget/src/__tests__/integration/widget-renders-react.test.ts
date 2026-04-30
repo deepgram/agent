@@ -33,7 +33,7 @@ mock.module("@deepgram/ui", () => ({
   AgentStartButton: () => null,
   Orb: () => null,
 }));
-mock.module("@deepgram/agent", () => ({}));
+mock.module("@deepgram/agents", () => ({}));
 
 const { buildSessionConfig } = await import("../../widget.js");
 

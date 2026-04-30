@@ -1,8 +1,8 @@
 # Floating Orb — Widget
 
-Orb widget in a floating card anchored to the bottom-right corner. Uses `@deepgram/agent-widget` with `layout: 'orb'`.
+Orb widget in a floating card anchored to the bottom-right corner. Uses `@deepgram/agents-widget` with `layout: 'orb'`.
 
-**Package:** `@deepgram/agent-widget`
+**Package:** `@deepgram/agents-widget`
 
 ![Screenshot](screenshot.png)
 

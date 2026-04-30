@@ -22,7 +22,7 @@ export default defineConfig({
       "react-dom":         require.resolve("preact/compat"),
       react:               require.resolve("preact/compat"),
       // Agent + react from source (no Tailwind involved — pure TS/JS)
-      "@deepgram/agent":         resolve(__dirname, "../sdk/dist/index.js"),
+      "@deepgram/agents":         resolve(__dirname, "../sdk/dist/index.js"),
       "@deepgram/react":         resolve(__dirname, "../../../react/packages/react/dist/index.js"),
       // UI from pre-compiled dist — Tailwind already compiled, CSS already bundled
       "@deepgram/ui/styles.css": resolve(UI_DIST, "styles.css"),

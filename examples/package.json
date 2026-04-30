@@ -1,5 +1,5 @@
 {
-  "name": "@deepgram/agent-examples",
+  "name": "@deepgram/agents-examples",
   "private": true,
   "version": "0.0.1",
   "type": "module",
@@ -10,8 +10,8 @@
     "test": "playwright test"
   },
   "dependencies": {
-    "@deepgram/agent": "workspace:*",
-    "@deepgram/agent-widget": "workspace:*",
+    "@deepgram/agents": "workspace:*",
+    "@deepgram/agents-widget": "workspace:*",
     "@deepgram/react": "file:../../react/packages/react",
     "@deepgram/ui": "file:../../ui/packages/ui"
   },

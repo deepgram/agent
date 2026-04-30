@@ -1,8 +1,8 @@
 # Floating FAB — Widget
 
-Floating action button reveals an overlay panel. Uses `@deepgram/agent-widget` with `layout: 'floating'`.
+Floating action button reveals an overlay panel. Uses `@deepgram/agents-widget` with `layout: 'floating'`.
 
-**Package:** `@deepgram/agent-widget`
+**Package:** `@deepgram/agents-widget`
 
 ![Screenshot](screenshot.png)
 

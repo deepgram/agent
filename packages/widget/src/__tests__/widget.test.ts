@@ -26,7 +26,7 @@ const componentMocks = {
 
 mock.module("@deepgram/react", () => hookMocks);
 mock.module("@deepgram/ui", () => ({ ...hookMocks, ...componentMocks }));
-mock.module("@deepgram/agent", () => ({}));
+mock.module("@deepgram/agents", () => ({}));
 
 const { buildSessionConfig } = await import("../widget.js");
 

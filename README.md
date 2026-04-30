@@ -3,15 +3,15 @@
 Voice agent SDK and embeddable widget for the [Deepgram Agent API](https://developers.deepgram.com/docs/voice-agent).
 
 ```
-@deepgram/agent  ←  @deepgram/react (external)  ←  @deepgram/ui (external)  ←  @deepgram/agent-widget
+@deepgram/agents  ←  @deepgram/react (external)  ←  @deepgram/ui (external)  ←  @deepgram/agents-widget
 ```
 
 ## Packages
 
 | Package | Description |
 |---------|-------------|
-| [`@deepgram/agent`](packages/sdk/) | Core SDK -- WebSocket session, microphone capture, audio playback |
-| [`@deepgram/agent-widget`](packages/widget/) | Self-contained widget (UMD + ESM) -- drop into any page, no framework needed |
+| [`@deepgram/agents`](packages/sdk/) | Core SDK -- WebSocket session, microphone capture, audio playback |
+| [`@deepgram/agents-widget`](packages/widget/) | Self-contained widget (UMD + ESM) -- drop into any page, no framework needed |
 
 React hooks and UI components live in their own repos:
 
@@ -60,7 +60,7 @@ function App() {
 ### SDK only
 
 ```ts
-import { AgentSession, AgentMicrophone, AgentPlayer } from "@deepgram/agent";
+import { AgentSession, AgentMicrophone, AgentPlayer } from "@deepgram/agents";
 
 const session = new AgentSession({
   auth: { tokenFactory: () => fetch('/api/deepgram-token').then(r => r.text()) },
@@ -112,8 +112,8 @@ Live demo: [deepgram-agent-examples.fly.dev](https://deepgram-agent-examples.fly
 
 | Package | Repo |
 |---------|------|
-| `@deepgram/agent` | This repo (`packages/sdk/`) |
-| `@deepgram/agent-widget` | This repo (`packages/widget/`) |
+| `@deepgram/agents` | This repo (`packages/sdk/`) |
+| `@deepgram/agents-widget` | This repo (`packages/widget/`) |
 | `@deepgram/react` | [`deepgram/react`](https://github.com/deepgram/react) |
 | `@deepgram/ui` | [`deepgram/ui`](https://github.com/deepgram/ui) |
 | `@deepgram/browser` | Planned: browser instrumentation SDK (non-agent), may re-export agent bits |

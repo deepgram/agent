@@ -90,7 +90,7 @@ jobs:
 
       - run: bun install
 
-      - run: bun run --filter '@deepgram/agent' --filter '@deepgram/agent-widget' build
+      - run: bun run --filter '@deepgram/agents' --filter '@deepgram/agents-widget' build
 
       - name: Swap file pointers to npm versions
         run: |
@@ -100,7 +100,7 @@ jobs:
           node -e "
             const fs = require('fs');
             const pkg = JSON.parse(fs.readFileSync('packages/widget/package.json', 'utf8'));
-            pkg.dependencies['@deepgram/agent'] = SDK_VERSION;
+            pkg.dependencies['@deepgram/agents'] = SDK_VERSION;
             pkg.dependencies['@deepgram/react'] = REACT_VERSION;
             pkg.dependencies['@deepgram/ui'] = UI_VERSION;
             fs.writeFileSync('packages/widget/package.json', JSON.stringify(pkg, null, 2) + '\n');

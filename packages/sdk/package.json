@@ -1,5 +1,5 @@
 {
-  "name": "@deepgram/agent",
+  "name": "@deepgram/agents",
   "version": "0.0.0",
   "description": "Deepgram Voice Agent SDK — browser/Node WebSocket client with microphone, audio playback, and VAD",
   "type": "module",

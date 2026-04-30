@@ -1,5 +1,5 @@
 {
-  "name": "@deepgram/agent-widget",
+  "name": "@deepgram/agents-widget",
   "version": "0.0.0",
   "description": "Self-contained CDN widget for Deepgram Voice Agent — no framework required",
   "type": "module",
@@ -22,7 +22,7 @@
     "test:watch": "bun test --watch"
   },
   "dependencies": {
-    "@deepgram/agent": "workspace:*",
+    "@deepgram/agents": "workspace:*",
     "@deepgram/react": "file:../../../react/packages/react",
     "@deepgram/ui": "file:../../../ui/packages/ui",
     "preact": "10.29.1",

@@ -1,8 +1,8 @@
 # Orb — Widget
 
-Animated Deepgram orb — audio-reactive with idle/listening/talking states. Uses `@deepgram/agent-widget` with `layout: 'orb'`.
+Animated Deepgram orb — audio-reactive with idle/listening/talking states. Uses `@deepgram/agents-widget` with `layout: 'orb'`.
 
-**Package:** `@deepgram/agent-widget`
+**Package:** `@deepgram/agents-widget`
 
 ![Screenshot](screenshot.png)
 

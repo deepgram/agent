@@ -1,17 +1,17 @@
-# @deepgram/agent
+# @deepgram/agents
 
 Core SDK for the [Deepgram Voice Agent API](https://developers.deepgram.com/docs/voice-agent). Manages the WebSocket session, microphone capture, and audio playback with volume/frequency analysis.
 
 ## Install
 
 ```bash
-bun add @deepgram/agent
+bun add @deepgram/agents
 ```
 
 ## Quick Start
 
 ```ts
-import { AgentSession, AgentMicrophone, AgentPlayer } from "@deepgram/agent";
+import { AgentSession, AgentMicrophone, AgentPlayer } from "@deepgram/agents";
 
 const session = new AgentSession({
   auth: { tokenFactory: () => fetch('/api/deepgram-token').then(r => r.text()) },
