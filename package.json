@@ -2,27 +2,16 @@
   "name": "@deepgram/voice-agent-monorepo",
   "private": true,
   "workspaces": [
-    "packages/*",
-    "examples"
+    "packages/sdk"
   ],
   "packageManager": "bun@1.3.10",
   "scripts": {
-    "build": "bun run --filter 'packages/*' build",
-    "dev": "bun run --filter 'packages/*' dev",
-    "dev:examples": "op run --env-file examples/.env -- bun run --cwd examples dev",
-    "typecheck": "bun run --filter 'packages/*' typecheck",
-    "test": "bun run --filter '@deepgram/agent' --filter '@deepgram/agent-widget' test",
-    "test:e2e": "bun test tests/e2e/"
+    "build": "bun run --filter '@deepgram/agent' build",
+    "dev": "bun run --filter '@deepgram/agent' dev",
+    "typecheck": "bun run --filter '@deepgram/agent' typecheck",
+    "test": "bun run --filter '@deepgram/agent' test"
   },
   "overrides": {
     "brace-expansion": "5.0.5"
-  },
-  "dependencies": {
-    "@deepgram/react": "file:../react/packages/react",
-    "@deepgram/ui": "file:../ui/packages/ui"
-  },
-  "devDependencies": {
-    "playwright": "1.59.1",
-    "vite": "8.0.5"
   }
 }
