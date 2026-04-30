@@ -29,16 +29,16 @@
     "sugar-high": "1.1.0"
   },
   "devDependencies": {
-    "@tailwindcss/vite": "4.2.2",
+    "@tailwindcss/vite": "4.2.4",
     "@testing-library/preact": "3.2.4",
     "@types/node": "22.15.3",
     "@vitejs/plugin-react": "6.0.1",
     "eventemitter3": "5.0.4",
-    "happy-dom": "20.8.9",
-    "tailwindcss": "4.2.2",
-    "terser": "5.46.1",
+    "happy-dom": "20.9.0",
+    "tailwindcss": "4.2.4",
+    "terser": "5.46.2",
     "typescript": "5.9.3",
-    "vite": "8.0.5",
+    "vite": "8.0.10",
     "vite-plugin-css-injected-by-js": "4.0.1",
     "vite-plugin-dts": "4.5.4"
   },
