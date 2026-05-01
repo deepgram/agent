@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.2](https://github.com/deepgram/agent/compare/agents-widget-v0.1.1...agents-widget-v0.1.2) (2026-05-01)
+
+
+### Bug Fixes
+
+* **widget:** build SDK before widget in publish-widget so types resolve ([#40](https://github.com/deepgram/agent/issues/40)) ([2246e93](https://github.com/deepgram/agent/commit/2246e93a7d4639aa12003c713245a847cf455843))
+
 ## [0.1.1](https://github.com/deepgram/agent/compare/agents-widget-v0.1.0...agents-widget-v0.1.1) (2026-05-01)
 
 
