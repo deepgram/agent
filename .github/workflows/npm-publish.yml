@@ -55,7 +55,7 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_DEEPGRAM_TOKEN }}
 
   publish-widget:
-    needs: [release-please, publish-sdk]
+    needs: release-please
     if: needs.release-please.outputs.widget--release_created == 'true'
     runs-on: ubuntu-latest
     permissions:

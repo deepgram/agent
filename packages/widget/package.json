@@ -16,6 +16,16 @@
   "files": [
     "dist"
   ],
+  "keywords": [
+    "deepgram",
+    "voice-agent",
+    "voice-ai",
+    "widget",
+    "umd",
+    "speech-to-text",
+    "text-to-speech",
+    "websocket"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/deepgram/agent.git",
