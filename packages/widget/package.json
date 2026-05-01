@@ -1,7 +1,7 @@
 {
   "name": "@deepgram/agents-widget",
   "version": "0.1.1",
-  "description": "Self-contained CDN widget for Deepgram Voice Agent — no framework required",
+  "description": "Self-contained Deepgram Voice Agent widget. Drop into any web page, no framework required.",
   "type": "module",
   "main": "dist/widget.umd.js",
   "module": "dist/widget.es.js",
@@ -22,6 +22,7 @@
     "voice-ai",
     "widget",
     "umd",
+    "preact",
     "speech-to-text",
     "text-to-speech",
     "websocket"
