@@ -20,8 +20,7 @@
     },
     "packages/widget": {
       "package-name": "@deepgram/agents-widget",
-      "changelog-path": "CHANGELOG.md",
-      "release-as": "0.1.0"
+      "changelog-path": "CHANGELOG.md"
     }
   }
 }
