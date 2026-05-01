@@ -75,7 +75,7 @@ jobs:
 
       - run: bun install
 
-      - run: bun run --filter '@deepgram/agents-widget' build
+      - run: bun run build
 
       - name: Pin @deepgram/agents to the SDK version being released
         run: |
