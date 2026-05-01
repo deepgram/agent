@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.1](https://github.com/deepgram/agent/compare/agents-widget-v0.1.0...agents-widget-v0.1.1) (2026-05-01)
+
+
+### Bug Fixes
+
+* **widget:** publish-widget should not depend on publish-sdk ([#38](https://github.com/deepgram/agent/issues/38)) ([78d87be](https://github.com/deepgram/agent/commit/78d87bedee6a0b14a33919a41bcecdf7b3fea176))
+
 ## 0.1.0 (2026-04-30)
 
 
