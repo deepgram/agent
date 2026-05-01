@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.3](https://github.com/deepgram/agent/compare/agents-widget-v0.1.2...agents-widget-v0.1.3) (2026-05-01)
+
+
+### Bug Fixes
+
+* **widget:** hardcode @deepgram/agents range, drop publish-time pin step ([#42](https://github.com/deepgram/agent/issues/42)) ([bcde49e](https://github.com/deepgram/agent/commit/bcde49efd7d4f5e55ef64a9fda9249b753da076d))
+
 ## [0.1.2](https://github.com/deepgram/agent/compare/agents-widget-v0.1.1...agents-widget-v0.1.2) (2026-05-01)
 
 
