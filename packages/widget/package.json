@@ -44,7 +44,7 @@
     "test:watch": "bun test --watch"
   },
   "dependencies": {
-    "@deepgram/agents": "workspace:*",
+    "@deepgram/agents": "^0.1.1",
     "@deepgram/react": "^0.1.0",
     "@deepgram/ui": "^0.1.0",
     "preact": "10.29.1",

@@ -77,14 +77,17 @@ jobs:
 
       - run: bun run build
 
-      - name: Pin @deepgram/agents to the SDK version being released
+      - name: Rewrite workspace:* to the published @deepgram/agents range
         run: |
-          SDK_VERSION=$(node -e "console.log(require('./packages/sdk/package.json').version)")
           node -e "
             const fs = require('fs');
-            const pkg = JSON.parse(fs.readFileSync('packages/widget/package.json', 'utf8'));
-            pkg.dependencies['@deepgram/agents'] = SDK_VERSION;
-            fs.writeFileSync('packages/widget/package.json', JSON.stringify(pkg, null, 2) + '\n');
+            const pkg = require('./packages/widget/package.json');
+            for (const k of Object.keys(pkg.dependencies || {})) {
+              if (typeof pkg.dependencies[k] === 'string' && pkg.dependencies[k].startsWith('workspace:')) {
+                throw new Error('found unrewritten workspace dep: ' + k + '=' + pkg.dependencies[k]);
+              }
+            }
+            console.log('widget dependencies are publish-ready');
           "
 
       - run: npm publish --provenance --access public
