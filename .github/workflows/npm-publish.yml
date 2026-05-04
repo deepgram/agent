@@ -94,3 +94,44 @@ jobs:
         working-directory: packages/widget
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_DEEPGRAM_TOKEN }}
+
+  publish-cdn-widget:
+    needs: release-please
+    if: needs.release-please.outputs.widget--release_created == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3.13"
+
+      - run: bun install
+
+      - run: bun run build
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ secrets.CDN_AWS_ROLE_DEPLOYER }}
+          role-session-name: gha-cdn-widget-${{ github.run_id }}
+          aws-region: ${{ secrets.CDN_AWS_REGION }}
+
+      - name: Upload widget bundle to CDN (versioned + latest)
+        env:
+          BUCKET: ${{ secrets.CDN_S3_BUCKET }}
+          VERSION: ${{ needs.release-please.outputs.widget--version }}
+        run: |
+          aws s3 sync ./packages/widget/dist/ "s3://${BUCKET}/widgets/v${VERSION}/" --delete
+          aws s3 sync ./packages/widget/dist/ "s3://${BUCKET}/widgets/latest/" --delete
+
+      - name: Invalidate CloudFront /widgets/latest/*
+        env:
+          DISTRIBUTION_ID: ${{ secrets.CDN_CLOUDFRONT_DISTRIBUTION_ID }}
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id "${DISTRIBUTION_ID}" \
+            --paths '/widgets/latest/*'
