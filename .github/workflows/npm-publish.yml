@@ -3,6 +3,7 @@ name: npm Publish
 on:
   push:
     branches: [main]
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -97,7 +98,9 @@ jobs:
 
   publish-cdn-widget:
     needs: release-please
-    if: needs.release-please.outputs.widget--release_created == 'true'
+    if: |
+      needs.release-please.outputs.widget--release_created == 'true' ||
+      github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -113,6 +116,19 @@ jobs:
 
       - run: bun run build
 
+      - name: Resolve widget version
+        id: ver
+        env:
+          RELEASE_VERSION: ${{ needs.release-please.outputs.widget--version }}
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            VER=$(node -p "require('./packages/widget/package.json').version")
+          else
+            VER="${RELEASE_VERSION}"
+          fi
+          echo "version=${VER}" >> $GITHUB_OUTPUT
+          echo "Resolved widget version: ${VER}"
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v6
         with:
@@ -123,7 +139,7 @@ jobs:
       - name: Upload widget bundle to CDN (versioned + latest)
         env:
           BUCKET: ${{ secrets.CDN_S3_BUCKET }}
-          VERSION: ${{ needs.release-please.outputs.widget--version }}
+          VERSION: ${{ steps.ver.outputs.version }}
         run: |
           aws s3 sync ./packages/widget/dist/ "s3://${BUCKET}/widgets/v${VERSION}/" --delete
           aws s3 sync ./packages/widget/dist/ "s3://${BUCKET}/widgets/latest/" --delete
