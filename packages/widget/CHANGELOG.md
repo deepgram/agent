@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.5](https://github.com/deepgram/agent/compare/agents-widget-v0.1.4...agents-widget-v0.1.5) (2026-05-07)
+
+
+### Bug Fixes
+
+* **widget:** bump @deepgram/ui to ^0.1.2 for prefixed tailwind utilities ([#50](https://github.com/deepgram/agent/issues/50)) ([ae2e6c2](https://github.com/deepgram/agent/commit/ae2e6c2e91f0a35eb19c61bf6762af7dbe2eff7d))
+
 ## [0.1.4](https://github.com/deepgram/agent/compare/agents-widget-v0.1.3...agents-widget-v0.1.4) (2026-05-06)
 
 
