@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.6](https://github.com/deepgram/agent/compare/agents-widget-v0.1.5...agents-widget-v0.1.6) (2026-05-07)
+
+
+### Bug Fixes
+
+* **widget:** bump @deepgram/ui to ^0.1.3 to drop unscoped preflight regression ([#52](https://github.com/deepgram/agent/issues/52)) ([f323ac4](https://github.com/deepgram/agent/commit/f323ac4d5be5d4e2f2408802aed33147b7e38833))
+
 ## [0.1.5](https://github.com/deepgram/agent/compare/agents-widget-v0.1.4...agents-widget-v0.1.5) (2026-05-07)
 
 
