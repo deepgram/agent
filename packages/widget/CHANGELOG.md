@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.7](https://github.com/deepgram/agent/compare/agents-widget-v0.1.6...agents-widget-v0.1.7) (2026-05-11)
+
+
+### Bug Fixes
+
+* **widget:** bump @deepgram/ui to ^0.1.4 for dark-mode utility-var fix ([#57](https://github.com/deepgram/agent/issues/57)) ([2bc3118](https://github.com/deepgram/agent/commit/2bc31185925a934a1e86210589d2b046eaf6809a))
+
 ## [0.1.6](https://github.com/deepgram/agent/compare/agents-widget-v0.1.5...agents-widget-v0.1.6) (2026-05-07)
 
 
