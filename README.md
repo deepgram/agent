@@ -6,6 +6,10 @@ Voice agent SDK and embeddable widget for the [Deepgram Agent API](https://devel
 @deepgram/agents  ←  @deepgram/react (external)  ←  @deepgram/ui (external)  ←  @deepgram/agents-widget
 ```
 
+## Status
+
+These packages are experimental and pre-1.0. Interfaces may change between minor versions, and releases are cut as the libraries evolve rather than on a fixed schedule. For a production integration with the [Deepgram Voice Agent API](https://developers.deepgram.com/docs/voice-agent), the documented and supported path is the official JavaScript SDK, [`@deepgram/sdk`](https://github.com/deepgram/deepgram-js-sdk). The packages in this family build on that API to provide embeddable browser components and are ready to evaluate and prototype with today.
+
 ## Packages
 
 | Package | Description |
@@ -42,9 +46,25 @@ The package also ships a UMD bundle at `dist/widget.umd.js` for `<script>`-tag u
 ### React
 
 ```tsx
-import { AgentProvider, useAgentState, useAgentConversation } from "@deepgram/ui";
-import "@deepgram/ui/styles.css";
-import { AgentConversation, AgentStartButton, AgentTextInput } from "@deepgram/ui";
+import {
+  AgentProvider,
+  AgentConversation,
+  AgentMessage,
+  AgentStartButton,
+  AgentTextInput,
+  useAgentConversation,
+} from "@deepgram/ui";
+
+function Conversation() {
+  const { conversation } = useAgentConversation();
+  return (
+    <AgentConversation>
+      {conversation.map((entry) => (
+        <AgentMessage key={entry.id} entry={entry} />
+      ))}
+    </AgentConversation>
+  );
+}
 
 function App() {
   return (
@@ -55,12 +75,14 @@ function App() {
       }}
     >
       <AgentStartButton />
-      <AgentConversation />
+      <Conversation />
       <AgentTextInput />
     </AgentProvider>
   );
 }
 ```
+
+Styles are embedded in the JavaScript bundle and injected automatically; no separate CSS import is required.
 
 ### SDK only
 
@@ -128,7 +150,7 @@ Live demo: [deepgram-agent-examples.fly.dev](https://deepgram-agent-examples.fly
 **Prerequisites:** [Bun](https://bun.sh/) 1.3+
 
 ```bash
-git clone git@github.com:deepgram/agent.git
+git clone https://github.com/deepgram/agent.git
 cd agent
 bun install
 ```
