@@ -8,7 +8,7 @@ Voice agent SDK and embeddable widget for the [Deepgram Agent API](https://devel
 
 ## Status
 
-These packages are experimental and pre-1.0. Interfaces may change between minor versions, and releases are cut as the libraries evolve rather than on a fixed schedule. For a production integration with the [Deepgram Voice Agent API](https://developers.deepgram.com/docs/voice-agent), the documented and supported path is the official JavaScript SDK, [`@deepgram/sdk`](https://github.com/deepgram/deepgram-js-sdk). The packages in this family build on that API to provide embeddable browser components and are ready to evaluate and prototype with today.
+These packages are pre-1.0. Interfaces may change between minor versions, and releases are cut as the libraries evolve rather than on a fixed schedule. The packages in this family build on the [Deepgram Voice Agent API](https://developers.deepgram.com/docs/voice-agent) to provide embeddable browser components.
 
 ## Packages
 
