@@ -32,6 +32,7 @@ export function createMockSocket() {
     sendSettings: jest.fn(),
     sendMedia: jest.fn(),
     sendKeepAlive: jest.fn(),
+    sendUpdateListen: jest.fn(),
     sendUpdateSpeak: jest.fn(),
     sendUpdateThink: jest.fn(),
     sendUpdatePrompt: jest.fn(),

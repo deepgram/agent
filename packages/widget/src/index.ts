@@ -23,7 +23,7 @@ export type {
  *
  * init({
  *   tokenFactory: () => fetch('/api/deepgram-token').then(r => r.text()),
- *   agent: { think: { type: 'open_ai', model: 'gpt-4o-mini' } },
+ *   agent: { think: { provider: { type: 'open_ai', model: 'gpt-4o-mini' } } },
  * });
  * ```
  *

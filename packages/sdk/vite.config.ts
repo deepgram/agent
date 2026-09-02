@@ -12,8 +12,6 @@ export default defineConfig({
       external: [
         "@deepgram/sdk",
         "eventemitter3",
-        "@ricky0123/vad-web",
-        "onnxruntime-web",
       ],
     },
     minify: "terser",

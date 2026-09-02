@@ -15,7 +15,12 @@ import { AgentSession, AgentMicrophone, AgentPlayer } from "@deepgram/agents";
 
 const session = new AgentSession({
   auth: { tokenFactory: () => fetch('/api/deepgram-token').then(r => r.text()) },
-  agent: { think: { provider: { type: 'open_ai' }, model: 'gpt-4o-mini' } },
+  agent: {
+    listen: { provider: { type: 'deepgram', version: 'v1', model: 'nova-3' } },
+    think: { provider: { type: 'open_ai', model: 'gpt-4o-mini' } },
+    speak: { provider: { type: 'deepgram', model: 'aura-2-thalia-en' } },
+  },
+  audio: { output: { encoding: 'linear16', sampleRate: 24_000 } },
 });
 
 const player = new AgentPlayer();
@@ -59,6 +64,9 @@ Core WebSocket session. Wraps `@deepgram/sdk`'s agent connection with:
 - Exponential-backoff reconnect with jitter
 - Automatic KeepAlive pings
 - Audio buffering until `SettingsApplied`
+- Ordered normalization of SDK binary `Blob` messages to `ArrayBuffer`
+
+`@deepgram/agents` depends directly on `@deepgram/sdk` 5.9.0. It disables the underlying socket's retries and owns application-level reconnect so each attempt can refresh authentication and restore Settings. Accumulated conversation context is restored for inline agent configurations only; the protocol cannot attach inline context to an agent UUID. Consumers continue to receive the documented `ArrayBuffer` from the `audio` event even though SDK 5.9 delivers binary messages to its callback as `Blob`.
 
 ### Constructor
 
@@ -74,7 +82,7 @@ interface AgentSessionConfig {
   agent: AgentSettingsObject | string;  // inline config or pre-built agent UUID
   audio?: {
     input?: { encoding?: AudioEncoding; sampleRate?: number };   // default: linear16 @ 16kHz
-    output?: { encoding?: OutputEncoding; sampleRate?: number }; // default: 24kHz
+    output?: { encoding?: OutputEncoding; sampleRate?: number }; // default: linear16 @ 24kHz
   };
   keepAliveInterval?: number;  // default: 10_000ms
   reconnect?: ReconnectConfig;
@@ -89,14 +97,16 @@ interface AgentSessionConfig {
 |--------|-------------|
 | `connect()` | Open WebSocket connection |
 | `disconnect()` | Close connection (no reconnect) |
+| `clearConversationHistory()` | Clear context accumulated for future inline-agent reconnects |
 | `sendAudio(data: ArrayBuffer)` | Send PCM audio frame (queued until SettingsApplied) |
 | `injectUserMessage(content)` | Send a text message as the user |
-| `injectAgentMessage(message)` | Inject text as the agent |
+| `injectAgentMessage(message, behavior?)` | Inject text as the agent with optional `default`, `queue`, or `interrupt` behavior |
+| `updateListen(listen)` | Update listening settings mid-session |
 | `updateSpeak(speak)` | Update TTS settings mid-session |
 | `updateThink(think)` | Update LLM settings mid-session |
 | `updatePrompt(prompt)` | Update system prompt mid-session |
 | `sendFunctionCallResponse(id, name, content)` | Respond to a function call request |
-| `getId()` | Returns session ID (available after Welcome) |
+| `getId()` | Returns the request ID from Welcome |
 
 ### Events
 
@@ -113,6 +123,9 @@ session.on("function-call-response", (msg) => {});
 session.on("prompt-updated", (msg) => {});
 session.on("speak-updated", (msg) => {});
 session.on("think-updated", (msg) => {});
+session.on("listen-updated", (msg) => {});
+session.on("latency-report", (msg) => {});
+session.on("history", (msg) => {});
 session.on("injection-refused", (msg) => {});
 session.on("error", (msg) => {});
 session.on("warning", (msg) => {});
@@ -136,7 +149,7 @@ session.state; // "idle" | "connecting" | "connected" | "reconnecting" | "discon
 
 ### Reconnect
 
-Auto-reconnect is enabled by default with exponential backoff + jitter. Configure via `reconnect`:
+Auto-reconnect is enabled by default with exponential backoff + jitter. Runtime updates are replayed in their original wire order after `SettingsApplied`, before audio queued during reconnect is flushed. Accumulated text and completed function-call context is restored for inline agent configurations only. Audio sent after an unexpected close or error stays queued across attempts and resumes only after the replacement connection receives `SettingsApplied`. The consecutive-attempt counter also resets at `SettingsApplied`, not merely when the transport opens. Configure via `reconnect`:
 
 ```ts
 {
@@ -187,7 +200,7 @@ mic.on("error", (err: Error) => {});
 
 ## AgentPlayer
 
-Decodes and plays PCM Int16 audio from the agent. Provides volume/frequency analysis for visualizations and supports barge-in via `interrupt()`.
+Decodes and plays raw PCM Int16 (`linear16`) audio from the agent. Provides volume/frequency analysis for visualizations and supports barge-in via `interrupt()`. `AgentPlayer` does not decode compressed output; use `linear16` output or provide a separate decoder/player.
 
 ### Usage
 
@@ -230,12 +243,15 @@ export type {
   AgentSessionEvents,
   MicrophoneOptions,
   PlayerOptions,
-  AgentSettingsObject, ThinkSettings, SpeakSettings,
+  AgentSettingsObject, ListenSettings, ThinkSettings, SpeakSettings,
+  AgentMessageBehavior,
   // Server messages
   WelcomeMessage, SettingsAppliedMessage, ConversationTextMessage,
   UserStartedSpeakingMessage, AgentThinkingMessage,
-  FunctionCallRequestMessage, FunctionCallItem,
+  FunctionCallRequestMessage, FunctionCallResponseMessage, FunctionCallItem,
   AgentStartedSpeakingMessage, AgentAudioDoneMessage,
+  PromptUpdatedMessage, SpeakUpdatedMessage, ThinkUpdatedMessage,
+  ListenUpdatedMessage, LatencyReportMessage, HistoryMessage,
   AgentErrorMessage, AgentWarningMessage,
   InjectionRefusedMessage, ServerMessage,
 };

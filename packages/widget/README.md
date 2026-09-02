@@ -17,7 +17,7 @@ import { init } from "@deepgram/agents-widget";
 
 const destroy = init({
   tokenFactory: () => fetch('/api/deepgram-token').then(r => r.text()),
-  agent: { think: { provider: { type: 'open_ai' }, model: 'gpt-4o-mini' } },
+  agent: { think: { provider: { type: 'open_ai', model: 'gpt-4o-mini' } } },
 });
 
 // Later: destroy() to unmount
@@ -30,7 +30,7 @@ A UMD bundle ships at `dist/widget.umd.js` for `<script>`-tag usage. Host it fro
 <script>
   DeepgramAgent.init({
     tokenFactory: () => fetch('/api/deepgram-token').then(r => r.text()),
-    agent: { think: { provider: { type: 'open_ai' }, model: 'gpt-4o-mini' } },
+    agent: { think: { provider: { type: 'open_ai', model: 'gpt-4o-mini' } } },
   });
 </script>
 ```

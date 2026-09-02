@@ -179,21 +179,4 @@ describe("AgentMicrophone", () => {
     });
   });
 
-  describe("VAD error path", () => {
-    it("throws a descriptive error when @ricky0123/vad-web is not available", async () => {
-      const mic = new AgentMicrophone(onAudioFrame, { vad: true });
-
-      // The dynamic import of @ricky0123/vad-web will fail because the mock
-      // environment doesn't provide it at the expected path. The actual error
-      // depends on whether the optional peer dep resolves — in test env without
-      // proper ONNX runtime, MicVAD.new() will throw during initialization.
-      // We can verify the mic at least attempts to start.
-      try {
-        await mic.start();
-        mic.stop();
-      } catch (err) {
-        expect(err).toBeInstanceOf(Error);
-      }
-    });
-  });
 });
