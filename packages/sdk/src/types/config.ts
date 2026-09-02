@@ -45,7 +45,7 @@ export interface AudioOutputConfig {
 export interface ReconnectConfig {
   /** Whether to auto-reconnect on unexpected disconnections. Default: true */
   enabled?: boolean;
-  /** Max consecutive attempts before SettingsApplied resets the counter. Default: 8 */
+  /** Max consecutive failed attempts before giving up. The counter resets once a connection reaches SettingsApplied. Default: 8 */
   maxAttempts?: number;
   /** Initial backoff delay in ms. Default: 500 */
   baseDelay?: number;

@@ -108,7 +108,9 @@ export class AgentSession extends EventEmitter<AgentSessionEvents> {
       () => {
         const socket = this.socket;
         if (this._canWriteToSocket(socket)) {
-          socket.sendKeepAlive({ type: "KeepAlive" });
+          this._writeToSocket(socket, () => {
+            socket.sendKeepAlive({ type: "KeepAlive" });
+          });
         }
       },
     );
@@ -152,12 +154,10 @@ export class AgentSession extends EventEmitter<AgentSessionEvents> {
       this.audioQueue.push(data);
       return;
     }
-    try {
+    if (!this._writeToSocket(socket, () => {
       socket.sendMedia(data);
-    } catch (err) {
+    })) {
       this.audioQueue.push(data);
-      const error = err instanceof Error ? err : new Error(String(err));
-      this._handleSocketFailure(socket, error.message, error);
     }
   }
 
@@ -180,16 +180,20 @@ export class AgentSession extends EventEmitter<AgentSessionEvents> {
   injectUserMessage(content: string): void {
     const socket = this.socket;
     if (!this._canWriteToSocket(socket)) return;
-    socket.sendInjectUserMessage({ type: "InjectUserMessage", content });
+    this._writeToSocket(socket, () => {
+      socket.sendInjectUserMessage({ type: "InjectUserMessage", content });
+    });
   }
 
   injectAgentMessage(message: string, behavior?: AgentMessageBehavior): void {
     const socket = this.socket;
     if (!this._canWriteToSocket(socket)) return;
-    socket.sendInjectAgentMessage({
-      type: "InjectAgentMessage",
-      message,
-      ...(behavior === undefined ? {} : { behavior }),
+    this._writeToSocket(socket, () => {
+      socket.sendInjectAgentMessage({
+        type: "InjectAgentMessage",
+        message,
+        ...(behavior === undefined ? {} : { behavior }),
+      });
     });
   }
 
@@ -197,8 +201,10 @@ export class AgentSession extends EventEmitter<AgentSessionEvents> {
     this._recordFunctionCallResponse(id, name, content);
     const socket = this.socket;
     if (!this._canWriteToSocket(socket)) return;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    socket.sendFunctionCallResponse({ type: "FunctionCallResponse", id, name, content } as any);
+    this._writeToSocket(socket, () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      socket.sendFunctionCallResponse({ type: "FunctionCallResponse", id, name, content } as any);
+    });
   }
 
   /**
@@ -473,6 +479,10 @@ export class AgentSession extends EventEmitter<AgentSessionEvents> {
 
   private _recordRuntimeUpdate(update: RuntimeUpdate): void {
     const snapshot = JSON.parse(JSON.stringify(update)) as RuntimeUpdate;
+    const existing = this.runtimeUpdates.findIndex(
+      (recorded) => recorded.type === snapshot.type,
+    );
+    if (existing !== -1) this.runtimeUpdates.splice(existing, 1);
     this.runtimeUpdates.push(snapshot);
     const socket = this.socket;
     if (this.settingsApplied && this._canWriteToSocket(socket)) {
@@ -484,8 +494,24 @@ export class AgentSession extends EventEmitter<AgentSessionEvents> {
     return socket !== null && socket === this.socket && socket !== this.socketFailureQueued;
   }
 
-  private _sendRuntimeUpdate(socket: V1Socket, update: RuntimeUpdate): boolean {
+  private _writeToSocket(socket: V1Socket, write: () => void): boolean {
     try {
+      write();
+      return true;
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error(String(err));
+      this._queueSocketFailure(
+        socket,
+        this.connectionGeneration,
+        error.message,
+        error,
+      );
+      return false;
+    }
+  }
+
+  private _sendRuntimeUpdate(socket: V1Socket, update: RuntimeUpdate): boolean {
+    return this._writeToSocket(socket, () => {
       switch (update.type) {
         case "UpdateListen":
           socket.sendUpdateListen(update);
@@ -500,12 +526,7 @@ export class AgentSession extends EventEmitter<AgentSessionEvents> {
           socket.sendUpdatePrompt(update);
           break;
       }
-      return true;
-    } catch (err) {
-      const error = err instanceof Error ? err : new Error(String(err));
-      this._handleSocketFailure(socket, error.message, error);
-      return false;
-    }
+    });
   }
 
   private _replayRuntimeUpdates(socket: V1Socket): boolean {

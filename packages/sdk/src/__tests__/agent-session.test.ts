@@ -862,6 +862,54 @@ describe("AgentSession", () => {
       expect(wireOrder).toEqual(["prompt", "listen", "speak", "think", "audio"]);
     });
 
+    it("replays only the latest value for each runtime update type", async () => {
+      const session = createSession({
+        reconnect: { enabled: true, maxAttempts: 3, baseDelay: 100, jitter: false },
+      });
+      await session.connect();
+      const firstSocket = mockSocket;
+      firstSocket._emit("message", { type: "SettingsApplied" });
+
+      session.updatePrompt("old prompt");
+      session.updateListen({
+        provider: { type: "deepgram", model: "nova-3" },
+      });
+      session.updatePrompt("latest prompt");
+      session.updateSpeak({
+        provider: { type: "deepgram", model: "aura-2-thalia-en" },
+      });
+      session.updateListen({
+        provider: { type: "deepgram", model: "flux-general-en" },
+      });
+
+      const nextSocket = createMockSocket();
+      createMockDeepgramClient(nextSocket);
+      mockClient.agent.v1.connect.mockResolvedValue(nextSocket);
+      const wireOrder: string[] = [];
+      nextSocket.sendUpdatePrompt.mockImplementation(() => wireOrder.push("prompt"));
+      nextSocket.sendUpdateSpeak.mockImplementation(() => wireOrder.push("speak"));
+      nextSocket.sendUpdateListen.mockImplementation(() => wireOrder.push("listen"));
+
+      firstSocket._emit("close", { code: 1006 });
+      jest.advanceTimersByTime(100);
+      await flushMicrotasks();
+      nextSocket._emit("message", { type: "SettingsApplied" });
+
+      expect(wireOrder).toEqual(["prompt", "speak", "listen"]);
+      expect(nextSocket.sendUpdatePrompt).toHaveBeenCalledTimes(1);
+      expect(nextSocket.sendUpdatePrompt).toHaveBeenCalledWith({
+        type: "UpdatePrompt",
+        prompt: "latest prompt",
+      });
+      expect(nextSocket.sendUpdateListen).toHaveBeenCalledTimes(1);
+      expect(nextSocket.sendUpdateListen).toHaveBeenCalledWith({
+        type: "UpdateListen",
+        listen: {
+          provider: { type: "deepgram", model: "flux-general-en" },
+        },
+      });
+    });
+
     it("snapshots runtime updates before sending and replaying them", async () => {
       const session = createSession({
         reconnect: { enabled: true, maxAttempts: 3, baseDelay: 100, jitter: false },
@@ -1159,6 +1207,36 @@ describe("AgentSession", () => {
       nextSocket._emit("message", { type: "SettingsApplied" });
       expect(nextSocket.sendMedia).toHaveBeenCalledTimes(1);
       expect(nextSocket.sendMedia).toHaveBeenCalledWith(outgoingFrame);
+    });
+
+    it("drains inbound audio before handling a synchronous send failure", async () => {
+      const session = createSession({
+        reconnect: { enabled: true, maxAttempts: 3, baseDelay: 100, jitter: false },
+      });
+      const events: string[] = [];
+      session.on("audio", () => events.push("audio"));
+      session.on("sdk-error", () => events.push("sdk-error"));
+      session.on("reconnecting", () => events.push("reconnecting"));
+      await session.connect();
+
+      mockSocket._emit("message", { type: "SettingsApplied" });
+      let resolveConversion!: (data: ArrayBuffer) => void;
+      const incomingAudio = new Blob();
+      Object.defineProperty(incomingAudio, "arrayBuffer", {
+        value: () => new Promise<ArrayBuffer>((resolve) => { resolveConversion = resolve; }),
+      });
+      mockSocket._emit("message", incomingAudio);
+      mockSocket.sendMedia.mockImplementation(() => {
+        throw new Error("socket write failed");
+      });
+
+      session.sendAudio(new ArrayBuffer(320));
+      expect(events).toEqual([]);
+
+      resolveConversion(new ArrayBuffer(160));
+      await flushMicrotasks();
+
+      expect(events).toEqual(["audio", "sdk-error", "reconnecting"]);
     });
 
     it("does not write messages to a socket with a queued failure", async () => {
