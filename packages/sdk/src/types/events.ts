@@ -10,6 +10,9 @@ import type {
   PromptUpdatedMessage,
   SpeakUpdatedMessage,
   ThinkUpdatedMessage,
+  ListenUpdatedMessage,
+  LatencyReportMessage,
+  HistoryMessage,
   InjectionRefusedMessage,
   AgentErrorMessage,
   AgentWarningMessage,
@@ -33,6 +36,9 @@ export interface AgentSessionEvents {
   "prompt-updated": [msg: PromptUpdatedMessage];
   "speak-updated": [msg: SpeakUpdatedMessage];
   "think-updated": [msg: ThinkUpdatedMessage];
+  "listen-updated": [msg: ListenUpdatedMessage];
+  "latency-report": [msg: LatencyReportMessage];
+  history: [msg: HistoryMessage];
   "injection-refused": [msg: InjectionRefusedMessage];
   error: [msg: AgentErrorMessage];
   warning: [msg: AgentWarningMessage];

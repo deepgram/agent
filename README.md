@@ -33,7 +33,7 @@ import { init } from "@deepgram/agents-widget";
 
 init({
   tokenFactory: () => fetch('/api/deepgram-token').then(r => r.text()),
-  agent: { think: { provider: { type: 'open_ai' }, model: 'gpt-4o-mini' } },
+  agent: { think: { provider: { type: 'open_ai', model: 'gpt-4o-mini' } } },
 });
 ```
 
@@ -51,7 +51,7 @@ function App() {
     <AgentProvider
       config={{
         auth: { tokenFactory: () => fetch('/api/deepgram-token').then(r => r.text()) },
-        agent: { think: { provider: { type: 'open_ai' }, model: 'gpt-4o-mini' } },
+        agent: { think: { provider: { type: 'open_ai', model: 'gpt-4o-mini' } } },
       }}
     >
       <AgentStartButton />
@@ -69,7 +69,7 @@ import { AgentSession, AgentMicrophone, AgentPlayer } from "@deepgram/agents";
 
 const session = new AgentSession({
   auth: { tokenFactory: () => fetch('/api/deepgram-token').then(r => r.text()) },
-  agent: { think: { provider: { type: 'open_ai' }, model: 'gpt-4o-mini' } },
+  agent: { think: { provider: { type: 'open_ai', model: 'gpt-4o-mini' } } },
 });
 
 const player = new AgentPlayer();

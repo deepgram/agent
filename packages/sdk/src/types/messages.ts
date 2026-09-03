@@ -12,6 +12,10 @@ type V1Socket = Awaited<ReturnType<InstanceType<typeof DeepgramClient>["agent"][
 
 export type AgentV1SettingsPayload = Parameters<V1Socket["sendSettings"]>[0];
 export type AgentSettingsObject    = AgentV1SettingsPayload["agent"];
+export type ListenSettings         = Parameters<V1Socket["sendUpdateListen"]>[0]["listen"];
+export type AgentMessageBehavior   = NonNullable<
+  Parameters<V1Socket["sendInjectAgentMessage"]>[0]["behavior"]
+>;
 
 // Derived from the settings payload — no hand-written types
 type AgentObject = Extract<AgentSettingsObject, object>;
@@ -41,6 +45,9 @@ export type AgentAudioDoneMessage       = agent.AgentV1AgentAudioDone;
 export type PromptUpdatedMessage        = agent.AgentV1PromptUpdated;
 export type SpeakUpdatedMessage         = agent.AgentV1SpeakUpdated;
 export type ThinkUpdatedMessage         = agent.AgentV1ThinkUpdated;
+export type ListenUpdatedMessage        = agent.AgentV1ListenUpdated;
+export type LatencyReportMessage        = agent.AgentV1LatencyReport;
+export type HistoryMessage              = agent.AgentV1History;
 export type InjectionRefusedMessage     = agent.AgentV1InjectionRefused;
 export type AgentErrorMessage           = agent.AgentV1Error;
 export type AgentWarningMessage         = agent.AgentV1Warning;
@@ -59,6 +66,9 @@ export type ServerMessage =
   | PromptUpdatedMessage
   | SpeakUpdatedMessage
   | ThinkUpdatedMessage
+  | ListenUpdatedMessage
+  | LatencyReportMessage
+  | HistoryMessage
   | InjectionRefusedMessage
   | AgentErrorMessage
   | AgentWarningMessage

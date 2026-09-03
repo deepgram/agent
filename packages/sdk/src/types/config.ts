@@ -45,7 +45,7 @@ export interface AudioOutputConfig {
 export interface ReconnectConfig {
   /** Whether to auto-reconnect on unexpected disconnections. Default: true */
   enabled?: boolean;
-  /** Max number of attempts before giving up. Default: 8 */
+  /** Max consecutive failed attempts before giving up. The counter resets once a connection reaches SettingsApplied. Default: 8 */
   maxAttempts?: number;
   /** Initial backoff delay in ms. Default: 500 */
   baseDelay?: number;
@@ -65,6 +65,8 @@ export interface AgentSessionConfig {
   /**
    * Agent configuration sent in the Settings message after connection.
    * Pass either a full settings object or a pre-built agent UUID.
+   * Conversation context restoration on reconnect is available only for the
+   * inline object form; the protocol cannot attach context to an agent UUID.
    */
   agent: AgentSettingsObject | string;
 

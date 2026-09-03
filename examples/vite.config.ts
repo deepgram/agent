@@ -139,7 +139,6 @@ export default defineConfig(({ mode }) => {
           path.resolve(".."),                    // agent monorepo root
           path.resolve("../../react"),           // deepgram/react repo
           path.resolve("../../ui"),              // deepgram/ui repo
-          path.resolve("../node_modules/.bun"),  // bun cache (WASM/ONNX for VAD)
         ],
       },
     },
