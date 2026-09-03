@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.1.2](https://github.com/deepgram/agent/compare/agents-v0.1.1...agents-v0.1.2) (2026-09-03)
+
+
+### Features
+
+* **sdk:** align with @deepgram/sdk 5.9 ([d08b6df](https://github.com/deepgram/agent/commit/d08b6df2dd39912faba4dbb1cf383a7d9f990608))
+* **sdk:** align with @deepgram/sdk 5.9 ([#71](https://github.com/deepgram/agent/issues/71)) ([5a63c41](https://github.com/deepgram/agent/commit/5a63c41d9d91d5ff5f76448fbfc5e056f064a69a))
+
+
+### Bug Fixes
+
+* **sdk:** bound reconnect replay state ([33d2480](https://github.com/deepgram/agent/commit/33d2480f0b5837dc7e129e0c3055b65ca8be29b1))
+* **sdk:** preserve queued messages during audio flush ([7f76952](https://github.com/deepgram/agent/commit/7f76952ac47a1157c27afe3d4bad5a494fbf3938))
+
 ## [0.1.1](https://github.com/deepgram/agent/compare/agents-v0.1.0...agents-v0.1.1) (2026-04-30)
 
 
