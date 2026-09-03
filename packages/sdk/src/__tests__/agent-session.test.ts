@@ -220,6 +220,40 @@ describe("AgentSession", () => {
       expect(mockSocket.sendMedia).toHaveBeenCalledWith(frame2);
     });
 
+    it("drains accepted messages before handling an audio flush failure", async () => {
+      const session = createSession({
+        reconnect: { enabled: true, maxAttempts: 3, baseDelay: 100, jitter: false },
+      });
+      const events: string[] = [];
+      session.on("audio", () => events.push("audio"));
+      session.on("warning", () => events.push("warning"));
+      session.on("sdk-error", () => events.push("sdk-error"));
+      session.on("reconnecting", () => events.push("reconnecting"));
+      await session.connect();
+      session.sendAudio(new ArrayBuffer(320));
+
+      let resolveConversion!: (data: ArrayBuffer) => void;
+      const incomingAudio = new Blob();
+      Object.defineProperty(incomingAudio, "arrayBuffer", {
+        value: () => new Promise<ArrayBuffer>((resolve) => { resolveConversion = resolve; }),
+      });
+      mockSocket._emit("message", incomingAudio);
+      mockSocket._emit("message", { type: "SettingsApplied" });
+      mockSocket._emit("message", {
+        type: "Warning",
+        code: "TEST_WARNING",
+        description: "queued after settings",
+      });
+      mockSocket.sendMedia.mockImplementation(() => {
+        throw new Error("flush failed");
+      });
+
+      resolveConversion(new ArrayBuffer(160));
+      await flushMicrotasks();
+
+      expect(events).toEqual(["audio", "warning", "sdk-error", "reconnecting"]);
+    });
+
     it("sends audio immediately after SettingsApplied", async () => {
       const session = createSession();
       await session.connect();

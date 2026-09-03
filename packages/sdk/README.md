@@ -149,7 +149,7 @@ session.state; // "idle" | "connecting" | "connected" | "reconnecting" | "discon
 
 ### Reconnect
 
-Auto-reconnect is enabled by default with exponential backoff + jitter. The latest value for each runtime setting is replayed in the order those settings were most recently updated after `SettingsApplied`, before audio queued during reconnect is flushed. Accumulated text and completed function-call context is restored for inline agent configurations only. Audio sent after an unexpected close or error stays queued across attempts and resumes only after the replacement connection receives `SettingsApplied`. The consecutive-attempt counter also resets at `SettingsApplied`, not merely when the transport opens. Configure via `reconnect`:
+Auto-reconnect is enabled by default with exponential backoff + jitter. After `SettingsApplied`, the latest value of each runtime setting (prompt, listen, speak, think) is replayed, ordered by when each setting was last updated, before audio queued during reconnect is flushed. Accumulated text and completed function-call context is restored for inline agent configurations only. Audio sent after an unexpected close or error stays queued across attempts and resumes only after the replacement connection receives `SettingsApplied`. The consecutive-attempt counter also resets at `SettingsApplied`, not merely when the transport opens. Configure via `reconnect`:
 
 ```ts
 {

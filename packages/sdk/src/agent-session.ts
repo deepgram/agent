@@ -593,8 +593,10 @@ export class AgentSession extends EventEmitter<AgentSessionEvents> {
         }
         this.sessionId = msg.request_id ?? null;
         const settings = this._buildSettingsPayload();
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        socket.sendSettings(settings as any);
+        if (!this._writeToSocket(socket, () => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          socket.sendSettings(settings as any);
+        })) return;
         this.emit("welcome", msg);
         break;
       }
@@ -608,12 +610,10 @@ export class AgentSession extends EventEmitter<AgentSessionEvents> {
         this.keepAlive.start();
         if (!this._replayRuntimeUpdates(socket)) return;
         for (let index = 0; index < this.audioQueue.length; index++) {
-          try {
+          if (!this._writeToSocket(socket, () => {
             socket.sendMedia(this.audioQueue[index]);
-          } catch (err) {
+          })) {
             this.audioQueue = this.audioQueue.slice(index);
-            const error = err instanceof Error ? err : new Error(String(err));
-            this._handleSocketFailure(socket, error.message, error);
             return;
           }
         }
