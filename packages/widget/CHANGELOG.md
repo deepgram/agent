@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.8](https://github.com/deepgram/agent/compare/agents-widget-v0.1.7...agents-widget-v0.1.8) (2026-09-04)
+
+
+### Features
+
+* **sdk:** align with @deepgram/sdk 5.9 ([d08b6df](https://github.com/deepgram/agent/commit/d08b6df2dd39912faba4dbb1cf383a7d9f990608))
+* **sdk:** align with @deepgram/sdk 5.9 ([#71](https://github.com/deepgram/agent/issues/71)) ([5a63c41](https://github.com/deepgram/agent/commit/5a63c41d9d91d5ff5f76448fbfc5e056f064a69a))
+
 ## [0.1.7](https://github.com/deepgram/agent/compare/agents-widget-v0.1.6...agents-widget-v0.1.7) (2026-05-11)
 
 
