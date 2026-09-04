@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.1.8](https://github.com/deepgram/agent/compare/agents-widget-v0.1.7...agents-widget-v0.1.8) (2026-09-04)
+
+
+### Features
+
+* **widget:** ship the `@deepgram/agents` 0.1.2 runtime in the self-contained ESM and UMD bundles, updating the underlying Agent transport from `@deepgram/sdk` 5.1 to 5.9 ([#71](https://github.com/deepgram/agent/issues/71)) ([5a63c41](https://github.com/deepgram/agent/commit/5a63c41d9d91d5ff5f76448fbfc5e056f064a69a))
+
+
+### Bug Fixes
+
+* **widget:** refresh credentials on reconnect, retain queued audio until `SettingsApplied`, and restore inline conversation and completed function-call context ([d08b6df](https://github.com/deepgram/agent/commit/d08b6df2dd39912faba4dbb1cf383a7d9f990608))
+* **widget:** replay only the latest prompt, listen, speak, and think updates after reconnect, in the order each setting was last changed ([33d2480](https://github.com/deepgram/agent/commit/33d2480f0b5837dc7e129e0c3055b65ca8be29b1))
+* **widget:** preserve wire order across Blob audio, JSON messages, and synchronous socket failures so accepted audio is delivered before reconnect teardown ([7f76952](https://github.com/deepgram/agent/commit/7f76952ac47a1157c27afe3d4bad5a494fbf3938))
+* **widget:** require `@deepgram/agents` 0.1.2 for matching public types and correct the OpenAI model placement in the ESM, UMD, and API examples ([f114af8](https://github.com/deepgram/agent/commit/f114af806f16d0ac69fcd2e2a582ec0747f10908))
+
 ## [0.1.7](https://github.com/deepgram/agent/compare/agents-widget-v0.1.6...agents-widget-v0.1.7) (2026-05-11)
 
 

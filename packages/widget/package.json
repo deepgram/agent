@@ -1,6 +1,6 @@
 {
   "name": "@deepgram/agents-widget",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "Self-contained Deepgram Voice Agent widget. Drop into any web page, no framework required.",
   "type": "module",
   "main": "dist/widget.umd.js",
@@ -44,7 +44,7 @@
     "test:watch": "bun test --watch"
   },
   "dependencies": {
-    "@deepgram/agents": "^0.1.1",
+    "@deepgram/agents": "^0.1.2",
     "@deepgram/react": "^0.1.0",
     "@deepgram/ui": "^0.1.4",
     "preact": "10.29.1",
