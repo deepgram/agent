@@ -6,6 +6,10 @@ Voice agent SDK and embeddable widget for the [Deepgram Agent API](https://devel
 @deepgram/agents  ←  @deepgram/react (external)  ←  @deepgram/ui (external)  ←  @deepgram/agents-widget
 ```
 
+## Status
+
+These packages are pre-1.0. Interfaces may change between minor versions, and releases are cut as the libraries evolve rather than on a fixed schedule. The packages in this family build on the [Deepgram Voice Agent API](https://developers.deepgram.com/docs/voice-agent) to provide browser SDKs, React hooks and UI components, and an embeddable widget.
+
 ## Packages
 
 | Package | Description |
@@ -42,9 +46,25 @@ The package also ships a UMD bundle at `dist/widget.umd.js` for `<script>`-tag u
 ### React
 
 ```tsx
-import { AgentProvider, useAgentState, useAgentConversation } from "@deepgram/ui";
-import "@deepgram/ui/styles.css";
-import { AgentConversation, AgentStartButton, AgentTextInput } from "@deepgram/ui";
+import {
+  AgentProvider,
+  AgentConversation,
+  AgentMessage,
+  AgentStartButton,
+  AgentTextInput,
+  useAgentConversation,
+} from "@deepgram/ui";
+
+function Conversation() {
+  const { conversation } = useAgentConversation();
+  return (
+    <AgentConversation>
+      {conversation.map((entry) => (
+        <AgentMessage key={entry.id} entry={entry} />
+      ))}
+    </AgentConversation>
+  );
+}
 
 function App() {
   return (
@@ -54,13 +74,17 @@ function App() {
         agent: { think: { provider: { type: 'open_ai', model: 'gpt-4o-mini' } } },
       }}
     >
-      <AgentStartButton />
-      <AgentConversation />
-      <AgentTextInput />
+      <div data-dg-agent>
+        <AgentStartButton />
+        <Conversation />
+        <AgentTextInput />
+      </div>
     </AgentProvider>
   );
 }
 ```
+
+Styles are embedded in the JavaScript bundle and injected automatically; no separate CSS import is required. The injected styles, including the theme variables and dark-mode behavior, apply only inside an element that carries the `data-dg-agent` attribute, so keep the components inside that wrapper.
 
 ### SDK only
 
@@ -128,7 +152,7 @@ Live demo: [deepgram-agent-examples.fly.dev](https://deepgram-agent-examples.fly
 **Prerequisites:** [Bun](https://bun.sh/) 1.3+
 
 ```bash
-git clone git@github.com:deepgram/agent.git
+git clone https://github.com/deepgram/agent.git
 cd agent
 bun install
 ```

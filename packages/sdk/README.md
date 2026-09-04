@@ -2,7 +2,17 @@
 
 Core SDK for the [Deepgram Voice Agent API](https://developers.deepgram.com/docs/voice-agent). Manages the WebSocket session, microphone capture, and audio playback with volume/frequency analysis.
 
+## Status
+
+This package is pre-1.0. Interfaces may change between minor versions.
+
 ## Install
+
+```bash
+npm install @deepgram/agents
+```
+
+or with Bun:
 
 ```bash
 bun add @deepgram/agents
