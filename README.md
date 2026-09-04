@@ -8,7 +8,7 @@ Voice agent SDK and embeddable widget for the [Deepgram Agent API](https://devel
 
 ## Status
 
-These packages are pre-1.0. Interfaces may change between minor versions, and releases are cut as the libraries evolve rather than on a fixed schedule. The packages in this family build on the [Deepgram Voice Agent API](https://developers.deepgram.com/docs/voice-agent) to provide embeddable browser components.
+These packages are pre-1.0. Interfaces may change between minor versions, and releases are cut as the libraries evolve rather than on a fixed schedule. The packages in this family build on the [Deepgram Voice Agent API](https://developers.deepgram.com/docs/voice-agent) to provide browser SDKs, React hooks and UI components, and an embeddable widget.
 
 ## Packages
 
@@ -74,15 +74,17 @@ function App() {
         agent: { think: { provider: { type: 'open_ai', model: 'gpt-4o-mini' } } },
       }}
     >
-      <AgentStartButton />
-      <Conversation />
-      <AgentTextInput />
+      <div data-dg-agent>
+        <AgentStartButton />
+        <Conversation />
+        <AgentTextInput />
+      </div>
     </AgentProvider>
   );
 }
 ```
 
-Styles are embedded in the JavaScript bundle and injected automatically; no separate CSS import is required.
+Styles are embedded in the JavaScript bundle and injected automatically; no separate CSS import is required. The injected styles, including the theme variables and dark-mode behavior, apply only inside an element that carries the `data-dg-agent` attribute, so keep the components inside that wrapper.
 
 ### SDK only
 

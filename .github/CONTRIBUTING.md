@@ -14,9 +14,9 @@ This is a Bun workspaces monorepo. The widget package depends on sibling repos v
 ```bash
 # Clone all repos as siblings
 cd ~/Projects/deepgram  # or your preferred directory
-git clone git@github.com:deepgram/agent.git
-git clone git@github.com:deepgram/react.git
-git clone git@github.com:deepgram/ui.git
+git clone https://github.com/deepgram/agent.git
+git clone https://github.com/deepgram/react.git
+git clone https://github.com/deepgram/ui.git
 
 # Build sibling dependencies
 cd react && bun install && bun run build && cd ..

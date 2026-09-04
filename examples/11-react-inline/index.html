@@ -32,11 +32,23 @@
   <span class="fn">AgentProvider</span>, <span class="fn">AgentStatus</span>, <span class="fn">AgentConversation</span>,
   <span class="fn">AgentTextInput</span>, <span class="fn">AgentMicrophoneButton</span>,
   <span class="fn">AgentSpeakerButton</span>, <span class="fn">AgentStartButton</span>,
+  <span class="fn">AgentMessage</span>, <span class="fn">useAgentConversation</span>,
 } <span class="kw">from</span> <span class="str">'@deepgram/ui'</span>;
+
+<span class="kw">function</span> <span class="fn">Conversation</span>() {
+  <span class="kw">const</span> { conversation } = <span class="fn">useAgentConversation</span>();
+  <span class="kw">return</span> (
+    <span class="tag">&lt;AgentConversation&gt;</span>
+      {conversation.map((entry) =&gt; (
+        <span class="tag">&lt;AgentMessage</span> <span class="at">key</span>={entry.id} <span class="at">entry</span>={entry} <span class="tag">/&gt;</span>
+      ))}
+    <span class="tag">&lt;/AgentConversation&gt;</span>
+  );
+}
 
 <span class="tag">&lt;AgentProvider</span> <span class="at">config</span>={config}<span class="tag">&gt;</span>
   <span class="tag">&lt;div</span> <span class="at">className</span>=<span class="str">"agent-panel"</span> <span class="at">data-dg-agent</span> <span class="at">data-dg-scheme</span>=<span class="str">"dark"</span><span class="tag">&gt;</span>
-    <span class="tag">&lt;AgentConversation /&gt;</span>
+    <span class="tag">&lt;Conversation /&gt;</span>
     <span class="tag">&lt;div</span> <span class="at">style</span>={{ padding: 12, display: <span class="str">"flex"</span>, flexDirection: <span class="str">"column"</span>, gap: 10 }}<span class="tag">&gt;</span>
       <span class="tag">&lt;AgentTextInput /&gt;</span>
       <span class="tag">&lt;AgentStartButton /&gt;</span>
@@ -53,7 +65,7 @@
     import {
       AgentProvider, AgentStatus, AgentConversation,
       AgentTextInput, AgentMicrophoneButton, AgentSpeakerButton,
-      AgentStartButton,
+      AgentStartButton, AgentMessage, useAgentConversation,
     } from "@deepgram/ui";
     import { baseConfig } from "../src/agent-config.ts";
 
@@ -66,6 +78,13 @@
       },
     };
 
+    function Conversation() {
+      const { conversation } = useAgentConversation();
+      return createElement(AgentConversation, null,
+        conversation.map((entry) => createElement(AgentMessage, { key: entry.id, entry })),
+      );
+    }
+
     function App() {
       return createElement(AgentProvider, { config },
         createElement("div", { className: "agent-panel", "data-dg-agent": "", "data-dg-scheme": "dark" },
@@ -73,7 +92,7 @@
             createElement("span", { style: { fontWeight: 600, flex: 1, color: "#fff" } }, "Voice Agent"),
             createElement(AgentStatus),
           ),
-          createElement(AgentConversation),
+          createElement(Conversation),
           createElement("div", { style: { padding: "12px 16px", display: "flex", flexDirection: "column", gap: 10, borderTop: "1px solid rgba(255,255,255,.08)" } },
             createElement("div", { style: { display: "flex", gap: 8, alignItems: "center" } },
               createElement(AgentTextInput),
