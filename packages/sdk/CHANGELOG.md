@@ -5,14 +5,15 @@
 
 ### Features
 
-* **sdk:** align with @deepgram/sdk 5.9 ([d08b6df](https://github.com/deepgram/agent/commit/d08b6df2dd39912faba4dbb1cf383a7d9f990608))
-* **sdk:** align with @deepgram/sdk 5.9 ([#71](https://github.com/deepgram/agent/issues/71)) ([5a63c41](https://github.com/deepgram/agent/commit/5a63c41d9d91d5ff5f76448fbfc5e056f064a69a))
+* **sdk:** upgrade the underlying Agent transport from `@deepgram/sdk` 5.1 to 5.9 and align settings, binary-message, and request-ID handling with the current Agent v1 socket ([#71](https://github.com/deepgram/agent/issues/71)) ([5a63c41](https://github.com/deepgram/agent/commit/5a63c41d9d91d5ff5f76448fbfc5e056f064a69a))
+* **sdk:** expose `updateListen`, injection behavior, conversation-history clearing, and typed `ListenUpdated`, `LatencyReport`, `History`, and `FunctionCallResponse` events ([d08b6df](https://github.com/deepgram/agent/commit/d08b6df2dd39912faba4dbb1cf383a7d9f990608))
 
 
 ### Bug Fixes
 
-* **sdk:** bound reconnect replay state ([33d2480](https://github.com/deepgram/agent/commit/33d2480f0b5837dc7e129e0c3055b65ca8be29b1))
-* **sdk:** preserve queued messages during audio flush ([7f76952](https://github.com/deepgram/agent/commit/7f76952ac47a1157c27afe3d4bad5a494fbf3938))
+* **sdk:** serialize Blob audio, JSON messages, and synchronous socket failures so accepted messages are emitted in wire order before reconnect teardown ([7f76952](https://github.com/deepgram/agent/commit/7f76952ac47a1157c27afe3d4bad5a494fbf3938))
+* **sdk:** refresh credentials on each reconnect attempt, restore inline conversation and completed function-call context, and retain queued audio until the replacement connection receives `SettingsApplied` ([d08b6df](https://github.com/deepgram/agent/commit/d08b6df2dd39912faba4dbb1cf383a7d9f990608))
+* **sdk:** compact reconnect replay to the latest prompt, listen, speak, and think updates in last-set order, and reset the consecutive-attempt counter only after `SettingsApplied` ([33d2480](https://github.com/deepgram/agent/commit/33d2480f0b5837dc7e129e0c3055b65ca8be29b1))
 
 ## [0.1.1](https://github.com/deepgram/agent/compare/agents-v0.1.0...agents-v0.1.1) (2026-04-30)
 
