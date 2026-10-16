@@ -4,6 +4,10 @@ Self-contained voice agent widget for the [Deepgram Agent API](https://developer
 
 Bundles Preact internally (React components from `@deepgram/ui` are aliased to `preact/compat`).
 
+## Status
+
+This package is pre-1.0. Interfaces may change between minor versions.
+
 ## Install
 
 ```bash
