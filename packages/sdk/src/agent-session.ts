@@ -232,16 +232,15 @@ export class AgentSession extends EventEmitter<AgentSessionEvents> {
       const token = await this.tokenFactory.get();
       if (generation !== this.connectionGeneration || this.intentionalClose) return;
 
-      // Build client with the right auth scheme:
-      // - Custom URL (proxy like dx-api): always Bearer
+      // Build the client with the configured URL and matching auth scheme:
       // - tokenFactory → Bearer token (from /v1/auth/grant)
       // - apiKey        → raw API key → Token header
       // CustomDeepgramClient converts these to Sec-WebSocket-Protocol in browsers.
-      const isBearer = !!this.config.url || "tokenFactory" in this.config.auth;
+      const isBearer = "tokenFactory" in this.config.auth;
       const clientOpts = this.config.url ? { baseUrl: this.config.url } : {};
       const client = isBearer
         ? new DeepgramClient({ accessToken: token, ...clientOpts })
-        : new DeepgramClient({ apiKey: token });
+        : new DeepgramClient({ apiKey: token, ...clientOpts });
       const authorization = isBearer ? `Bearer ${token}` : `Token ${token}`;
 
       // Returns a WrappedAgentV1Socket with startClosed:true — NOT yet connected.
