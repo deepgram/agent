@@ -4,12 +4,13 @@ import { createMockSocket, createMockDeepgramClient, type MockSocket } from "./h
 // Mock @deepgram/sdk before importing AgentSession
 let mockSocket: MockSocket;
 let mockClient: ReturnType<typeof createMockDeepgramClient>;
+const mockDeepgramClientConstructor = jest.fn(() => mockClient);
 
 mock.module("@deepgram/sdk", () => {
   mockSocket = createMockSocket();
   mockClient = createMockDeepgramClient(mockSocket);
   return {
-    DeepgramClient: jest.fn(() => mockClient),
+    DeepgramClient: mockDeepgramClientConstructor,
   };
 });
 
@@ -34,6 +35,7 @@ describe("AgentSession", () => {
     // Reset the mock socket for each test
     mockSocket = createMockSocket();
     mockClient = createMockDeepgramClient(mockSocket);
+    mockDeepgramClientConstructor.mockClear();
   });
 
   afterEach(() => {
@@ -87,6 +89,46 @@ describe("AgentSession", () => {
       // Advance timers — no reconnect should fire
       jest.advanceTimersByTime(60_000);
       expect(reconnecting).not.toHaveBeenCalled();
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // Authentication
+  // ---------------------------------------------------------------------------
+
+  describe("authentication", () => {
+    it("uses Token authentication with an API key and custom URL", async () => {
+      const session = createSession({ url: "wss://api.eu.deepgram.com" });
+
+      await session.connect();
+
+      expect(mockDeepgramClientConstructor).toHaveBeenCalledWith({
+        apiKey: "test-key",
+        baseUrl: "wss://api.eu.deepgram.com",
+      });
+      expect(mockClient.agent.v1.connect).toHaveBeenCalledWith({
+        Authorization: "Token test-key",
+        reconnectAttempts: 0,
+      });
+    });
+
+    it("uses Bearer authentication with a token factory and custom URL", async () => {
+      const tokenFactory = jest.fn(async () => "grant-token");
+      const session = createSession({
+        auth: { tokenFactory },
+        url: "wss://api.eu.deepgram.com",
+      });
+
+      await session.connect();
+
+      expect(mockDeepgramClientConstructor).toHaveBeenCalledWith({
+        accessToken: "grant-token",
+        baseUrl: "wss://api.eu.deepgram.com",
+      });
+      expect(mockClient.agent.v1.connect).toHaveBeenCalledWith({
+        Authorization: "Bearer grant-token",
+        reconnectAttempts: 0,
+      });
     });
   });
 
