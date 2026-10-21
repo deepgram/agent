@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.2.0](https://github.com/deepgram/agent/compare/agents-widget-v0.1.8...agents-widget-v0.2.0) (2026-10-21)
+
+
+### ⚠ BREAKING CHANGES
+
+* **deps-dev:** Disables CSS and IFrame loading by default (<a href="https://redirect.github.com/capricorn86/happy-dom/issues/2502">#2502</a>)</li> <li><a href="https://github.com/capricorn86/happy-dom/commit/f21dbd7d0a0c63cdd41954ba5d0f05def4e0f2b3"><code>f21dbd7</code></a> fix: Fixes cookie scope forgery vulnerability (<a href="https://redirect.github.com/capricorn86/happy-dom/issues/2477">#2477</a>)</li> <li><a href="https://github.com/capricorn86/happy-dom/commit/0d4cdbe7442af49d16b49ddf1acf7cc9684ed318"><code>0d4cdbe</code></a> fix: <a href="https://redirect.github.com/capricorn86/happy-dom/issues/2409">#2409</a> Preserve character references in comment data (<a href="https://redirect.github.com/capricorn86/happy-dom/issues/2410">#2410</a>)</li> <li><a href="https://github.com/capricorn86/happy-dom/commit/9c920a414a0e27a9c8f279a2be59beaaefd754e0"><code>9c920a4</code></a> fix: <a href="https://redirect.github.com/capricorn86/happy-dom/issues/2407">#2407</a> End comments at the first comment end tag when it overlaps a com...</li> <li><a href="https://github.com/capricorn86/happy-dom/commit/5fb1df3df8fcbd037341e848bfd33e5a35c6d910"><code>5fb1df3</code></a> fix: <a href="https://redirect.github.com/capricorn86/happy-dom/issues/2363">#2363</a> Avoids cloning all properties in CSSPropertyManager.toString() (...</li> <li><a href="https://github.com/capricorn86/happy-dom/commit/de0a1e9107f75dc089cf72853257c83818e1874b"><code>de0a1e9</code></a> fix: <a href="https://redirect.github.com/capricorn86/happy-dom/issues/2344">#2344</a> Resolve every var() in a value, not only the first one (<a href="https://redirect.github.com/capricorn86/happy-dom/issues/2395">#2395</a>)</li> <li><a href="https://github.com/capricorn86/happy-dom/commit/64b8b9479860ce0242f4ddedc3dfd5f9d53ab63c"><code>64b8b94</code></a> fix: <a href="https://redirect.github.com/capricorn86/happy-dom/issues/2366">#2366</a> Invalidate the computed style cache for the whole subtree (<a href="https://redirect.github.com/capricorn86/happy-dom/issues/2367">#2367</a>)</li> <li><a href="https://github.com/capricorn86/happy-dom/commit/eac5a38026b0569f2d52b609b2bb4cbaa94d9644"><code>eac5a38</code></a> feat: <a href="https://redirect.github.com/capricorn86/happy-dom/issues/2357">#2357</a> Improves computed style cache (<a href="https://redirect.github.com/capricorn86/happy-dom/issues/2358">#2358</a>)</li> <li><a href="https://github.com/capricorn86/happy-dom/commit/5b3559bc6d6df04c10bd4237575d5b2bd886e1a5"><code>5b3559b</code></a> fix: <a href="https://redirect.github.com/capricorn86/happy-dom/issues/2349">#2349</a> Fix problem with getComputedStyle with :host and :host-context s...</li> <li>Additional commits viewable in <a href="https://github.com/capricorn86/happy-dom/compare/v20.9.0...v21.0.1">compare view</a></li> </ul> </details> <br />
+
+### Miscellaneous
+
+* **deps-dev:** bump happy-dom from 20.9.0 to 21.0.1 ([#85](https://github.com/deepgram/agent/issues/85)) ([f1caee3](https://github.com/deepgram/agent/commit/f1caee3cbd2672ff6115915c6af1630444004eaf))
+
 ## [0.1.8](https://github.com/deepgram/agent/compare/agents-widget-v0.1.7...agents-widget-v0.1.8) (2026-09-04)
 
 
