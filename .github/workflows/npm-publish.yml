@@ -4,6 +4,17 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      publish_sdk:
+        description: Publish the SDK version currently on main
+        required: false
+        type: boolean
+        default: false
+      publish_widget:
+        description: Publish the widget version currently on main
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -29,7 +40,7 @@ jobs:
 
   publish-sdk:
     needs: release-please
-    if: needs.release-please.outputs.sdk--release_created == 'true'
+    if: needs.release-please.outputs.sdk--release_created == 'true' || inputs.publish_sdk
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -43,21 +54,19 @@ jobs:
 
       - uses: actions/setup-node@v7
         with:
-          node-version: 22
+          node-version: 24
           registry-url: https://registry.npmjs.org
 
       - run: bun install
 
       - run: bun run build
 
-      - run: npm publish --provenance --access public
+      - run: npm publish --access public
         working-directory: packages/sdk
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_DEEPGRAM_TOKEN }}
 
   publish-widget:
     needs: release-please
-    if: needs.release-please.outputs.widget--release_created == 'true'
+    if: needs.release-please.outputs.widget--release_created == 'true' || inputs.publish_widget
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -71,7 +80,7 @@ jobs:
 
       - uses: actions/setup-node@v7
         with:
-          node-version: 22
+          node-version: 24
           registry-url: https://registry.npmjs.org
 
       - run: bun install
@@ -91,10 +100,8 @@ jobs:
             console.log('widget dependencies are publish-ready');
           "
 
-      - run: npm publish --provenance --access public
+      - run: npm publish --access public
         working-directory: packages/widget
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_DEEPGRAM_TOKEN }}
 
   publish-cdn-widget:
     needs: release-please
