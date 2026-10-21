@@ -107,7 +107,7 @@ jobs:
     needs: release-please
     if: |
       needs.release-please.outputs.widget--release_created == 'true' ||
-      github.event_name == 'workflow_dispatch'
+      inputs.publish_widget
     runs-on: ubuntu-latest
     permissions:
       contents: read
