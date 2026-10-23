@@ -47,7 +47,7 @@
     "@deepgram/agents": "^0.1.2",
     "@deepgram/react": "^0.2.0",
     "@deepgram/ui": "^0.1.6",
-    "preact": "10.29.1",
+    "preact": "11.0.1",
     "sugar-high": "2.6.0"
   },
   "devDependencies": {
