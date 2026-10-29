@@ -33,16 +33,16 @@
     "test:watch": "bun test --watch"
   },
   "dependencies": {
-    "@deepgram/sdk": "5.15.0",
+    "@deepgram/sdk": "5.16.0",
     "eventemitter3": "5.0.4"
   },
   "devDependencies": {
     "@types/node": "26.6.5",
     "@typescript/typescript6": "6.0.2",
-    "happy-dom": "21.0.1",
+    "happy-dom": "21.0.4",
     "terser": "5.51.2",
     "typescript": "7.0.2",
-    "vite": "8.3.4",
+    "vite": "8.3.5",
     "vite-plugin-dts": "5.1.2"
   },
   "license": "MIT"
